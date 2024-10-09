@@ -1044,12 +1044,6 @@ void _noopt LAMMPS::init_pkg_lists()
 #include "packages_compute.h"
 #undef ComputeStyle
 #undef COMPUTE_CLASS
-#define DIHEDRAL_CLASS
-#define DihedralStyle(key,Class)                \
-  pkg_lists->dihedral_styles[#key] = PACKAGE;
-#include "packages_dihedral.h"
-#undef DihedralStyle
-#undef DIHEDRAL_CLASS
 #define DUMP_CLASS
 #define DumpStyle(key,Class)                    \
   pkg_lists->dump_styles[#key] = PACKAGE;

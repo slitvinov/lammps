@@ -690,15 +690,9 @@ double Comm::get_comm_cutoff()
     // apply bond length based heuristics.
 
     if (force->newton_bond) {
-      if (force->dihedral || force->improper) {
-        maxbondcutoff *= 2.25;
-      } else {
-        maxbondcutoff *=1.5;
-      }
+      maxbondcutoff *=1.5;
     } else {
-      if (force->dihedral || force->improper) {
-        maxbondcutoff *= 3.125;
-      } else if (force->angle) {
+      if (force->angle) {
         maxbondcutoff *= 2.25;
       } else {
         maxbondcutoff *=1.5;

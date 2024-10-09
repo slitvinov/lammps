@@ -21,7 +21,6 @@
 namespace LAMMPS_NS {
 class Angle;
 class Bond;
-class Dihedral;
 class Improper;
 class KSpace;
 class Pair;
@@ -77,9 +76,6 @@ class Force : protected Pointers {
   Angle *angle;
   char *angle_style;
 
-  Dihedral *dihedral;
-  char *dihedral_style;
-
   Improper *improper;
   char *improper_style;
 
@@ -89,21 +85,18 @@ class Force : protected Pointers {
   typedef Pair *(*PairCreator)(LAMMPS *);
   typedef Bond *(*BondCreator)(LAMMPS *);
   typedef Angle *(*AngleCreator)(LAMMPS *);
-  typedef Dihedral *(*DihedralCreator)(LAMMPS *);
   typedef Improper *(*ImproperCreator)(LAMMPS *);
   typedef KSpace *(*KSpaceCreator)(LAMMPS *);
 
   typedef std::map<std::string, PairCreator> PairCreatorMap;
   typedef std::map<std::string, BondCreator> BondCreatorMap;
   typedef std::map<std::string, AngleCreator> AngleCreatorMap;
-  typedef std::map<std::string, DihedralCreator> DihedralCreatorMap;
   typedef std::map<std::string, ImproperCreator> ImproperCreatorMap;
   typedef std::map<std::string, KSpaceCreator> KSpaceCreatorMap;
 
   PairCreatorMap *pair_map;
   BondCreatorMap *bond_map;
   AngleCreatorMap *angle_map;
-  DihedralCreatorMap *dihedral_map;
   ImproperCreatorMap *improper_map;
   KSpaceCreatorMap *kspace_map;
 
