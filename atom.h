@@ -24,7 +24,6 @@ namespace LAMMPS_NS {
 // forward declarations
 
 class AtomVec;
-class Molecule;
 
 class Atom : protected Pointers {
  public:
@@ -243,14 +242,6 @@ class Atom : protected Pointers {
   char **ivname, **dvname, **ianame, **daname;
   int nivector, ndvector, niarray, ndarray;
 
-  // molecule templates
-  // each template can be a set of consecutive molecules
-  // each with same ID (stored in molecules)
-  // 1st molecule in template stores nset = # in set
-
-  int nmolecule;
-  Molecule **molecules;
-
   // type label maps
 
   class LabelMap *lmap;
@@ -347,11 +338,6 @@ class Atom : protected Pointers {
 
   int radius_consistency(int, double &);
   int shape_consistency(int, double &, double &, double &);
-
-  void add_molecule(int, char **);
-  int find_molecule(const char *);
-  std::vector<Molecule *> get_molecule_by_id(const std::string &);
-  void add_molecule_atom(Molecule *, int, int, tagint);
 
   void add_label_map();
 

@@ -4,7 +4,5 @@
 #include "dump_deprecated.h"
 #include "dump_grid.h"
 #include "dump_grid_vtk.h"
-#include "dump_image.h"
 #include "dump_local.h"
-#include "dump_movie.h"
 #include "dump_xyz.h"

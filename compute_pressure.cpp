@@ -21,11 +21,9 @@
 #include "error.h"
 #include "fix.h"
 #include "force.h"
-#include "improper.h"
 #include "kspace.h"
 #include "modify.h"
 #include "pair.h"
-#include "pair_hybrid.h"
 #include "update.h"
 
 #include <cctype>
@@ -64,17 +62,15 @@ ComputePressure::ComputePressure(LAMMPS *lmp, int narg, char **arg) :
   }
 
   // process optional args
-
-  pairhybridflag = 0;
   if (narg == 4) {
     keflag = 1;
     pairflag = 1;
-    bondflag = angleflag = dihedralflag = improperflag = 1;
+    bondflag = angleflag = 1;
     kspaceflag = fixflag = 1;
   } else {
     keflag = 0;
     pairflag = 0;
-    bondflag = angleflag = dihedralflag = improperflag = 0;
+    bondflag = angleflag = 0;
     kspaceflag = fixflag = 0;
     int iarg = 4;
     while (iarg < narg) {
@@ -95,30 +91,15 @@ ComputePressure::ComputePressure(LAMMPS *lmp, int narg, char **arg) :
               error->all(FLERR,"Illegal compute pressure command");
           }
         }
-
-        // check if pair style with and without suffix exists
-
-        pairhybrid = (Pair *) force->pair_match(pstyle,1,nsub);
-        if (!pairhybrid && lmp->suffix) {
-          pstyle[strlen(pstyle) - strlen(lmp->suffix) - 1] = '\0';
-          pairhybrid = (Pair *) force->pair_match(pstyle,1,nsub);
-        }
-
-        if (!pairhybrid)
-          error->all(FLERR,"Unrecognized pair style in compute pressure command");
-
-        pairhybridflag = 1;
       }
       else if (strcmp(arg[iarg],"pair") == 0) pairflag = 1;
       else if (strcmp(arg[iarg],"bond") == 0) bondflag = 1;
       else if (strcmp(arg[iarg],"angle") == 0) angleflag = 1;
-      else if (strcmp(arg[iarg],"dihedral") == 0) dihedralflag = 1;
-      else if (strcmp(arg[iarg],"improper") == 0) improperflag = 1;
       else if (strcmp(arg[iarg],"kspace") == 0) kspaceflag = 1;
       else if (strcmp(arg[iarg],"fix") == 0) fixflag = 1;
       else if (strcmp(arg[iarg],"virial") == 0) {
         pairflag = 1;
-        bondflag = angleflag = dihedralflag = improperflag = 1;
+        bondflag = angleflag = 1;
         kspaceflag = fixflag = 1;
       } else error->all(FLERR,"Illegal compute pressure command");
       iarg++;
@@ -165,19 +146,6 @@ void ComputePressure::init()
   }
 
   // recheck if pair style with and without suffix exists
-
-  if (pairhybridflag) {
-    pairhybrid = (Pair *) force->pair_match(pstyle,1,nsub);
-    if (!pairhybrid && lmp->suffix) {
-      strcat(pstyle,"/");
-      strcat(pstyle,lmp->suffix);
-      pairhybrid = (Pair *) force->pair_match(pstyle,1,nsub);
-    }
-
-    if (!pairhybrid)
-      error->all(FLERR,"Unrecognized pair style in compute pressure command");
-  }
-
   // detect contributions to virial
   // vptr points to all virial[6] contributions
 
@@ -185,13 +153,10 @@ void ComputePressure::init()
   nvirial = 0;
   vptr = nullptr;
 
-  if (pairhybridflag && force->pair) nvirial++;
   if (pairflag && force->pair) nvirial++;
   if (atom->molecular != Atom::ATOMIC) {
     if (bondflag && force->bond) nvirial++;
     if (angleflag && force->angle) nvirial++;
-    if (dihedralflag && force->dihedral) nvirial++;
-    if (improperflag && force->improper) nvirial++;
   }
   if (fixflag)
     for (auto &ifix : modify->get_fix_list())
@@ -200,19 +165,12 @@ void ComputePressure::init()
   if (nvirial) {
     vptr = new double*[nvirial];
     nvirial = 0;
-    if (pairhybridflag && force->pair) {
-      auto ph = dynamic_cast<PairHybrid *>(force->pair);
-      ph->no_virial_fdotr_compute = 1;
-      vptr[nvirial++] = pairhybrid->virial;
-    }
     if (pairflag && force->pair) vptr[nvirial++] = force->pair->virial;
     if (bondflag && force->bond) vptr[nvirial++] = force->bond->virial;
     if (angleflag && force->angle) vptr[nvirial++] = force->angle->virial;
-    if (improperflag && force->improper)
-      vptr[nvirial++] = force->improper->virial;
     if (fixflag)
-    for (auto &ifix : modify->get_fix_list())
-      if (ifix->virial_global_flag && ifix->thermo_virial)
+      for (auto &ifix : modify->get_fix_list())
+	if (ifix->virial_global_flag && ifix->thermo_virial)
           vptr[nvirial++] = ifix->virial;
   }
 

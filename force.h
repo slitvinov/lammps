@@ -21,7 +21,6 @@
 namespace LAMMPS_NS {
 class Angle;
 class Bond;
-class Improper;
 class KSpace;
 class Pair;
 
@@ -76,28 +75,22 @@ class Force : protected Pointers {
   Angle *angle;
   char *angle_style;
 
-  Improper *improper;
-  char *improper_style;
-
   KSpace *kspace;
   char *kspace_style;
 
   typedef Pair *(*PairCreator)(LAMMPS *);
   typedef Bond *(*BondCreator)(LAMMPS *);
   typedef Angle *(*AngleCreator)(LAMMPS *);
-  typedef Improper *(*ImproperCreator)(LAMMPS *);
   typedef KSpace *(*KSpaceCreator)(LAMMPS *);
 
   typedef std::map<std::string, PairCreator> PairCreatorMap;
   typedef std::map<std::string, BondCreator> BondCreatorMap;
   typedef std::map<std::string, AngleCreator> AngleCreatorMap;
-  typedef std::map<std::string, ImproperCreator> ImproperCreatorMap;
   typedef std::map<std::string, KSpaceCreator> KSpaceCreatorMap;
 
   PairCreatorMap *pair_map;
   BondCreatorMap *bond_map;
   AngleCreatorMap *angle_map;
-  ImproperCreatorMap *improper_map;
   KSpaceCreatorMap *kspace_map;
 
   // index [0] is not used in these arrays
@@ -127,10 +120,6 @@ class Force : protected Pointers {
   void create_angle(const std::string &, int);
   Angle *new_angle(const std::string &, int, int &);
   Angle *angle_match(const std::string &);
-
-  void create_improper(const std::string &, int);
-  Improper *new_improper(const std::string &, int, int &);
-  Improper *improper_match(const std::string &);
 
   void create_kspace(const std::string &, int);
   KSpace *new_kspace(const std::string &, int, int &);

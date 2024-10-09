@@ -35,7 +35,7 @@ class ComputePEAtom : public Compute {
   double memory_usage() override;
 
  private:
-  int pairflag, bondflag, angleflag, dihedralflag, improperflag;
+  int pairflag, bondflag, angleflag;
   int kspaceflag, fixflag;
   int nmax;
   double *energy;

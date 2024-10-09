@@ -23,7 +23,6 @@
 #include "error.h"
 #include "fix.h"
 #include "force.h"
-#include "improper.h"
 #include "label_map.h"
 #include "memory.h"
 #include "modify.h"
@@ -338,10 +337,6 @@ void WriteData::force_fields()
   if (force->angle && force->angle->writedata && atom->nangletypes) {
     fmt::print(fp,"\nAngle Coeffs # {}\n\n", force->angle_style);
     force->angle->write_data(fp);
-  }
-  if (force->improper && force->improper->writedata && atom->nimpropertypes) {
-    fmt::print(fp,"\nImproper Coeffs # {}\n\n", force->improper_style);
-    force->improper->write_data(fp);
   }
 }
 

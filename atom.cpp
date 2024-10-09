@@ -28,7 +28,6 @@
 #include "math_const.h"
 #include "memory.h"
 #include "modify.h"
-#include "molecule.h"
 #include "neighbor.h"
 #include "tokenizer.h"
 #include "update.h"
@@ -215,11 +214,6 @@ Atom::Atom(LAMMPS *_lmp) : Pointers(_lmp)
   // end of customization section
   // --------------------------------------------------------------------
 
-  // user-defined molecules
-
-  nmolecule = 0;
-  molecules = nullptr;
-
   // type labels
 
   lmap = nullptr;
@@ -336,11 +330,6 @@ Atom::~Atom()
   memory->sfree(darray);
   memory->sfree(icols);
   memory->sfree(dcols);
-
-  // delete user-defined molecules
-
-  for (int i = 0; i < nmolecule; i++) delete molecules[i];
-  memory->sfree(molecules);
 
   // delete label map
 
@@ -2051,145 +2040,6 @@ int Atom::shape_consistency(int itype, double &shapex, double &shapey, double &s
   shapey = oneall[1];
   shapez = oneall[2];
   return 1;
-}
-
-/* ----------------------------------------------------------------------
-   add a new molecule template = set of molecules
-------------------------------------------------------------------------- */
-
-void Atom::add_molecule(int narg, char **arg)
-{
-  if (narg < 1) utils::missing_cmd_args(FLERR, "molecule", error);
-
-  if (find_molecule(arg[0]) >= 0)
-    error->all(FLERR,"Reuse of molecule template ID {}", arg[0]);
-
-  // 1st molecule in set stores nset = # of mols, others store nset = 0
-  // ifile = count of molecules in set
-  // index = argument index where next molecule starts, updated by constructor
-
-  int ifile = 1;
-  int index = 1;
-  while (true) {
-    molecules = (Molecule **)
-      memory->srealloc(molecules,(nmolecule+1)*sizeof(Molecule *), "atom::molecules");
-    molecules[nmolecule] = new Molecule(lmp,narg,arg,index);
-    molecules[nmolecule]->nset = 0;
-    molecules[nmolecule-ifile+1]->nset++;
-    nmolecule++;
-    if (molecules[nmolecule-1]->last) break;
-    ifile++;
-  }
-}
-
-/* ----------------------------------------------------------------------
-   find first molecule in set with template ID
-   return -1 if does not exist
-------------------------------------------------------------------------- */
-
-int Atom::find_molecule(const char *id)
-{
-  if (id == nullptr) return -1;
-  for (int imol = 0; imol < nmolecule; imol++)
-    if (strcmp(id,molecules[imol]->id) == 0) return imol;
-  return -1;
-}
-
-/* ----------------------------------------------------------------------
-   return vector of molecules which match template ID
-------------------------------------------------------------------------- */
-
-std::vector<Molecule *>Atom::get_molecule_by_id(const std::string &id)
-{
-  std::vector<Molecule *> result;
-  for (int imol = 0; imol < nmolecule; ++imol)
-    if (id == molecules[imol]->id) result.push_back(molecules[imol]);
-  return result;
-}
-
-/* ----------------------------------------------------------------------
-   add info to current atom ilocal from molecule template onemol and its iatom
-   offset = atom ID preceding IDs of atoms in this molecule
-   called by fixes and commands that add molecules
-------------------------------------------------------------------------- */
-
-void Atom::add_molecule_atom(Molecule *onemol, int iatom, int ilocal, tagint offset)
-{
-  if (onemol->qflag && q_flag) q[ilocal] = onemol->q[iatom];
-  if (onemol->radiusflag && radius_flag) radius[ilocal] = onemol->radius[iatom];
-  if (onemol->rmassflag && rmass_flag) rmass[ilocal] = onemol->rmass[iatom];
-  else if (rmass_flag)
-    rmass[ilocal] = 4.0*MY_PI/3.0 * radius[ilocal]*radius[ilocal]*radius[ilocal];
-  if (onemol->bodyflag) {
-    body[ilocal] = 0;     // as if a body read from data file
-    onemol->avec_body->data_body(ilocal,onemol->nibody,onemol->ndbody,
-                                 onemol->ibodyparams,onemol->dbodyparams);
-    onemol->avec_body->set_quat(ilocal,onemol->quat_external);
-  }
-
-  // initialize custom per-atom properties to zero if present
-
-  for (int i = 0; i < nivector; ++i) ivector[i][ilocal] = 0;
-  for (int i = 0; i < ndvector; ++i) dvector[i][ilocal] = 0.0;
-  for (int i = 0; i < niarray; ++i)
-    for (int j = 0; j < icols[i]; ++j)
-      iarray[i][ilocal][j] = 0;
-  for (int i = 0; i < ndarray; ++i)
-    for (int j = 0; j < dcols[i]; ++j)
-      darray[i][ilocal][j] = 0.0;
-
-  if (molecular != Atom::MOLECULAR) return;
-
-  // add bond topology info
-  // for molecular atom styles, but not atom style template
-
-  if (avec->bonds_allow) {
-    num_bond[ilocal] = onemol->num_bond[iatom];
-    for (int i = 0; i < num_bond[ilocal]; i++) {
-      bond_type[ilocal][i] = onemol->bond_type[iatom][i];
-      bond_atom[ilocal][i] = onemol->bond_atom[iatom][i] + offset;
-    }
-  }
-
-  if (avec->angles_allow) {
-    num_angle[ilocal] = onemol->num_angle[iatom];
-    for (int i = 0; i < num_angle[ilocal]; i++) {
-      angle_type[ilocal][i] = onemol->angle_type[iatom][i];
-      angle_atom1[ilocal][i] = onemol->angle_atom1[iatom][i] + offset;
-      angle_atom2[ilocal][i] = onemol->angle_atom2[iatom][i] + offset;
-      angle_atom3[ilocal][i] = onemol->angle_atom3[iatom][i] + offset;
-    }
-  }
-
-  if (avec->dihedrals_allow) {
-    num_dihedral[ilocal] = onemol->num_dihedral[iatom];
-    for (int i = 0; i < num_dihedral[ilocal]; i++) {
-      dihedral_type[ilocal][i] = onemol->dihedral_type[iatom][i];
-      dihedral_atom1[ilocal][i] = onemol->dihedral_atom1[iatom][i] + offset;
-      dihedral_atom2[ilocal][i] = onemol->dihedral_atom2[iatom][i] + offset;
-      dihedral_atom3[ilocal][i] = onemol->dihedral_atom3[iatom][i] + offset;
-      dihedral_atom4[ilocal][i] = onemol->dihedral_atom4[iatom][i] + offset;
-    }
-  }
-
-  if (avec->impropers_allow) {
-    num_improper[ilocal] = onemol->num_improper[iatom];
-    for (int i = 0; i < num_improper[ilocal]; i++) {
-      improper_type[ilocal][i] = onemol->improper_type[iatom][i];
-      improper_atom1[ilocal][i] = onemol->improper_atom1[iatom][i] + offset;
-      improper_atom2[ilocal][i] = onemol->improper_atom2[iatom][i] + offset;
-      improper_atom3[ilocal][i] = onemol->improper_atom3[iatom][i] + offset;
-      improper_atom4[ilocal][i] = onemol->improper_atom4[iatom][i] + offset;
-    }
-  }
-
-  if (onemol->specialflag) {
-    nspecial[ilocal][0] = onemol->nspecial[iatom][0];
-    nspecial[ilocal][1] = onemol->nspecial[iatom][1];
-    int n = nspecial[ilocal][2] = onemol->nspecial[iatom][2];
-    for (int i = 0; i < n; i++)
-      special[ilocal][i] = onemol->special[iatom][i] + offset;
-  }
 }
 
 /* ----------------------------------------------------------------------

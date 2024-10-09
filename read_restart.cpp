@@ -24,7 +24,6 @@
 #include "fix_read_restart.h"
 #include "force.h"
 #include "group.h"
-#include "improper.h"
 #include "irregular.h"
 #include "label_map.h"
 #include "memory.h"
@@ -949,15 +948,6 @@ void ReadRestart::force_fields()
         utils::logmesg(lmp,"  restoring angle style {} from restart\n",
                        force->angle_style);
       force->angle->read_restart(fp);
-
-    } else if (flag == IMPROPER) {
-      style = read_string();
-      force->create_improper(style,1);
-      delete[] style;
-      if (comm->me ==0)
-        utils::logmesg(lmp,"  restoring improper style {} from restart\n",
-                       force->improper_style);
-      force->improper->read_restart(fp);
 
     } else error->all(FLERR,
                       "Invalid flag in force field section of restart file");

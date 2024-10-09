@@ -36,7 +36,6 @@
 #include "lmppython.h"
 #include "memory.h"
 #include "modify.h"
-#include "molecule.h"
 #include "neigh_list.h"
 #include "neighbor.h"
 #include "output.h"
@@ -44,7 +43,6 @@
 #include "plugin.h"
 #endif
 #include "region.h"
-#include "respa.h"
 #include "thermo.h"
 #include "timer.h"
 #include "universe.h"
@@ -1597,12 +1595,6 @@ void *lammps_extract_global(void *handle, const char *name)
   // lammps_get_thermo() can access all thermo keywords by value
   if (strcmp(name,"atime") == 0) return (void *) &lmp->update->atime;
   if (strcmp(name,"atimestep") == 0) return (void *) &lmp->update->atimestep;
-
-  if (utils::strmatch(lmp->update->integrate_style,"^respa")) {
-    auto respa = dynamic_cast<Respa *>(lmp->update->integrate);
-    if (strcmp(name,"respa_levels") == 0) return (void *) &respa->nlevels;
-    if (strcmp(name,"respa_dt") == 0) return (void *) respa->step;
-  }
   if (strcmp(name,"boxlo") == 0) return (void *) lmp->domain->boxlo;
   if (strcmp(name,"boxhi") == 0) return (void *) lmp->domain->boxhi;
   if (strcmp(name,"sublo") == 0) return (void *) lmp->domain->sublo;
@@ -5599,8 +5591,6 @@ int lammps_has_id(void *handle, const char *category, const char *name) {
     if (lmp->modify->get_fix_by_id(name)) return 1;
   } else if (strcmp(category,"group") == 0) {
     if (lmp->group->find(name) >= 0) return 1;
-  } else if (strcmp(category,"molecule") == 0) {
-    if (lmp->atom->find_molecule(name) >= 0) return 1;
   } else if (strcmp(category,"region") == 0) {
     if (lmp->domain->get_region_by_id(name)) return 1;
   } else if (strcmp(category,"variable") == 0) {
@@ -5637,8 +5627,6 @@ int lammps_id_count(void *handle, const char *category) {
     return lmp->modify->get_fix_list().size();
   } else if (strcmp(category,"group") == 0) {
     return lmp->group->ngroup;
-  } else if (strcmp(category,"molecule") == 0) {
-    return lmp->atom->nmolecule;
   } else if (strcmp(category,"region") == 0) {
     return lmp->domain->get_region_list().size();
   } else if (strcmp(category,"variable") == 0) {
@@ -5695,11 +5683,6 @@ int lammps_id_name(void *handle, const char *category, int idx, char *buffer, in
   } else if (strcmp(category,"group") == 0) {
     if ((idx >=0) && (idx < lmp->group->ngroup)) {
       strncpy(buffer, lmp->group->names[idx], buf_size);
-      return 1;
-    }
-  } else if (strcmp(category,"molecule") == 0) {
-    if ((idx >=0) && (idx < lmp->atom->nmolecule)) {
-      strncpy(buffer, lmp->atom->molecules[idx]->id, buf_size);
       return 1;
     }
   } else if (strcmp(category,"region") == 0) {

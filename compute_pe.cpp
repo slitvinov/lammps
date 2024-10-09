@@ -20,7 +20,6 @@
 #include "domain.h"
 #include "error.h"
 #include "force.h"
-#include "improper.h"
 #include "kspace.h"
 #include "modify.h"
 #include "pair.h"
@@ -44,12 +43,12 @@ ComputePE::ComputePE(LAMMPS *lmp, int narg, char **arg) : Compute(lmp, narg, arg
 
   if (narg == 3) {
     pairflag = 1;
-    bondflag = angleflag = dihedralflag = improperflag = 1;
+    bondflag = angleflag = 1;
     kspaceflag = 1;
     fixflag = 1;
   } else {
     pairflag = 0;
-    bondflag = angleflag = dihedralflag = improperflag = 0;
+    bondflag = angleflag = 0;
     kspaceflag = 0;
     fixflag = 0;
     int iarg = 3;
@@ -60,10 +59,6 @@ ComputePE::ComputePE(LAMMPS *lmp, int narg, char **arg) : Compute(lmp, narg, arg
         bondflag = 1;
       else if (strcmp(arg[iarg], "angle") == 0)
         angleflag = 1;
-      else if (strcmp(arg[iarg], "dihedral") == 0)
-        dihedralflag = 1;
-      else if (strcmp(arg[iarg], "improper") == 0)
-        improperflag = 1;
       else if (strcmp(arg[iarg], "kspace") == 0)
         kspaceflag = 1;
       else if (strcmp(arg[iarg], "fix") == 0)
@@ -92,7 +87,6 @@ double ComputePE::compute_scalar()
   if (atom->molecular != Atom::ATOMIC) {
     if (bondflag && force->bond) one += force->bond->energy;
     if (angleflag && force->angle) one += force->angle->energy;
-    if (improperflag && force->improper) one += force->improper->energy;
   }
 
   MPI_Allreduce(&one, &scalar, 1, MPI_DOUBLE, MPI_SUM, world);

@@ -14,7 +14,6 @@
 #include "modify.h"
 #include "style_compute.h"    // IWYU pragma: keep
 #include "style_fix.h"        // IWYU pragma: keep
-
 #include "atom.h"
 #include "comm.h"
 #include "compute.h"    // IWYU pragma: keep

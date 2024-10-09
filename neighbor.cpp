@@ -38,15 +38,11 @@
 #include "neigh_request.h"
 #include "npair.h"
 #include "nstencil.h"
-#include "ntopo.h"
 #include "output.h"
 #include "pair.h"
-#include "pair_hybrid.h"
-#include "respa.h"
 #include "style_nbin.h"  // IWYU pragma: keep
 #include "style_npair.h"  // IWYU pragma: keep
 #include "style_nstencil.h"  // IWYU pragma: keep
-#include "style_ntopo.h"  // IWYU pragma: keep
 #include "suffix.h"
 #include "tokenizer.h"
 #include "update.h"
@@ -275,11 +271,6 @@ Neighbor::~Neighbor()
   delete[] pairnames;
   delete[] pairmasks;
 
-  delete neigh_bond;
-  delete neigh_angle;
-  delete neigh_dihedral;
-  delete neigh_improper;
-
   memory->destroy(xhold);
 
   memory->destroy(ex1_type);
@@ -481,19 +472,6 @@ void Neighbor::init()
   // rRESPA cutoffs
 
   int respa = 0;
-  if (update->whichflag == 1 && utils::strmatch(update->integrate_style,"^respa")) {
-    if ((dynamic_cast<Respa *>(update->integrate))->level_inner >= 0) respa = 1;
-    if ((dynamic_cast<Respa *>(update->integrate))->level_middle >= 0) respa = 2;
-  }
-
-  if (respa) {
-    double *cut_respa = (dynamic_cast<Respa *>(update->integrate))->cutoff;
-    cut_inner_sq = (cut_respa[1] + skin) * (cut_respa[1] + skin);
-    cut_middle_sq = (cut_respa[3] + skin) * (cut_respa[3] + skin);
-    cut_middle_inside_sq = (cut_respa[0] - skin) * (cut_respa[0] - skin);
-    if (cut_respa[0]-skin < 0) cut_middle_inside_sq = 0.0;
-  }
-
   // fixchecklist = other classes that can induce reneighboring in decide()
 
   restart_check = 0;
@@ -544,32 +522,7 @@ void Neighbor::init()
 
   if (force->kspace) {
     special_flag[1] = special_flag[2] = special_flag[3] = 2;
-  } else {
-    PairHybrid *ph = reinterpret_cast<PairHybrid *>(force->pair_match("^hybrid",0));
-    if (ph) {
-      int flag=0;
-      for (int isub=0; isub < ph->nstyles; ++isub) {
-        if (force->pair_match("amoeba",0,isub)
-            || force->pair_match("hippo",0,isub)
-            || force->pair_match("coul/wolf",0,isub)
-            || force->pair_match("coul/dsf",0,isub)
-            || force->pair_match("coul/exclude",0)
-            || force->pair_match("thole",0,isub))
-          ++flag;
-      }
-      if (flag)
-        special_flag[1] = special_flag[2] = special_flag[3] = 2;
-    } else {
-      if (force->pair_match("amoeba",0)
-          || force->pair_match("hippo",0)
-          || force->pair_match("coul/wolf",0)
-          || force->pair_match("coul/dsf",0)
-          || force->pair_match("coul/exclude",0)
-          || force->pair_match("thole",0))
-        special_flag[1] = special_flag[2] = special_flag[3] = 2;
-    }
   }
-
   // ------------------------------------------------------------------
   // xhold array
 
@@ -1639,15 +1592,6 @@ void Neighbor::init_topology()
     if (atom->molecular == Atom::TEMPLATE) bondwhich = TEMPLATE;
     else if (bond_off) bondwhich = PARTIAL;
     else bondwhich = ALL;
-    if (!neigh_bond || bondwhich != old_bondwhich) {
-      delete neigh_bond;
-      if (bondwhich == ALL)
-        neigh_bond = new NTopoBondAll(lmp);
-      else if (bondwhich == PARTIAL)
-        neigh_bond = new NTopoBondPartial(lmp);
-      else if (bondwhich == TEMPLATE)
-        neigh_bond = new NTopoBondTemplate(lmp);
-    }
   }
 
   if (atom->avec->angles_allow) {
@@ -1655,15 +1599,6 @@ void Neighbor::init_topology()
     if (atom->molecular == Atom::TEMPLATE) anglewhich = TEMPLATE;
     else if (angle_off) anglewhich = PARTIAL;
     else anglewhich = ALL;
-    if (!neigh_angle || anglewhich != old_anglewhich) {
-      delete neigh_angle;
-      if (anglewhich == ALL)
-        neigh_angle = new NTopoAngleAll(lmp);
-      else if (anglewhich == PARTIAL)
-        neigh_angle = new NTopoAnglePartial(lmp);
-      else if (anglewhich == TEMPLATE)
-        neigh_angle = new NTopoAngleTemplate(lmp);
-    }
   }
 
   if (atom->avec->dihedrals_allow) {
@@ -1671,15 +1606,6 @@ void Neighbor::init_topology()
     if (atom->molecular == Atom::TEMPLATE) dihedralwhich = TEMPLATE;
     else if (dihedral_off) dihedralwhich = PARTIAL;
     else dihedralwhich = ALL;
-    if (!neigh_dihedral || dihedralwhich != old_dihedralwhich) {
-      delete neigh_dihedral;
-      if (dihedralwhich == ALL)
-        neigh_dihedral = new NTopoDihedralAll(lmp);
-      else if (dihedralwhich == PARTIAL)
-        neigh_dihedral = new NTopoDihedralPartial(lmp);
-      else if (dihedralwhich == TEMPLATE)
-        neigh_dihedral = new NTopoDihedralTemplate(lmp);
-    }
   }
 
   if (atom->avec->impropers_allow) {
@@ -1687,15 +1613,6 @@ void Neighbor::init_topology()
     if (atom->molecular == Atom::TEMPLATE) improperwhich = TEMPLATE;
     else if (improper_off) improperwhich = PARTIAL;
     else improperwhich = ALL;
-    if (!neigh_improper || improperwhich != old_improperwhich) {
-      delete neigh_improper;
-      if (improperwhich == ALL)
-        neigh_improper = new NTopoImproperAll(lmp);
-      else if (improperwhich == PARTIAL)
-        neigh_improper = new NTopoImproperPartial(lmp);
-      else if (improperwhich == TEMPLATE)
-        neigh_improper = new NTopoImproperTemplate(lmp);
-    }
   }
 }
 
@@ -2446,40 +2363,6 @@ void Neighbor::build(int topoflag)
     neigh_pair[m]->build_setup();
     neigh_pair[m]->build(lists[m]);
   }
-
-  // build topology lists for bonds/angles/etc
-  // skip if GPU package styles will call it explicitly to overlap with GPU computation.
-
-  if ((atom->molecular != Atom::ATOMIC) && topoflag && !overlap_topo) build_topology();
-}
-
-/* ----------------------------------------------------------------------
-   build topology neighbor lists: bond, angle, dihedral, improper
-   copy their list info back to Neighbor for access by bond/angle/etc classes
-------------------------------------------------------------------------- */
-
-void Neighbor::build_topology()
-{
-  if (force->bond) {
-    neigh_bond->build();
-    nbondlist = neigh_bond->nbondlist;
-    bondlist = neigh_bond->bondlist;
-  }
-  if (force->angle) {
-    neigh_angle->build();
-    nanglelist = neigh_angle->nanglelist;
-    anglelist = neigh_angle->anglelist;
-  }
-  if (force->dihedral) {
-    neigh_dihedral->build();
-    ndihedrallist = neigh_dihedral->ndihedrallist;
-    dihedrallist = neigh_dihedral->dihedrallist;
-  }
-  if (force->improper) {
-    neigh_improper->build();
-    nimproperlist = neigh_improper->nimproperlist;
-    improperlist = neigh_improper->improperlist;
-  }
 }
 
 /* ----------------------------------------------------------------------
@@ -2947,15 +2830,6 @@ bigint Neighbor::get_nneigh_half()
   return nneighhalf;
 }
 
-/* ----------------------------------------------------------------------
-   add pair of atoms to bondlist array
-   will only persist until the next neighbor build
-------------------------------------------------------------------------- */
-
-void Neighbor::add_temporary_bond(int i1, int i2, int btype)
-{
-  neigh_bond->add_temporary_bond(i1, i2, btype);
-}
 
 /* ----------------------------------------------------------------------
    return # of bytes of allocated memory
@@ -2972,11 +2846,5 @@ double Neighbor::memory_usage()
     bytes += neigh_stencil[i]->memory_usage();
   for (int i = 0; i < nbin; i++)
     bytes += neigh_bin[i]->memory_usage();
-
-  if (neigh_bond) bytes += neigh_bond->memory_usage();
-  if (neigh_angle) bytes += neigh_angle->memory_usage();
-  if (neigh_dihedral) bytes += neigh_dihedral->memory_usage();
-  if (neigh_improper) bytes += neigh_improper->memory_usage();
-
   return bytes;
 }

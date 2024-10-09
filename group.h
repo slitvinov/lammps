@@ -71,7 +71,6 @@ class Group : protected Pointers {
   std::map<tagint, int> *hash;
 
   int find_unused();
-  void add_molecules(int, int);
 
   // callback functions for ring communication
 

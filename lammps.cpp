@@ -20,8 +20,6 @@
 #include "style_command.h"   // IWYU pragma: keep
 #include "style_compute.h"   // IWYU pragma: keep
 #include "style_dump.h"      // IWYU pragma: keep
-#include "style_fix.h"       // IWYU pragma: keep
-#include "style_improper.h"  // IWYU pragma: keep
 #include "style_integrate.h" // IWYU pragma: keep
 #include "style_kspace.h"    // IWYU pragma: keep
 #include "style_minimize.h"  // IWYU pragma: keep
@@ -1056,12 +1054,6 @@ void _noopt LAMMPS::init_pkg_lists()
 #include "packages_fix.h"
 #undef FixStyle
 #undef FIX_CLASS
-#define IMPROPER_CLASS
-#define ImproperStyle(key,Class)                \
-  pkg_lists->improper_styles[#key] = PACKAGE;
-#include "packages_improper.h"
-#undef ImproperStyle
-#undef IMPROPER_CLASS
 #define INTEGRATE_CLASS
 #define IntegrateStyle(key,Class)               \
   pkg_lists->integrate_styles[#key] = PACKAGE;
@@ -1291,14 +1283,6 @@ void _noopt LAMMPS::help()
 #define AngleStyle(key,Class) print_style(fp,#key,pos);
 #include "style_angle.h"  // IWYU pragma: keep
 #undef ANGLE_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Improper styles:\n");
-#define IMPROPER_CLASS
-#define ImproperStyle(key,Class) print_style(fp,#key,pos);
-#include "style_improper.h"  // IWYU pragma: keep
-#undef IMPROPER_CLASS
   fprintf(fp,"\n\n");
 
   pos = 80;

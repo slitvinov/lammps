@@ -32,7 +32,6 @@
 #include "error.h"
 #include "fix_minimize.h"
 #include "force.h"
-#include "improper.h"
 #include "kspace.h"
 #include "math_const.h"
 #include "memory.h"
@@ -261,8 +260,6 @@ void Min::setup(int flag)
   if (atom->sortfreq > 0) atom->sort();
   comm->borders();
   if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
-  domain->image_check();
-  domain->box_too_small_check();
   modify->setup_pre_neighbor();
   neighbor->build(1);
   modify->setup_post_neighbor();
@@ -303,7 +300,6 @@ void Min::setup(int flag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->improper) force->improper->compute(eflag,vflag);
   }
 
   if (force->kspace) {
@@ -360,8 +356,6 @@ void Min::setup_minimal(int flag)
     comm->exchange();
     comm->borders();
     if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
-    domain->image_check();
-    domain->box_too_small_check();
     modify->setup_pre_neighbor();
     neighbor->build(1);
     modify->setup_post_neighbor();
@@ -384,7 +378,6 @@ void Min::setup_minimal(int flag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->improper) force->improper->compute(eflag,vflag);
   }
 
   if (force->kspace) {
@@ -479,7 +472,6 @@ void Min::cleanup()
   // delete fix at end of run, so its atom arrays won't persist
 
   modify->delete_fix("MINIMIZE");
-  domain->box_too_small_check();
 
   // reset timestep size (important for variable timestep minimizer)
 
@@ -555,7 +547,6 @@ double Min::energy_force(int resetflag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->improper) force->improper->compute(eflag,vflag);
     timer->stamp(Timer::BOND);
   }
 

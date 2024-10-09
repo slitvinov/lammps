@@ -21,7 +21,6 @@
 #include "memory.h"
 #include "modify.h"
 #include "region.h"
-#include "respa.h"
 #include "update.h"
 #include "variable.h"
 
@@ -194,24 +193,13 @@ void FixAddForce::init()
     error->all(FLERR, "Cannot use variable energy with constant force in fix addforce");
   if ((varflag == EQUAL || varflag == ATOM) && update->whichflag == 2 && estyle == NONE)
     error->all(FLERR, "Must use variable energy with fix addforce");
-
-  if (utils::strmatch(update->integrate_style, "^respa")) {
-    ilevel_respa = (dynamic_cast<Respa *>(update->integrate))->nlevels - 1;
-    if (respa_level >= 0) ilevel_respa = MIN(respa_level, ilevel_respa);
-  }
 }
 
 /* ---------------------------------------------------------------------- */
 
 void FixAddForce::setup(int vflag)
 {
-  if (utils::strmatch(update->integrate_style, "^verlet"))
-    post_force(vflag);
-  else {
-    (dynamic_cast<Respa *>(update->integrate))->copy_flevel_f(ilevel_respa);
-    post_force_respa(vflag, ilevel_respa, 0);
-    (dynamic_cast<Respa *>(update->integrate))->copy_f_flevel(ilevel_respa);
-  }
+  post_force(vflag);
 }
 
 /* ---------------------------------------------------------------------- */

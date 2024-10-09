@@ -114,8 +114,6 @@ class Domain : protected Pointers {
   virtual void set_local_box();
   virtual void reset_box();
   virtual void pbc();
-  void image_check();
-  void box_too_small_check();
   void subbox_too_small_check(double);
   void minimum_image(double &, double &, double &) const;
   void minimum_image(double *delta) const { minimum_image(delta[0], delta[1], delta[2]); }

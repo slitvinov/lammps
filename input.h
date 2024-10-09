@@ -101,16 +101,12 @@ class Input : protected Pointers {
   void compute();
   void compute_modify();
   void dielectric();
-  void dihedral_coeff();
-  void dihedral_style();
   void dimension();
   void dump();
   void dump_modify();
   void fix();
   void fix_modify();
   void group_command();
-  void improper_coeff();
-  void improper_style();
   void kspace_modify();
   void kspace_style();
   void labelmap();
@@ -118,7 +114,6 @@ class Input : protected Pointers {
   void mass();
   void min_modify();
   void min_style();
-  void molecule();
   void neigh_modify();
   void neighbor_command();
   void newton();

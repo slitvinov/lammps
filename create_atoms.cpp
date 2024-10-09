@@ -30,7 +30,6 @@
 #include "math_extra.h"
 #include "memory.h"
 #include "modify.h"
-#include "molecule.h"
 #include "random_mars.h"
 #include "random_park.h"
 #include "region.h"
@@ -173,17 +172,6 @@ void CreateAtoms::command(int narg, char **arg)
       if (iarg + 2 > narg) utils::missing_cmd_args(FLERR, "create_atoms remap", error);
       remapflag = utils::logical(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-    } else if (strcmp(arg[iarg], "mol") == 0) {
-      if (iarg + 3 > narg) utils::missing_cmd_args(FLERR, "create_atoms mol", error);
-      int imol = atom->find_molecule(arg[iarg + 1]);
-      if (imol == -1)
-        error->all(FLERR, "Molecule template ID {} for create_atoms does not exist", arg[iarg + 1]);
-      if ((atom->molecules[imol]->nset > 1) && (comm->me == 0))
-        error->warning(FLERR, "Molecule template for create_atoms has multiple molecules");
-      mode = MOLECULE;
-      onemol = atom->molecules[imol];
-      molseed = utils::inumeric(FLERR, arg[iarg + 2], false, lmp);
-      iarg += 3;
     } else if (strcmp(arg[iarg], "units") == 0) {
       if (iarg + 2 > narg) utils::missing_cmd_args(FLERR, "create_atoms units", error);
       if (strcmp(arg[iarg + 1], "box") == 0)
@@ -293,22 +281,7 @@ void CreateAtoms::command(int narg, char **arg)
   if (mode == ATOM) {
     if ((ntype <= 0) || (ntype > atom->ntypes))
       error->all(FLERR, "Invalid atom type in create_atoms command");
-  } else if (mode == MOLECULE) {
-    if (onemol->xflag == 0) error->all(FLERR, "Create_atoms molecule must have coordinates");
-    if (onemol->typeflag == 0) error->all(FLERR, "Create_atoms molecule must have atom types");
-    if (ntype + onemol->ntypes <= 0 || ntype + onemol->ntypes > atom->ntypes)
-      error->all(FLERR, "Invalid atom type in create_atoms mol command");
-    if (onemol->tag_require && !atom->tag_enable)
-      error->all(FLERR, "Create_atoms molecule has atom IDs, but system does not");
-
-    onemol->check_attributes();
-
-    // use geometric center of molecule for insertion
-    // molecule random number generator, different for each proc
-
-    onemol->compute_center();
-    ranmol = new RanMars(lmp, molseed + comm->me);
-  }
+  } 
 
   if (style == MESH) {
     if (mode == MOLECULE)
@@ -488,144 +461,6 @@ void CreateAtoms::command(int narg, char **arg)
     atom->map_set();
   }
 
-  // for MOLECULE mode:
-  // molecule can mean just a mol ID or bonds/angles/etc or mol templates
-  // set molecule IDs for created atoms if atom->molecule_flag is set
-  // reset new molecule bond,angle,etc and special values if defined
-  // send atoms to new owning procs via irregular comm
-  //   since not all atoms I created will be within my sub-domain
-  // perform special list build if needed
-
-  if (mode == MOLECULE) {
-
-    int molecule_flag = atom->molecule_flag;
-    int molecular = atom->molecular;
-    tagint *molecule = atom->molecule;
-
-    // molcreate = # of molecules I created
-
-    tagint molcreate = (atom->nlocal - nlocal_previous) / onemol->natoms;
-
-    // increment total bonds,angles,etc
-
-    bigint nmolme = molcreate;
-    bigint nmoltotal;
-    MPI_Allreduce(&nmolme, &nmoltotal, 1, MPI_LMP_BIGINT, MPI_SUM, world);
-    atom->nbonds += nmoltotal * onemol->nbonds;
-    atom->nangles += nmoltotal * onemol->nangles;
-    atom->ndihedrals += nmoltotal * onemol->ndihedrals;
-    atom->nimpropers += nmoltotal * onemol->nimpropers;
-
-    // if atom style template
-    // maxmol = max molecule ID across all procs, for previous atoms
-    // moloffset = max molecule ID for all molecules owned by previous procs
-    //             including molecules existing before this creation
-
-    tagint moloffset = 0;
-    if (molecule_flag) {
-      tagint max = 0;
-      for (int i = 0; i < nlocal_previous; i++) max = MAX(max, molecule[i]);
-      tagint maxmol;
-      MPI_Allreduce(&max, &maxmol, 1, MPI_LMP_TAGINT, MPI_MAX, world);
-      MPI_Scan(&molcreate, &moloffset, 1, MPI_LMP_TAGINT, MPI_SUM, world);
-      moloffset = moloffset - molcreate + maxmol;
-    }
-
-    // loop over molecules I created
-    // set their molecule ID
-    // reset their bond,angle,etc and special values
-
-    int natoms = onemol->natoms;
-    tagint offset = 0;
-
-    tagint *tag = atom->tag;
-    int *num_bond = atom->num_bond;
-    int *num_angle = atom->num_angle;
-    int *num_dihedral = atom->num_dihedral;
-    int *num_improper = atom->num_improper;
-    tagint **bond_atom = atom->bond_atom;
-    tagint **angle_atom1 = atom->angle_atom1;
-    tagint **angle_atom2 = atom->angle_atom2;
-    tagint **angle_atom3 = atom->angle_atom3;
-    tagint **dihedral_atom1 = atom->dihedral_atom1;
-    tagint **dihedral_atom2 = atom->dihedral_atom2;
-    tagint **dihedral_atom3 = atom->dihedral_atom3;
-    tagint **dihedral_atom4 = atom->dihedral_atom4;
-    tagint **improper_atom1 = atom->improper_atom1;
-    tagint **improper_atom2 = atom->improper_atom2;
-    tagint **improper_atom3 = atom->improper_atom3;
-    tagint **improper_atom4 = atom->improper_atom4;
-    int **nspecial = atom->nspecial;
-    tagint **special = atom->special;
-
-    int ilocal = nlocal_previous;
-    for (int i = 0; i < molcreate; i++) {
-      if (tag) offset = tag[ilocal] - 1;
-      for (int m = 0; m < natoms; m++) {
-        if (molecule_flag) {
-          if (onemol->moleculeflag) {
-            molecule[ilocal] = moloffset + onemol->molecule[m];
-          } else {
-            molecule[ilocal] = moloffset + 1;
-          }
-        }
-        if (molecular == Atom::TEMPLATE) {
-          atom->molindex[ilocal] = 0;
-          atom->molatom[ilocal] = m;
-        } else if (molecular != Atom::ATOMIC) {
-          if (onemol->bondflag)
-            for (int j = 0; j < num_bond[ilocal]; j++) bond_atom[ilocal][j] += offset;
-          if (onemol->angleflag)
-            for (int j = 0; j < num_angle[ilocal]; j++) {
-              angle_atom1[ilocal][j] += offset;
-              angle_atom2[ilocal][j] += offset;
-              angle_atom3[ilocal][j] += offset;
-            }
-          if (onemol->dihedralflag)
-            for (int j = 0; j < num_dihedral[ilocal]; j++) {
-              dihedral_atom1[ilocal][j] += offset;
-              dihedral_atom2[ilocal][j] += offset;
-              dihedral_atom3[ilocal][j] += offset;
-              dihedral_atom4[ilocal][j] += offset;
-            }
-          if (onemol->improperflag)
-            for (int j = 0; j < num_improper[ilocal]; j++) {
-              improper_atom1[ilocal][j] += offset;
-              improper_atom2[ilocal][j] += offset;
-              improper_atom3[ilocal][j] += offset;
-              improper_atom4[ilocal][j] += offset;
-            }
-          if (onemol->specialflag)
-            for (int j = 0; j < nspecial[ilocal][2]; j++) special[ilocal][j] += offset;
-        }
-        ilocal++;
-      }
-      if (molecule_flag) {
-        if (onemol->moleculeflag) {
-          moloffset += onemol->nmolecules;
-        } else {
-          moloffset++;
-        }
-      }
-    }
-
-    // perform irregular comm to migrate atoms to new owning procs
-
-    double **x = atom->x;
-    imageint *image = atom->image;
-    int nlocal = atom->nlocal;
-    for (int i = 0; i < nlocal; i++) domain->remap(x[i], image[i]);
-
-    if (domain->triclinic) domain->x2lamda(atom->nlocal);
-    domain->reset_box();
-    auto irregular = new Irregular(lmp);
-    irregular->migrate_atoms(1);
-    delete irregular;
-    if (domain->triclinic) domain->lamda2x(atom->nlocal);
-  }
-
-  // clean up
-
   delete ranmol;
   delete ranlatt;
 
@@ -634,18 +469,6 @@ void CreateAtoms::command(int narg, char **arg)
   delete[] xstr;
   delete[] ystr;
   delete[] zstr;
-
-  // for MOLECULE mode:
-  // create special bond lists for molecular systems,
-  //   but not for atom style template
-  // only if onemol added bonds but not special info
-
-  if (mode == MOLECULE) {
-    if (atom->molecular == Atom::MOLECULAR && onemol->bondflag && !onemol->specialflag) {
-      Special special(lmp);
-      special.build();
-    }
-  }
 
   // print status
 
@@ -694,11 +517,7 @@ void CreateAtoms::add_single()
 
   if (coord[0] >= sublo[0] && coord[0] < subhi[0] && coord[1] >= sublo[1] && coord[1] < subhi[1] &&
       coord[2] >= sublo[2] && coord[2] < subhi[2]) {
-    if (mode == ATOM) {
       atom->avec->create_atom(ntype, xone);
-    } else {
-      add_molecule(xone);
-    }
   }
 }
 
@@ -715,7 +534,6 @@ void CreateAtoms::add_random()
 
   if (overlapflag) {
     double odist = overlap;
-    if (mode == MOLECULE) odist += onemol->molradius;
     odistsq = odist * odist;
   }
 
@@ -841,11 +659,8 @@ void CreateAtoms::add_random()
 
     if (coord[0] >= sublo[0] && coord[0] < subhi[0] && coord[1] >= sublo[1] &&
         coord[1] < subhi[1] && coord[2] >= sublo[2] && coord[2] < subhi[2]) {
-      if (mode == ATOM) {
+      if (mode == ATOM)
         atom->avec->create_atom(ntype, xone);
-      } else {
-        add_molecule(xone);
-      }
     }
   }
 
@@ -1345,69 +1160,17 @@ void CreateAtoms::loop_lattice(int action)
           if (action == INSERT) {
             if (mode == ATOM) {
               atom->avec->create_atom(basistype[m], x);
-            } else {
-              add_molecule(x);
             }
           } else if (action == COUNT) {
             if (nlatt == MAXSMALLINT) nlatt_overflow = 1;
           } else if (action == INSERT_SELECTED && flag[nlatt]) {
-            if (mode == ATOM) {
-              atom->avec->create_atom(basistype[m], x);
-            } else {
-              add_molecule(x);
-            }
+	    atom->avec->create_atom(basistype[m], x);
           }
 
           nlatt++;
         }
       }
     }
-  }
-}
-
-/* ----------------------------------------------------------------------
-   add a molecule with its center at center
-------------------------------------------------------------------------- */
-
-void CreateAtoms::add_molecule(double *center)
-{
-  double r[3], rotmat[3][3];
-
-  // use quatone as-is if user set it
-  // else generate random quaternion in quatone
-
-  if (!quat_user) {
-    if (domain->dimension == 3) {
-      r[0] = ranmol->uniform() - 0.5;
-      r[1] = ranmol->uniform() - 0.5;
-      r[2] = ranmol->uniform() - 0.5;
-      MathExtra::norm3(r);
-    } else {
-      r[0] = r[1] = 0.0;
-      r[2] = 1.0;
-    }
-    double theta = ranmol->uniform() * MY_2PI;
-    MathExtra::axisangle_to_quat(r, theta, quatone);
-  }
-
-  MathExtra::quat_to_mat(quatone, rotmat);
-
-  // create atoms in molecule with atom ID = 0 and mol ID = 0
-  // IDs are reset in caller after all molecules created by all procs
-  // pass add_molecule_atom an offset of 0 since don't know
-  //   max tag of atoms in previous molecules at this point
-  // onemol->quat_external is used by atom->add_moleclue_atom()
-
-  onemol->quat_external = quatone;
-
-  int n, natoms = onemol->natoms;
-  double xnew[3];
-  for (int m = 0; m < natoms; m++) {
-    MathExtra::matvec(rotmat, onemol->dx[m], xnew);
-    MathExtra::add3(xnew, center, xnew);
-    atom->avec->create_atom(ntype + onemol->type[m], xnew);
-    n = atom->nlocal - 1;
-    atom->add_molecule_atom(onemol, m, n, 0);
   }
 }
 

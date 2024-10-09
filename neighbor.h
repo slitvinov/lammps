@@ -96,17 +96,6 @@ class Neighbor : protected Pointers {
   NeighRequest **old_requests;    // copy of requests to compare to
   int *j_sorted;                  // index of requests sorted by cutoff distance
 
-  // data from topology neighbor lists
-
-  int nbondlist;    // list of bonds to compute
-  int **bondlist;
-  int nanglelist;    // list of angles to compute
-  int **anglelist;
-  int ndihedrallist;    // list of dihedrals to compute
-  int **dihedrallist;
-  int nimproperlist;    // list of impropers to compute
-  int **improperlist;
-
   // optional type grouping for multi
 
   int custom_collection_flag;      // 1 if custom collections are defined for multi
@@ -144,7 +133,6 @@ class Neighbor : protected Pointers {
   virtual int check_distance();     // check max distance moved since last build
   void setup_bins();                // setup bins based on box and cutoff
   virtual void build(int);          // build all perpetual neighbor lists
-  virtual void build_topology();    // pairwise topology neighbor lists
   // create a one-time pairwise neigh list
   void build_one(class NeighList *list, int preflag = 0);
   void set(int, char **);                     // set neighbor style and skin distance
@@ -171,7 +159,6 @@ class Neighbor : protected Pointers {
 
   bigint get_nneigh_full();    // return number of neighbors in a regular full neighbor list
   bigint get_nneigh_half();    // return number of neighbors in a regular half neighbor list
-  void add_temporary_bond(int, int, int);    // add temporary bond to bondlist array
   double memory_usage();
 
   bigint last_setup_bins;    // step of last neighbor::setup_bins() call

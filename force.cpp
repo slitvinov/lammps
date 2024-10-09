@@ -15,16 +15,9 @@
 
 #include "style_angle.h"       // IWYU pragma: keep
 #include "style_bond.h"        // IWYU pragma: keep
-#include "style_improper.h"    // IWYU pragma: keep
 #include "style_kspace.h"      // IWYU pragma: keep
 #include "style_pair.h"        // IWYU pragma: keep
-
-#include "angle_hybrid.h"
-#include "bond_hybrid.h"
-#include "improper_hybrid.h"
 #include "kspace.h"
-#include "pair_hybrid.h"
-
 #include "atom.h"
 #include "comm.h"
 #include "error.h"
@@ -61,14 +54,11 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp)
   pair = nullptr;
   bond = nullptr;
   angle = nullptr;
-  improper = nullptr;
   kspace = nullptr;
 
   pair_style = utils::strdup("none");
   bond_style = utils::strdup("none");
   angle_style = utils::strdup("none");
-  dihedral_style = utils::strdup("none");
-  improper_style = utils::strdup("none");
   kspace_style = utils::strdup("none");
 
   pair_restart = nullptr;
@@ -103,14 +93,6 @@ void _noopt Force::create_factories()
 #undef AngleStyle
 #undef ANGLE_CLASS
 
-  improper_map = new ImproperCreatorMap();
-
-#define IMPROPER_CLASS
-#define ImproperStyle(key, Class) (*improper_map)[#key] = &style_creator<Improper, Class>;
-#include "style_improper.h"    // IWYU pragma: keep
-#undef ImproperStyle
-#undef IMPROPER_CLASS
-
   kspace_map = new KSpaceCreatorMap();
 
 #define KSPACE_CLASS
@@ -127,8 +109,6 @@ Force::~Force()
   delete[] pair_style;
   delete[] bond_style;
   delete[] angle_style;
-  delete[] dihedral_style;
-  delete[] improper_style;
   delete[] kspace_style;
 
   delete[] pair_restart;
@@ -136,21 +116,16 @@ Force::~Force()
   if (pair) delete pair;
   if (bond) delete bond;
   if (angle) delete angle;
-  if (improper) delete improper;
   if (kspace) delete kspace;
 
   pair = nullptr;
   bond = nullptr;
   angle = nullptr;
-  dihedral = nullptr;
-  improper = nullptr;
   kspace = nullptr;
 
   delete pair_map;
   delete bond_map;
   delete angle_map;
-  delete dihedral_map;
-  delete improper_map;
   delete kspace_map;
 }
 
@@ -171,7 +146,6 @@ void Force::init()
   if (pair) pair->init();        // so g_ewald is defined
   if (bond) bond->init();
   if (angle) angle->init();
-  if (improper) improper->init();
 
   // print warnings if topology and force field are inconsistent
 
@@ -186,13 +160,6 @@ void Force::init()
       if ((special_lj[2] != 1.0) || (special_coul[2] != 1.0))
         error->warning(FLERR, "Likewise 1-3 special neighbor interactions != 1.0");
     }
-    if (!dihedral && (atom->ndihedrals > 0)) {
-      error->warning(FLERR, "Dihedrals are defined but no dihedral style is set");
-      if ((special_lj[3] != 1.0) || (special_coul[3] != 1.0))
-        error->warning(FLERR, "Likewise 1-4 special neighbor interactions != 1.0");
-    }
-    if (!improper && (atom->nimpropers > 0))
-      error->warning(FLERR, "Impropers are defined but no improper style is set");
   }
 }
 
@@ -276,19 +243,6 @@ Pair *Force::pair_match(const std::string &word, int exact, int nsub)
     return pair;
   else if (!exact && utils::strmatch(pair_style, word))
     return pair;
-  else if (utils::strmatch(pair_style, "^hybrid")) {
-    auto hybrid = dynamic_cast<PairHybrid *>(pair);
-    count = 0;
-    for (int i = 0; i < hybrid->nstyles; i++)
-      if ((exact && (word == hybrid->keywords[i])) ||
-          (!exact && utils::strmatch(hybrid->keywords[i], word))) {
-        iwhich = i;
-        count++;
-        if (nsub == count) return hybrid->styles[iwhich];
-      }
-    if (count == 1) return hybrid->styles[iwhich];
-  }
-
   return nullptr;
 }
 
@@ -301,13 +255,6 @@ Pair *Force::pair_match(const std::string &word, int exact, int nsub)
 char *Force::pair_match_ptr(Pair *ptr)
 {
   if (ptr == pair) return pair_style;
-
-  if (utils::strmatch(pair_style, "^hybrid")) {
-    auto hybrid = dynamic_cast<PairHybrid *>(pair);
-    for (int i = 0; i < hybrid->nstyles; i++)
-      if (ptr == hybrid->styles[i]) return hybrid->keywords[i];
-  }
-
   return nullptr;
 }
 
@@ -371,11 +318,6 @@ Bond *Force::bond_match(const std::string &style)
 {
   if (style == bond_style)
     return bond;
-  else if (strcmp(bond_style, "hybrid") == 0) {
-    auto hybrid = dynamic_cast<BondHybrid *>(bond);
-    for (int i = 0; i < hybrid->nstyles; i++)
-      if (style == hybrid->keywords[i]) return hybrid->styles[i];
-  }
   return nullptr;
 }
 
@@ -439,80 +381,6 @@ Angle *Force::angle_match(const std::string &style)
 {
   if (style == angle_style)
     return angle;
-  else if (utils::strmatch(angle_style, "^hybrid")) {
-    auto hybrid = dynamic_cast<AngleHybrid *>(angle);
-    for (int i = 0; i < hybrid->nstyles; i++)
-      if (style == hybrid->keywords[i]) return hybrid->styles[i];
-  }
-  return nullptr;
-}
-
-
-/* ----------------------------------------------------------------------
-   create an improper style, called from input script or restart file
-------------------------------------------------------------------------- */
-
-void Force::create_improper(const std::string &style, int trysuffix)
-{
-  delete[] improper_style;
-  if (improper) delete improper;
-
-  int sflag;
-  improper = new_improper(style, trysuffix, sflag);
-  improper_style = store_style(style, sflag);
-}
-
-/* ----------------------------------------------------------------------
-   generate a improper class
-------------------------------------------------------------------------- */
-
-Improper *Force::new_improper(const std::string &style, int trysuffix, int &sflag)
-{
-  if (trysuffix && lmp->suffix_enable) {
-    if (lmp->non_pair_suffix()) {
-      sflag = 1 + 2*lmp->pair_only_flag;
-      std::string estyle = style + "/" + lmp->non_pair_suffix();
-      if (improper_map->find(estyle) != improper_map->end()) {
-        ImproperCreator &improper_creator = (*improper_map)[estyle];
-        return improper_creator(lmp);
-      }
-    }
-
-    if (lmp->suffix2) {
-      sflag = 2;
-      std::string estyle = style + "/" + lmp->suffix2;
-      if (improper_map->find(estyle) != improper_map->end()) {
-        ImproperCreator &improper_creator = (*improper_map)[estyle];
-        return improper_creator(lmp);
-      }
-    }
-  }
-
-  sflag = 0;
-  if (style == "none") return nullptr;
-  if (improper_map->find(style) != improper_map->end()) {
-    ImproperCreator &improper_creator = (*improper_map)[style];
-    return improper_creator(lmp);
-  }
-
-  error->all(FLERR, utils::check_packages_for_style("improper", style, lmp));
-
-  return nullptr;
-}
-
-/* ----------------------------------------------------------------------
-   return ptr to current improper class or hybrid sub-class if matches style
-------------------------------------------------------------------------- */
-
-Improper *Force::improper_match(const std::string &style)
-{
-  if (style == improper_style)
-    return improper;
-  else if (utils::strmatch(improper_style, "^hybrid")) {
-    auto hybrid = dynamic_cast<ImproperHybrid *>(improper);
-    for (int i = 0; i < hybrid->nstyles; i++)
-      if (style == hybrid->keywords[i]) return hybrid->styles[i];
-  }
   return nullptr;
 }
 
@@ -715,7 +583,6 @@ double Force::memory_usage()
   if (pair) bytes += pair->memory_usage();
   if (bond) bytes += bond->memory_usage();
   if (angle) bytes += angle->memory_usage();
-  if (improper) bytes += improper->memory_usage();
   if (kspace) bytes += kspace->memory_usage();
   return bytes;
 }

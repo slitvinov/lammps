@@ -331,16 +331,6 @@ void LabelMap::write_data(FILE *fp)
     fmt::print(fp, "\nAngle Type Labels\n\n");
     for (int i = 0; i < nangletypes; i++) fmt::print(fp, "{} {}\n", i + 1, atypelabel[i]);
   }
-
-  if (force->dihedral && is_complete(Atom::DIHEDRAL)) {
-    fmt::print(fp, "\nDihedral Type Labels\n\n");
-    for (int i = 0; i < ndihedraltypes; i++) fmt::print(fp, "{} {}\n", i + 1, dtypelabel[i]);
-  }
-
-  if (force->improper && is_complete(Atom::IMPROPER)) {
-    fmt::print(fp, "\nImproper Type Labels\n\n");
-    for (int i = 0; i < nimpropertypes; i++) fmt::print(fp, "{} {}\n", i + 1, itypelabel[i]);
-  }
 }
 
 /* ----------------------------------------------------------------------

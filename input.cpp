@@ -29,7 +29,6 @@
 #include "fix.h"
 #include "force.h"
 #include "group.h"
-#include "improper.h"
 #include "integrate.h"
 #include "kspace.h"
 #include "label_map.h"
@@ -784,8 +783,6 @@ int Input::execute_command()
   else if (mycmd == "fix") fix();
   else if (mycmd == "fix_modify") fix_modify();
   else if (mycmd == "group") group_command();
-  else if (mycmd == "improper_coeff") improper_coeff();
-  else if (mycmd == "improper_style") improper_style();
   else if (mycmd == "kspace_modify") kspace_modify();
   else if (mycmd == "kspace_style") kspace_style();
   else if (mycmd == "labelmap") labelmap();
@@ -793,7 +790,6 @@ int Input::execute_command()
   else if (mycmd == "mass") mass();
   else if (mycmd == "min_modify") min_modify();
   else if (mycmd == "min_style") min_style();
-  else if (mycmd == "molecule") molecule();
   else if (mycmd == "neigh_modify") neigh_modify();
   else if (mycmd == "neighbor") neighbor_command();
   else if (mycmd == "newton") newton();
@@ -1514,33 +1510,6 @@ void Input::group_command()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::improper_coeff()
-{
-  if (domain->box_exist == 0)
-    error->all(FLERR,"Improper_coeff command before simulation box is defined");
-  if (force->improper == nullptr)
-    error->all(FLERR,"Improper_coeff command before improper_style is defined");
-  if (atom->avec->impropers_allow == 0)
-    error->all(FLERR,"Improper_coeff command when no impropers allowed");
-  char *newarg = utils::expand_type(FLERR, arg[0], Atom::IMPROPER, lmp);
-  if (newarg) arg[0] = newarg;
-  force->improper->coeff(narg,arg);
-  delete[] newarg;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::improper_style()
-{
-  if (narg < 1) error->all(FLERR,"Illegal improper_style command");
-  if (atom->avec->impropers_allow == 0)
-    error->all(FLERR,"Improper_style command when no impropers allowed");
-  force->create_improper(arg[0],1);
-  if (force->improper) force->improper->settings(narg-1,&arg[1]);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::kspace_modify()
 {
   if (force->kspace == nullptr)
@@ -1595,13 +1564,6 @@ void Input::min_style()
   if (domain->box_exist == 0)
     error->all(FLERR,"Min_style command before simulation box is defined");
   update->create_minimize(narg,arg,1);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::molecule()
-{
-  atom->add_molecule(narg,arg);
 }
 
 /* ---------------------------------------------------------------------- */

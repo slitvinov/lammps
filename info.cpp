@@ -31,13 +31,11 @@
 #include "fix.h"
 #include "force.h"
 #include "group.h"
-#include "improper.h"
 #include "input.h"
 #include "modify.h"
 #include "neighbor.h"
 #include "output.h"
 #include "pair.h"
-#include "pair_hybrid.h"
 #include "region.h"
 #include "update.h"
 #include "variable.h"
@@ -87,7 +85,6 @@ enum {COMPUTES=1<<0,
       PAIR_STYLES=1<<15,
       BOND_STYLES=1<<16,
       ANGLE_STYLES=1<<17,
-      IMPROPER_STYLES=1<<19,
       KSPACE_STYLES=1<<20,
       FIX_STYLES=1<<21,
       COMPUTE_STYLES=1<<22,
@@ -99,7 +96,7 @@ enum {COMPUTES=1<<0,
 
 static const int STYLES = ATOM_STYLES | INTEGRATE_STYLES | MINIMIZE_STYLES
                         | PAIR_STYLES | BOND_STYLES | ANGLE_STYLES
-                        | IMPROPER_STYLES | KSPACE_STYLES
+                        | KSPACE_STYLES
                         | FIX_STYLES | COMPUTE_STYLES | REGION_STYLES
                         | DUMP_STYLES | COMMAND_STYLES;
 }
@@ -227,9 +224,6 @@ void Info::command(int narg, char **arg)
           ++idx;
         } else if (strncmp(arg[idx],"angle",3) == 0) {
           flags |= ANGLE_STYLES;
-          ++idx;
-        } else if (strncmp(arg[idx],"improper",3) == 0) {
-          flags |= IMPROPER_STYLES;
           ++idx;
         } else if (strncmp(arg[idx],"kspace",3) == 0) {
           flags |= KSPACE_STYLES;
@@ -409,13 +403,6 @@ void Info::command(int narg, char **arg)
     fmt::print(out,"Atoms     = {:12},  types = {:8d},  style = {}\n",
                atom->natoms, atom->ntypes, force->pair_style);
 
-    if (force->pair && utils::strmatch(force->pair_style,"^hybrid")) {
-      auto hybrid = dynamic_cast<PairHybrid *>(force->pair);
-      fmt::print(out,"Hybrid sub-styles:");
-      for (int i=0; i < hybrid->nstyles; ++i)
-        fmt::print(out," {}", hybrid->keywords[i]);
-      fputc('\n',out);
-    }
     if (atom->molecular != Atom::ATOMIC) {
       const char *msg;
       msg = force->bond_style ? force->bond_style : "none";
@@ -425,10 +412,6 @@ void Info::command(int narg, char **arg)
       msg = force->angle_style ? force->angle_style : "none";
       fmt::print(out,"Angles    = {:12},  types = {:8},  style = {}\n",
                  atom->nangles, atom->nangletypes, msg);
-
-      msg = force->improper_style ? force->improper_style : "none";
-      fmt::print(out,"Impropers = {:12},  types = {:8},  style = {}\n",
-                 atom->nimpropers, atom->nimpropertypes, msg);
 
       const double * const special_lj   = force->special_lj;
       const double * const special_coul = force->special_coul;
@@ -495,18 +478,6 @@ void Info::command(int narg, char **arg)
         for (int i=1; i <= atom->nangletypes; ++i) {
           fmt::print(out,"{:6d}:",i);
           if (angle->allocated && angle->setflag[i]) fputs(" is set\n",out);
-          else fputs (" is not set\n",out);
-        }
-      }
-    }
-    if (force->improper) {
-      Improper *b=force->improper;
-
-      if (b) {
-        fputs("\nImproper Coeffs:\n",out);
-        for (int i=1; i <= atom->nimpropertypes; ++i) {
-          fmt::print(out,"{:6d}:",i);
-          if (b->allocated && b->setflag[i]) fputs(" is set\n",out);
           else fputs (" is not set\n",out);
         }
       }
@@ -642,7 +613,6 @@ void Info::available_styles(FILE * out, int flags)
   if (flags & PAIR_STYLES)      pair_styles(out);
   if (flags & BOND_STYLES)      bond_styles(out);
   if (flags & ANGLE_STYLES)     angle_styles(out);
-  if (flags & IMPROPER_STYLES)  improper_styles(out);
   if (flags & KSPACE_STYLES)    kspace_styles(out);
   if (flags & FIX_STYLES)       fix_styles(out);
   if (flags & COMPUTE_STYLES)   compute_styles(out);
@@ -690,13 +660,6 @@ void Info::angle_styles(FILE *out)
 {
   fputs("\nAngle styles:\n",out);
   print_columns(out, force->angle_map);
-  fputs("\n\n\n",out);
-}
-
-void Info::improper_styles(FILE *out)
-{
-  fputs("\nImproper styles:\n",out);
-  print_columns(out, force->improper_map);
   fputs("\n\n\n",out);
 }
 
@@ -793,8 +756,6 @@ bool Info::is_active(const char *category, const char *name)
     style = force->bond_style;
   } else if (strcmp(category,"angle_style") == 0) {
     style = force->angle_style;
-  } else if (strcmp(category,"improper_style") == 0) {
-    style = force->improper_style;
   } else if (strcmp(category,"kspace_style") == 0) {
     style = force->kspace_style;
   } else error->all(FLERR,"Unknown category for info is_active(): {}", category);
@@ -888,8 +849,6 @@ bool Info::has_style(const std::string &category, const std::string &name)
     return find_style(lmp, force->bond_map, name, true);
   } else if (category == "angle") {
     return find_style(lmp, force->angle_map, name, true);
-  } else if (category == "improper") {
-    return find_style(lmp, force->improper_map, name, true);
   } else if (category == "kspace") {
     return find_style(lmp, force->kspace_map, name, true);
   } else if (category == "fix") {
@@ -920,8 +879,6 @@ std::vector<std::string> Info::get_available_styles(const std::string &category)
     return get_style_names(force->bond_map);
   } else if (category == "angle") {
     return get_style_names(force->angle_map);
-  } else if (category == "improper") {
-    return get_style_names(force->improper_map);
   } else if (category == "kspace") {
     return get_style_names(force->kspace_map);
   } else if (category == "fix") {

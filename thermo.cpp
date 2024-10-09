@@ -28,7 +28,6 @@
 #include "fix.h"
 #include "force.h"
 #include "group.h"
-#include "improper.h"
 #include "input.h"
 #include "kspace.h"
 #include "lattice.h"
@@ -1801,12 +1800,7 @@ void Thermo::compute_eangle()
 
 void Thermo::compute_eimp()
 {
-  if (force->improper) {
-    double tmp = force->improper->energy;
-    MPI_Allreduce(&tmp, &dvalue, 1, MPI_DOUBLE, MPI_SUM, world);
-    if (normflag) dvalue /= natoms;
-  } else
-    dvalue = 0.0;
+  dvalue = 0.0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1817,7 +1811,6 @@ void Thermo::compute_emol()
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) tmp += force->bond->energy;
     if (force->angle) tmp += force->angle->energy;
-    if (force->improper) tmp += force->improper->energy;
     MPI_Allreduce(&tmp, &dvalue, 1, MPI_DOUBLE, MPI_SUM, world);
     if (normflag) dvalue /= natoms;
   } else

@@ -28,7 +28,7 @@
 
 using namespace LAMMPS_NS;
 
-enum { NONE, NEIGH, PAIR, BOND, ANGLE, DIHEDRAL, IMPROPER };
+enum { NONE, NEIGH, PAIR, BOND, ANGLE };
 enum { TYPE, RADIUS };
 
 #define DELTA 10000
@@ -131,59 +131,6 @@ ComputePropertyLocal::ComputePropertyLocal(LAMMPS *lmp, int narg, char **arg) :
       if (kindflag != NONE && kindflag != ANGLE)
         error->all(FLERR, "Compute property/local cannot use these inputs together");
       kindflag = ANGLE;
-
-    } else if (strcmp(arg[iarg], "datom1") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_datom1;
-      if (kindflag != NONE && kindflag != DIHEDRAL)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = DIHEDRAL;
-    } else if (strcmp(arg[iarg], "datom2") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_datom2;
-      if (kindflag != NONE && kindflag != DIHEDRAL)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = DIHEDRAL;
-    } else if (strcmp(arg[iarg], "datom3") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_datom3;
-      if (kindflag != NONE && kindflag != DIHEDRAL)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = DIHEDRAL;
-    } else if (strcmp(arg[iarg], "datom4") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_datom4;
-      if (kindflag != NONE && kindflag != DIHEDRAL)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = DIHEDRAL;
-    } else if (strcmp(arg[iarg], "dtype") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_dtype;
-      if (kindflag != NONE && kindflag != DIHEDRAL)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = DIHEDRAL;
-
-    } else if (strcmp(arg[iarg], "iatom1") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_iatom1;
-      if (kindflag != NONE && kindflag != IMPROPER)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = IMPROPER;
-    } else if (strcmp(arg[iarg], "iatom2") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_iatom2;
-      if (kindflag != NONE && kindflag != IMPROPER)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = IMPROPER;
-    } else if (strcmp(arg[iarg], "iatom3") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_iatom3;
-      if (kindflag != NONE && kindflag != IMPROPER)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = IMPROPER;
-    } else if (strcmp(arg[iarg], "iatom4") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_iatom4;
-      if (kindflag != NONE && kindflag != IMPROPER)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = IMPROPER;
-    } else if (strcmp(arg[iarg], "itype") == 0) {
-      pack_choice[i] = &ComputePropertyLocal::pack_itype;
-      if (kindflag != NONE && kindflag != IMPROPER)
-        error->all(FLERR, "Compute property/local cannot use these inputs together");
-      kindflag = IMPROPER;
-
     } else
       break;
 
@@ -217,7 +164,7 @@ ComputePropertyLocal::ComputePropertyLocal(LAMMPS *lmp, int narg, char **arg) :
   // error check
 
   if (atom->molecular == 2 &&
-      (kindflag == BOND || kindflag == ANGLE || kindflag == DIHEDRAL || kindflag == IMPROPER))
+      (kindflag == BOND || kindflag == ANGLE ))
     error->all(FLERR,
                "Compute property/local does not (yet) work "
                "with atom_style template");
@@ -225,10 +172,6 @@ ComputePropertyLocal::ComputePropertyLocal(LAMMPS *lmp, int narg, char **arg) :
   if (kindflag == BOND && atom->avec->bonds_allow == 0)
     error->all(FLERR, "Compute property/local for property that isn't allocated");
   if (kindflag == ANGLE && atom->avec->angles_allow == 0)
-    error->all(FLERR, "Compute property/local for property that isn't allocated");
-  if (kindflag == DIHEDRAL && atom->avec->dihedrals_allow == 0)
-    error->all(FLERR, "Compute property/local for property that isn't allocated");
-  if (kindflag == IMPROPER && atom->avec->impropers_allow == 0)
     error->all(FLERR, "Compute property/local for property that isn't allocated");
   if (cutstyle == RADIUS && !atom->radius_flag)
     error->all(FLERR, "Compute property/local requires atom attribute radius");
@@ -281,11 +224,6 @@ void ComputePropertyLocal::init()
     ncount = count_bonds(0);
   else if (kindflag == ANGLE)
     ncount = count_angles(0);
-  else if (kindflag == DIHEDRAL)
-    ncount = count_dihedrals(0);
-  else if (kindflag == IMPROPER)
-    ncount = count_impropers(0);
-
   if (ncount > nmax) reallocate(ncount);
   size_local_rows = ncount;
 }
@@ -313,11 +251,6 @@ void ComputePropertyLocal::compute_local()
     ncount = count_bonds(0);
   else if (kindflag == ANGLE)
     ncount = count_angles(0);
-  else if (kindflag == DIHEDRAL)
-    ncount = count_dihedrals(0);
-  else if (kindflag == IMPROPER)
-    ncount = count_impropers(0);
-
   if (ncount > nmax) reallocate(ncount);
   size_local_rows = ncount;
 
@@ -329,11 +262,6 @@ void ComputePropertyLocal::compute_local()
     ncount = count_bonds(1);
   else if (kindflag == ANGLE)
     ncount = count_angles(1);
-  else if (kindflag == DIHEDRAL)
-    ncount = count_dihedrals(1);
-  else if (kindflag == IMPROPER)
-    ncount = count_impropers(1);
-
   // fill vector or array with local values
 
   if (nvalues == 1) {
@@ -519,92 +447,6 @@ int ComputePropertyLocal::count_angles(int flag)
       atom3 = atom->map(angle_atom3[atom2][i]);
       if (atom3 < 0 || !(mask[atom3] & groupbit)) continue;
       if (angle_type[atom2][i] == 0) continue;
-
-      if (flag) {
-        indices[m][0] = atom2;
-        indices[m][1] = i;
-      }
-      m++;
-    }
-  }
-
-  return m;
-}
-
-/* ----------------------------------------------------------------------
-   count dihedrals on this proc
-   only count if 2nd atom is the one storing the dihedral
-   all atoms in interaction must be in group
-   all atoms in interaction must be known to proc
-------------------------------------------------------------------------- */
-
-int ComputePropertyLocal::count_dihedrals(int flag)
-{
-  int i, atom1, atom2, atom3, atom4;
-
-  int *num_dihedral = atom->num_dihedral;
-  tagint **dihedral_atom1 = atom->dihedral_atom1;
-  tagint **dihedral_atom2 = atom->dihedral_atom2;
-  tagint **dihedral_atom3 = atom->dihedral_atom3;
-  tagint **dihedral_atom4 = atom->dihedral_atom4;
-  tagint *tag = atom->tag;
-  int *mask = atom->mask;
-  int nlocal = atom->nlocal;
-
-  int m = 0;
-  for (atom2 = 0; atom2 < nlocal; atom2++) {
-    if (!(mask[atom2] & groupbit)) continue;
-    for (i = 0; i < num_dihedral[atom2]; i++) {
-      if (tag[atom2] != dihedral_atom2[atom2][i]) continue;
-      atom1 = atom->map(dihedral_atom1[atom2][i]);
-      if (atom1 < 0 || !(mask[atom1] & groupbit)) continue;
-      atom3 = atom->map(dihedral_atom3[atom2][i]);
-      if (atom3 < 0 || !(mask[atom3] & groupbit)) continue;
-      atom4 = atom->map(dihedral_atom4[atom2][i]);
-      if (atom4 < 0 || !(mask[atom4] & groupbit)) continue;
-
-      if (flag) {
-        indices[m][0] = atom2;
-        indices[m][1] = i;
-      }
-      m++;
-    }
-  }
-
-  return m;
-}
-
-/* ----------------------------------------------------------------------
-   count impropers on this proc
-   only count if 2nd atom is the one storing the improper
-   all atoms in interaction must be in group
-   all atoms in interaction must be known to proc
-------------------------------------------------------------------------- */
-
-int ComputePropertyLocal::count_impropers(int flag)
-{
-  int i, atom1, atom2, atom3, atom4;
-
-  int *num_improper = atom->num_improper;
-  tagint **improper_atom1 = atom->improper_atom1;
-  tagint **improper_atom2 = atom->improper_atom2;
-  tagint **improper_atom3 = atom->improper_atom3;
-  tagint **improper_atom4 = atom->improper_atom4;
-  tagint *tag = atom->tag;
-  int *mask = atom->mask;
-  int nlocal = atom->nlocal;
-
-  int m = 0;
-  for (atom2 = 0; atom2 < nlocal; atom2++) {
-    if (!(mask[atom2] & groupbit)) continue;
-    for (i = 0; i < num_improper[atom2]; i++) {
-      if (tag[atom2] != improper_atom2[atom2][i]) continue;
-      atom1 = atom->map(improper_atom1[atom2][i]);
-      if (atom1 < 0 || !(mask[atom1] & groupbit)) continue;
-      atom3 = atom->map(improper_atom3[atom2][i]);
-      if (atom3 < 0 || !(mask[atom3] & groupbit)) continue;
-      atom4 = atom->map(improper_atom4[atom2][i]);
-      if (atom4 < 0 || !(mask[atom4] & groupbit)) continue;
 
       if (flag) {
         indices[m][0] = atom2;

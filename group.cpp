@@ -366,15 +366,8 @@ void Group::assign(int narg, char **arg)
     // style = include
 
     } else if (strcmp(arg[1],"include") == 0) {
-
       if (narg != 3) error->all(FLERR,"Illegal group include command");
-      if (strcmp(arg[2],"molecule") == 0) {
-        if (!atom->molecule_flag)
-          error->all(FLERR,"Group include molecule command requires atom attribute molecule");
-
-        add_molecules(igroup,bit);
-
-      } else error->all(FLERR,"Unknown group include keyword {}",arg[2]);
+      error->all(FLERR,"Unknown group include keyword {}",arg[2]);
 
     // style = subtract
 
@@ -621,45 +614,6 @@ int Group::find_unused()
   for (int igroup = 0; igroup < MAX_GROUP; igroup++)
     if (names[igroup] == nullptr) return igroup;
   return -1;
-}
-
-/* ----------------------------------------------------------------------
-   add atoms to group that are in same molecules as atoms already in group
-   do not include molID = 0
-------------------------------------------------------------------------- */
-
-void Group::add_molecules(int /*igroup*/, int bit)
-{
-  // hash = unique molecule IDs of atoms already in group
-
-  hash = new std::map<tagint,int>();
-
-  tagint *molecule = atom->molecule;
-  int *mask = atom->mask;
-  int nlocal = atom->nlocal;
-
-  for (int i = 0; i < nlocal; i++)
-    if (mask[i] & bit) {
-      if (molecule[i] == 0) continue;
-      if (hash->find(molecule[i]) == hash->end()) (*hash)[molecule[i]] = 1;
-    }
-
-  // list = set of unique molecule IDs for atoms to add
-  // pass list to all other procs via comm->ring()
-
-  int n = hash->size();
-  tagint *list;
-  memory->create(list,n,"group:list");
-
-  n = 0;
-  std::map<tagint,int>::iterator pos;
-  for (pos = hash->begin(); pos != hash->end(); ++pos) list[n++] = pos->first;
-
-  molbit = bit;
-  comm->ring(n,sizeof(tagint),list,1,molring,nullptr,(void *)this);
-
-  delete hash;
-  memory->destroy(list);
 }
 
 /* ----------------------------------------------------------------------

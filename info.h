@@ -63,8 +63,6 @@ class Info : public Command {
   void pair_styles(FILE *out);
   void bond_styles(FILE *out);
   void angle_styles(FILE *out);
-  void dihedral_styles(FILE *out);
-  void improper_styles(FILE *out);
   void kspace_styles(FILE *out);
   void fix_styles(FILE *out);
   void compute_styles(FILE *out);

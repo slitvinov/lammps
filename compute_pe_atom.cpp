@@ -19,7 +19,6 @@
 #include "comm.h"
 #include "error.h"
 #include "force.h"
-#include "improper.h"
 #include "kspace.h"
 #include "memory.h"
 #include "modify.h"
@@ -45,12 +44,12 @@ ComputePEAtom::ComputePEAtom(LAMMPS *lmp, int narg, char **arg) :
 
   if (narg == 3) {
     pairflag = 1;
-    bondflag = angleflag = dihedralflag = improperflag = 1;
+    bondflag = angleflag = 1;
     kspaceflag = 1;
     fixflag = 1;
   } else {
     pairflag = 0;
-    bondflag = angleflag = dihedralflag = improperflag = 0;
+    bondflag = angleflag = 0;
     kspaceflag = 0;
     fixflag = 0;
     int iarg = 3;
@@ -61,10 +60,6 @@ ComputePEAtom::ComputePEAtom(LAMMPS *lmp, int narg, char **arg) :
         bondflag = 1;
       else if (strcmp(arg[iarg], "angle") == 0)
         angleflag = 1;
-      else if (strcmp(arg[iarg], "dihedral") == 0)
-        dihedralflag = 1;
-      else if (strcmp(arg[iarg], "improper") == 0)
-        improperflag = 1;
       else if (strcmp(arg[iarg], "kspace") == 0)
         kspaceflag = 1;
       else if (strcmp(arg[iarg], "fix") == 0)
@@ -139,11 +134,6 @@ void ComputePEAtom::compute_peratom()
 
   if (angleflag && force->angle) {
     double *eatom = force->angle->eatom;
-    for (i = 0; i < nbond; i++) energy[i] += eatom[i];
-  }
-
-  if (improperflag && force->improper) {
-    double *eatom = force->improper->eatom;
     for (i = 0; i < nbond; i++) energy[i] += eatom[i];
   }
 

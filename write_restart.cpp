@@ -24,7 +24,6 @@
 #include "fix.h"
 #include "force.h"
 #include "group.h"
-#include "improper.h"
 #include "label_map.h"
 #include "memory.h"
 #include "modify.h"
@@ -555,11 +554,6 @@ void WriteRestart::force_fields()
     write_string(ANGLE,utils::strip_style_suffix(force->angle_style,lmp));
     force->angle->write_restart(fp);
   }
-  if (atom->avec->impropers_allow && force->improper) {
-    write_string(IMPROPER,utils::strip_style_suffix(force->improper_style,lmp));
-    force->improper->write_restart(fp);
-  }
-
   // -1 flag signals end of force field info
 
   int flag = -1;

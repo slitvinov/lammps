@@ -23,7 +23,6 @@
 #include "error.h"
 #include "fix.h"
 #include "force.h"
-#include "improper.h"
 #include "kspace.h"
 #include "modify.h"
 #include "neighbor.h"
@@ -122,8 +121,6 @@ void Verlet::setup(int flag)
   if (atom->sortfreq > 0) atom->sort();
   comm->borders();
   if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
-  domain->image_check();
-  domain->box_too_small_check();
   modify->setup_pre_neighbor();
   neighbor->build(1);
   modify->setup_post_neighbor();
@@ -142,7 +139,6 @@ void Verlet::setup(int flag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->improper) force->improper->compute(eflag,vflag);
   }
 
   if (force->kspace) {
@@ -183,8 +179,6 @@ void Verlet::setup_minimal(int flag)
     comm->exchange();
     comm->borders();
     if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
-    domain->image_check();
-    domain->box_too_small_check();
     modify->setup_pre_neighbor();
     neighbor->build(1);
     modify->setup_post_neighbor();
@@ -203,7 +197,6 @@ void Verlet::setup_minimal(int flag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->improper) force->improper->compute(eflag,vflag);
   }
 
   if (force->kspace) {
@@ -317,7 +310,6 @@ void Verlet::run(int n)
     if (atom->molecular != Atom::ATOMIC) {
       if (force->bond) force->bond->compute(eflag,vflag);
       if (force->angle) force->angle->compute(eflag,vflag);
-      if (force->improper) force->improper->compute(eflag,vflag);
       timer->stamp(Timer::BOND);
     }
 
@@ -360,7 +352,6 @@ void Verlet::run(int n)
 void Verlet::cleanup()
 {
   modify->post_run();
-  domain->box_too_small_check();
   update->update_time();
 }
 

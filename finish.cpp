@@ -23,7 +23,6 @@
 #include "kspace.h"
 #include "memory.h"             // IWYU pragma: keep
 #include "min.h"
-#include "molecule.h"
 #include "neighbor.h"           // IWYU pragma: keep
 #include "output.h"
 #include "pair.h"
@@ -509,41 +508,12 @@ if (fixomp && timer->has_full()) {
     tmp = MAX(MAX(nneigh,nneighfull),0.0);
     double nall;
     MPI_Allreduce(&tmp,&nall,1,MPI_DOUBLE,MPI_SUM,world);
-
-    int nspec;
-    double nspec_all = 0;
-    if (atom->molecular == Atom::MOLECULAR) {
-      int **nspecial = atom->nspecial;
-      int nlocal = atom->nlocal;
-      nspec = 0;
-      for (i = 0; i < nlocal; i++) nspec += nspecial[i][2];
-      tmp = nspec;
-      MPI_Allreduce(&tmp,&nspec_all,1,MPI_DOUBLE,MPI_SUM,world);
-    } else if (atom->molecular == Atom::TEMPLATE) {
-      Molecule **onemols = atom->avec->onemols;
-      int *molindex = atom->molindex;
-      int *molatom = atom->molatom;
-      int nlocal = atom->nlocal;
-      int imol,iatom;
-      nspec = 0;
-      for (i = 0; i < nlocal; i++) {
-        if (molindex[i] < 0) continue;
-        imol = molindex[i];
-        iatom = molatom[i];
-        nspec += onemols[imol]->nspecial[iatom][2];
-      }
-      tmp = nspec;
-      MPI_Allreduce(&tmp,&nspec_all,1,MPI_DOUBLE,MPI_SUM,world);
-    }
-
     if (me == 0) {
       std::string mesg;
 
       mesg += fmt::format("Total # of neighbors = {:.8g}\n",nall);
       if (atom->natoms > 0)
         mesg += fmt::format("Ave neighs/atom = {:.8}\n",nall/atom->natoms);
-      if ((atom->molecular != Atom::ATOMIC) && (atom->natoms > 0))
-        mesg += fmt::format("Ave special neighs/atom = {:.8}\n",nspec_all/atom->natoms);
       mesg += fmt::format("Neighbor list builds = {}\n",neighbor->ncalls);
       if (neighbor->dist_check)
         mesg += fmt::format("Dangerous builds = {}\n",neighbor->ndanger);

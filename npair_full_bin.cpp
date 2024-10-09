@@ -17,7 +17,6 @@
 #include "atom_vec.h"
 #include "domain.h"
 #include "error.h"
-#include "molecule.h"
 #include "my_page.h"
 #include "neigh_list.h"
 
@@ -97,22 +96,6 @@ void NPairFullBin::build(NeighList *list)
         rsq = delx * delx + dely * dely + delz * delz;
 
         if (rsq <= cutneighsq[itype][jtype]) {
-          if (molecular != Atom::ATOMIC) {
-            if (!moltemplate) {
-              which = find_special(special[i], nspecial[i], tag[j]);
-            } else if (imol >= 0) {
-              const auto mol = onemols[imol];
-              which = find_special(mol->special[iatom], mol->nspecial[iatom], tag[j] - tagprev);
-            } else {
-              which = 0;
-            }
-            if (which == 0)
-              neighptr[n++] = j;
-            else if (domain->minimum_image_check(delx, dely, delz))
-              neighptr[n++] = j;
-            else if (which > 0)
-              neighptr[n++] = j ^ (which << SBBITS);
-          } else
             neighptr[n++] = j;
         }
       }

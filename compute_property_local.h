@@ -49,8 +49,6 @@ class ComputePropertyLocal : public Compute {
   int count_pairs(int, int);
   int count_bonds(int);
   int count_angles(int);
-  int count_dihedrals(int);
-  int count_impropers(int);
   void reallocate(int);
 
   typedef void (ComputePropertyLocal::*FnPtrPack)(int);

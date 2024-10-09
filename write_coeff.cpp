@@ -19,7 +19,6 @@
 #include "domain.h"
 #include "error.h"
 #include "force.h"
-#include "improper.h"
 #include "pair.h"
 
 #include <cctype>
@@ -67,11 +66,6 @@ void WriteCoeff::command(int narg, char **arg)
     if (force->angle && force->angle->writedata) {
       fprintf(one, "# angle_style %s\nangle_coeff\n", force->angle_style);
       force->angle->write_data(one);
-      fprintf(one, "end\n");
-    }
-    if (force->improper && force->improper->writedata) {
-      fprintf(one, "# improper_style %s\nimproper_coeff\n", force->improper_style);
-      force->improper->write_data(one);
       fprintf(one, "end\n");
     }
     rewind(one);
