@@ -446,7 +446,7 @@ write_dump.o \
 write_restart.o \
 
 main: $(S:.cpp=.o)
-	$(MPICXX) -o main $(S:.cpp=.o) $(LDFLAGS)
+	$(MPICXX) -o main $(S:.cpp=.o) $(LDFLAGS) -lm
 .cpp.o:
 	$(MPICXX) -o $@ -c $< $(FLAGS) $(CXXFLAGS)
 clean:
