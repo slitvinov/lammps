@@ -19,7 +19,6 @@
 #include "style_bond.h"      // IWYU pragma: keep
 #include "style_command.h"   // IWYU pragma: keep
 #include "style_compute.h"   // IWYU pragma: keep
-#include "style_dihedral.h"  // IWYU pragma: keep
 #include "style_dump.h"      // IWYU pragma: keep
 #include "style_fix.h"       // IWYU pragma: keep
 #include "style_improper.h"  // IWYU pragma: keep
@@ -1298,14 +1297,6 @@ void _noopt LAMMPS::help()
 #define AngleStyle(key,Class) print_style(fp,#key,pos);
 #include "style_angle.h"  // IWYU pragma: keep
 #undef ANGLE_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Dihedral styles:\n");
-#define DIHEDRAL_CLASS
-#define DihedralStyle(key,Class) print_style(fp,#key,pos);
-#include "style_dihedral.h"  // IWYU pragma: keep
-#undef DIHEDRAL_CLASS
   fprintf(fp,"\n\n");
 
   pos = 80;

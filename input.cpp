@@ -24,7 +24,6 @@
 #include "comm_tiled.h"
 #include "command.h"
 #include "compute.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
@@ -779,8 +778,6 @@ int Input::execute_command()
   else if (mycmd == "compute") compute();
   else if (mycmd == "compute_modify") compute_modify();
   else if (mycmd == "dielectric") dielectric();
-  else if (mycmd == "dihedral_coeff") dihedral_coeff();
-  else if (mycmd == "dihedral_style") dihedral_style();
   else if (mycmd == "dimension") dimension();
   else if (mycmd == "dump") dump();
   else if (mycmd == "dump_modify") dump_modify();
@@ -1465,33 +1462,6 @@ void Input::dielectric()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::dihedral_coeff()
-{
-  if (domain->box_exist == 0)
-    error->all(FLERR,"Dihedral_coeff command before simulation box is defined");
-  if (force->dihedral == nullptr)
-    error->all(FLERR,"Dihedral_coeff command before dihedral_style is defined");
-  if (atom->avec->dihedrals_allow == 0)
-    error->all(FLERR,"Dihedral_coeff command when no dihedrals allowed");
-  char *newarg = utils::expand_type(FLERR, arg[0], Atom::DIHEDRAL, lmp);
-  if (newarg) arg[0] = newarg;
-  force->dihedral->coeff(narg,arg);
-  delete[] newarg;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::dihedral_style()
-{
-  if (narg < 1) error->all(FLERR,"Illegal dihedral_style command");
-  if (atom->avec->dihedrals_allow == 0)
-    error->all(FLERR,"Dihedral_style command when no dihedrals allowed");
-  force->create_dihedral(arg[0],1);
-  if (force->dihedral) force->dihedral->settings(narg-1,&arg[1]);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::dimension()
 {
   if (narg != 1) error->all(FLERR, "Dimension command expects exactly 1 argument");
@@ -1847,7 +1817,6 @@ void Input::special_bonds()
   double coul3 = force->special_coul[3];
   int onefive = force->special_onefive;
   int angle = force->special_angle;
-  int dihedral = force->special_dihedral;
 
   force->set_special(narg,arg);
 
@@ -1857,8 +1826,7 @@ void Input::special_bonds()
     if (lj2 != force->special_lj[2] || lj3 != force->special_lj[3] ||
         coul2 != force->special_coul[2] || coul3 != force->special_coul[3] ||
         onefive != force->special_onefive ||
-        angle != force->special_angle ||
-        dihedral != force->special_dihedral) {
+        angle != force->special_angle) {
       Special special(lmp);
       special.build();
     }

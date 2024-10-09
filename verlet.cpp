@@ -19,7 +19,6 @@
 #include "atom_vec.h"
 #include "bond.h"
 #include "comm.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
@@ -143,7 +142,6 @@ void Verlet::setup(int flag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->dihedral) force->dihedral->compute(eflag,vflag);
     if (force->improper) force->improper->compute(eflag,vflag);
   }
 
@@ -205,7 +203,6 @@ void Verlet::setup_minimal(int flag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->dihedral) force->dihedral->compute(eflag,vflag);
     if (force->improper) force->improper->compute(eflag,vflag);
   }
 
@@ -320,7 +317,6 @@ void Verlet::run(int n)
     if (atom->molecular != Atom::ATOMIC) {
       if (force->bond) force->bond->compute(eflag,vflag);
       if (force->angle) force->angle->compute(eflag,vflag);
-      if (force->dihedral) force->dihedral->compute(eflag,vflag);
       if (force->improper) force->improper->compute(eflag,vflag);
       timer->stamp(Timer::BOND);
     }

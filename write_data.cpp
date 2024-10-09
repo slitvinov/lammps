@@ -19,7 +19,6 @@
 #include "atom_vec.h"
 #include "bond.h"
 #include "comm.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
@@ -339,10 +338,6 @@ void WriteData::force_fields()
   if (force->angle && force->angle->writedata && atom->nangletypes) {
     fmt::print(fp,"\nAngle Coeffs # {}\n\n", force->angle_style);
     force->angle->write_data(fp);
-  }
-  if (force->dihedral && force->dihedral->writedata && atom->ndihedraltypes) {
-    fmt::print(fp,"\nDihedral Coeffs # {}\n\n", force->dihedral_style);
-    force->dihedral->write_data(fp);
   }
   if (force->improper && force->improper->writedata && atom->nimpropertypes) {
     fmt::print(fp,"\nImproper Coeffs # {}\n\n", force->improper_style);

@@ -49,7 +49,6 @@
 #include "fix_planeforce.h"
 #include "fix_press_berendsen.h"
 #include "fix_print.h"
-#include "fix_property_atom.h"
 #include "fix_rattle.h"
 #include "fix_rbc.h"
 #include "fix_read_restart.h"

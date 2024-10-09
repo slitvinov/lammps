@@ -19,7 +19,6 @@
 #include "atom_vec.h"
 #include "bond.h"
 #include "comm.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
@@ -555,10 +554,6 @@ void WriteRestart::force_fields()
   if (atom->avec->angles_allow && force->angle) {
     write_string(ANGLE,utils::strip_style_suffix(force->angle_style,lmp));
     force->angle->write_restart(fp);
-  }
-  if (atom->avec->dihedrals_allow && force->dihedral) {
-    write_string(DIHEDRAL,utils::strip_style_suffix(force->dihedral_style,lmp));
-    force->dihedral->write_restart(fp);
   }
   if (atom->avec->impropers_allow && force->improper) {
     write_string(IMPROPER,utils::strip_style_suffix(force->improper_style,lmp));

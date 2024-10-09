@@ -147,7 +147,6 @@ class Thermo : protected Pointers {
   void compute_epair();
   void compute_ebond();
   void compute_eangle();
-  void compute_edihed();
   void compute_eimp();
   void compute_emol();
   void compute_elong();

@@ -23,7 +23,6 @@
 #include "bond.h"
 #include "comm.h"
 #include "compute.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
@@ -863,9 +862,6 @@ void Thermo::parse_fields(const std::string &str)
     } else if (word == "eangle") {
       addfield("E_angle", &Thermo::compute_eangle, FLOAT);
       index_pe = add_compute(id_pe, SCALAR);
-    } else if (word == "edihed") {
-      addfield("E_dihed", &Thermo::compute_edihed, FLOAT);
-      index_pe = add_compute(id_pe, SCALAR);
     } else if (word == "eimp") {
       addfield("E_impro", &Thermo::compute_eimp, FLOAT);
       index_pe = add_compute(id_pe, SCALAR);
@@ -1333,10 +1329,6 @@ int Thermo::evaluate_keyword(const std::string &word, double *answer)
   } else if (word == "eangle") {
     check_pe(word);
     compute_eangle();
-
-  } else if (word == "edihed") {
-    check_pe(word);
-    compute_edihed();
 
   } else if (word == "eimp") {
     check_pe(word);
@@ -1807,18 +1799,6 @@ void Thermo::compute_eangle()
 
 /* ---------------------------------------------------------------------- */
 
-void Thermo::compute_edihed()
-{
-  if (force->dihedral) {
-    double tmp = force->dihedral->energy;
-    MPI_Allreduce(&tmp, &dvalue, 1, MPI_DOUBLE, MPI_SUM, world);
-    if (normflag) dvalue /= natoms;
-  } else
-    dvalue = 0.0;
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Thermo::compute_eimp()
 {
   if (force->improper) {
@@ -1837,7 +1817,6 @@ void Thermo::compute_emol()
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) tmp += force->bond->energy;
     if (force->angle) tmp += force->angle->energy;
-    if (force->dihedral) tmp += force->dihedral->energy;
     if (force->improper) tmp += force->improper->energy;
     MPI_Allreduce(&tmp, &dvalue, 1, MPI_DOUBLE, MPI_SUM, world);
     if (normflag) dvalue /= natoms;

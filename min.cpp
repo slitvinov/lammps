@@ -28,7 +28,6 @@
 #include "bond.h"
 #include "comm.h"
 #include "compute.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "fix_minimize.h"
@@ -304,7 +303,6 @@ void Min::setup(int flag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->dihedral) force->dihedral->compute(eflag,vflag);
     if (force->improper) force->improper->compute(eflag,vflag);
   }
 
@@ -386,7 +384,6 @@ void Min::setup_minimal(int flag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->dihedral) force->dihedral->compute(eflag,vflag);
     if (force->improper) force->improper->compute(eflag,vflag);
   }
 
@@ -558,7 +555,6 @@ double Min::energy_force(int resetflag)
   if (atom->molecular != Atom::ATOMIC) {
     if (force->bond) force->bond->compute(eflag,vflag);
     if (force->angle) force->angle->compute(eflag,vflag);
-    if (force->dihedral) force->dihedral->compute(eflag,vflag);
     if (force->improper) force->improper->compute(eflag,vflag);
     timer->stamp(Timer::BOND);
   }

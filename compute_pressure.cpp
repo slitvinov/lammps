@@ -17,7 +17,6 @@
 #include "angle.h"
 #include "atom.h"
 #include "bond.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
@@ -209,8 +208,6 @@ void ComputePressure::init()
     if (pairflag && force->pair) vptr[nvirial++] = force->pair->virial;
     if (bondflag && force->bond) vptr[nvirial++] = force->bond->virial;
     if (angleflag && force->angle) vptr[nvirial++] = force->angle->virial;
-    if (dihedralflag && force->dihedral)
-      vptr[nvirial++] = force->dihedral->virial;
     if (improperflag && force->improper)
       vptr[nvirial++] = force->improper->virial;
     if (fixflag)

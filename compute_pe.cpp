@@ -17,7 +17,6 @@
 #include "atom.h"
 #include "atom_masks.h"
 #include "bond.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "force.h"
@@ -93,7 +92,6 @@ double ComputePE::compute_scalar()
   if (atom->molecular != Atom::ATOMIC) {
     if (bondflag && force->bond) one += force->bond->energy;
     if (angleflag && force->angle) one += force->angle->energy;
-    if (dihedralflag && force->dihedral) one += force->dihedral->energy;
     if (improperflag && force->improper) one += force->improper->energy;
   }
 

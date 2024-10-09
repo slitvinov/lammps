@@ -135,10 +135,6 @@ class Force : protected Pointers {
   Angle *new_angle(const std::string &, int, int &);
   Angle *angle_match(const std::string &);
 
-  void create_dihedral(const std::string &, int);
-  Dihedral *new_dihedral(const std::string &, int, int &);
-  Dihedral *dihedral_match(const std::string &);
-
   void create_improper(const std::string &, int);
   Improper *new_improper(const std::string &, int, int &);
   Improper *improper_match(const std::string &);

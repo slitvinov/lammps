@@ -17,7 +17,6 @@
 #include "atom.h"
 #include "bond.h"
 #include "comm.h"
-#include "dihedral.h"
 #include "error.h"
 #include "force.h"
 #include "improper.h"
@@ -140,11 +139,6 @@ void ComputePEAtom::compute_peratom()
 
   if (angleflag && force->angle) {
     double *eatom = force->angle->eatom;
-    for (i = 0; i < nbond; i++) energy[i] += eatom[i];
-  }
-
-  if (dihedralflag && force->dihedral) {
-    double *eatom = force->dihedral->eatom;
     for (i = 0; i < nbond; i++) energy[i] += eatom[i];
   }
 

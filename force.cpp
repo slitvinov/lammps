@@ -15,14 +15,12 @@
 
 #include "style_angle.h"       // IWYU pragma: keep
 #include "style_bond.h"        // IWYU pragma: keep
-#include "style_dihedral.h"    // IWYU pragma: keep
 #include "style_improper.h"    // IWYU pragma: keep
 #include "style_kspace.h"      // IWYU pragma: keep
 #include "style_pair.h"        // IWYU pragma: keep
 
 #include "angle_hybrid.h"
 #include "bond_hybrid.h"
-#include "dihedral_hybrid.h"
 #include "improper_hybrid.h"
 #include "kspace.h"
 #include "pair_hybrid.h"
@@ -52,7 +50,7 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp)
   special_lj[0] = special_coul[0] = 1.0;
   special_lj[1] = special_lj[2] = special_lj[3] = 0.0;
   special_coul[1] = special_coul[2] = special_coul[3] = 0.0;
-  special_angle = special_dihedral = 0;
+  special_angle = 0;
   special_onefive = 0;
   special_extra = 0;
 
@@ -63,7 +61,6 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp)
   pair = nullptr;
   bond = nullptr;
   angle = nullptr;
-  dihedral = nullptr;
   improper = nullptr;
   kspace = nullptr;
 
@@ -106,14 +103,6 @@ void _noopt Force::create_factories()
 #undef AngleStyle
 #undef ANGLE_CLASS
 
-  dihedral_map = new DihedralCreatorMap();
-
-#define DIHEDRAL_CLASS
-#define DihedralStyle(key, Class) (*dihedral_map)[#key] = &style_creator<Dihedral, Class>;
-#include "style_dihedral.h"    // IWYU pragma: keep
-#undef DihedralStyle
-#undef DIHEDRAL_CLASS
-
   improper_map = new ImproperCreatorMap();
 
 #define IMPROPER_CLASS
@@ -147,7 +136,6 @@ Force::~Force()
   if (pair) delete pair;
   if (bond) delete bond;
   if (angle) delete angle;
-  if (dihedral) delete dihedral;
   if (improper) delete improper;
   if (kspace) delete kspace;
 
@@ -183,7 +171,6 @@ void Force::init()
   if (pair) pair->init();        // so g_ewald is defined
   if (bond) bond->init();
   if (angle) angle->init();
-  if (dihedral) dihedral->init();
   if (improper) improper->init();
 
   // print warnings if topology and force field are inconsistent
@@ -460,73 +447,6 @@ Angle *Force::angle_match(const std::string &style)
   return nullptr;
 }
 
-/* ----------------------------------------------------------------------
-   create a dihedral style, called from input script or restart file
-------------------------------------------------------------------------- */
-
-void Force::create_dihedral(const std::string &style, int trysuffix)
-{
-  delete[] dihedral_style;
-  if (dihedral) delete dihedral;
-
-  int sflag;
-  dihedral = new_dihedral(style, trysuffix, sflag);
-  dihedral_style = store_style(style, sflag);
-}
-
-/* ----------------------------------------------------------------------
-   generate a dihedral class
-------------------------------------------------------------------------- */
-
-Dihedral *Force::new_dihedral(const std::string &style, int trysuffix, int &sflag)
-{
-  if (trysuffix && lmp->suffix_enable) {
-    if (lmp->non_pair_suffix()) {
-      sflag = 1 + 2*lmp->pair_only_flag;
-      std::string estyle = style + "/" + lmp->non_pair_suffix();
-      if (dihedral_map->find(estyle) != dihedral_map->end()) {
-        DihedralCreator &dihedral_creator = (*dihedral_map)[estyle];
-        return dihedral_creator(lmp);
-      }
-    }
-
-    if (lmp->suffix2) {
-      sflag = 2;
-      std::string estyle = style + "/" + lmp->suffix2;
-      if (dihedral_map->find(estyle) != dihedral_map->end()) {
-        DihedralCreator &dihedral_creator = (*dihedral_map)[estyle];
-        return dihedral_creator(lmp);
-      }
-    }
-  }
-
-  sflag = 0;
-  if (style == "none") return nullptr;
-  if (dihedral_map->find(style) != dihedral_map->end()) {
-    DihedralCreator &dihedral_creator = (*dihedral_map)[style];
-    return dihedral_creator(lmp);
-  }
-
-  error->all(FLERR, utils::check_packages_for_style("dihedral", style, lmp));
-
-  return nullptr;
-}
-
-/* ----------------------------------------------------------------------
-   return ptr to current angle class or hybrid sub-class if matches style
-------------------------------------------------------------------------- */
-
-Dihedral *Force::dihedral_match(const std::string &style)
-{
-  if (style == dihedral_style)
-    return dihedral;
-  else if (utils::strmatch(dihedral_style, "^hybrid")) {
-    auto hybrid = dynamic_cast<DihedralHybrid *>(dihedral);
-    for (int i = 0; i < hybrid->nstyles; i++)
-      if (style == hybrid->keywords[i]) return hybrid->styles[i];
-  }
-  return nullptr;
-}
 
 /* ----------------------------------------------------------------------
    create an improper style, called from input script or restart file
@@ -795,7 +715,6 @@ double Force::memory_usage()
   if (pair) bytes += pair->memory_usage();
   if (bond) bytes += bond->memory_usage();
   if (angle) bytes += angle->memory_usage();
-  if (dihedral) bytes += dihedral->memory_usage();
   if (improper) bytes += improper->memory_usage();
   if (kspace) bytes += kspace->memory_usage();
   return bytes;

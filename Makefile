@@ -45,7 +45,6 @@ compute_angmom_chunk.o \
 compute_bond_local.o \
 compute_bond.o \
 compute_centro_atom.o \
-compute_centroid_stress_atom.o \
 compute_chunk_atom.o \
 compute_chunk.o \
 compute_chunk_spread_atom.o \
@@ -55,8 +54,6 @@ compute_com_chunk.o \
 compute_com.o \
 compute_coord_atom.o \
 compute_deprecated.o \
-compute_dihedral_local.o \
-compute_dihedral.o \
 compute_dipole_chunk.o \
 compute_dipole.o \
 compute_displace_atom.o \
@@ -82,8 +79,8 @@ compute_omega_chunk.o \
 compute_orientorder_atom.o \
 compute_pair_local.o \
 compute_pair.o \
-compute_pe_atom.o \
 compute_pe.o \
+compute_pe_atom.o \
 compute_pressure.o \
 compute_property_atom.o \
 compute_property_chunk.o \
@@ -95,7 +92,6 @@ compute_reduce.o \
 compute_reduce_region.o \
 compute_rigid_local.o \
 compute_slice.o \
-compute_stress_atom.o \
 compute_temp_chunk.o \
 compute_temp_com.o \
 compute_temp_deform.o \
@@ -114,11 +110,6 @@ create_box.o \
 delete_atoms.o \
 delete_bonds.o \
 deprecated.o \
-dihedral_deprecated.o \
-dihedral_hybrid.o \
-dihedral.o \
-dihedral_write.o \
-dihedral_zero.o \
 displace_atoms.o \
 domain.o \
 dump_atom.o \
@@ -188,7 +179,6 @@ fix_pair.o \
 fix_planeforce.o \
 fix_press_berendsen.o \
 fix_print.o \
-fix_property_atom.o \
 fix_rattle.o \
 fix_rbc.o \
 fix_read_restart.o \
@@ -402,12 +392,10 @@ procmap.o \
 random_mars.o \
 random_park.o \
 rcb.o \
-read_data.o \
-read_dump.o \
 reader_native.o \
 reader.o \
 reader_xyz.o \
-read_restart.o \
+read_restart.o\
 region_block.o \
 region_cone.o \
 region_cylinder.o \
@@ -420,7 +408,6 @@ region_prism.o \
 region_sphere.o \
 region_union.o \
 replicate.o \
-rerun.o \
 reset_atoms_id.o \
 reset_atoms_image.o \
 reset_atoms_mol.o \
@@ -446,7 +433,7 @@ write_dump.o \
 write_restart.o \
 
 main: $(S:.cpp=.o)
-	$(MPICXX) -o main $(S:.cpp=.o) $(LDFLAGS) -lm
+	$(MPICXX) -o main $(S:.cpp=.o) $(LDFLAGS) -ldl
 .cpp.o:
 	$(MPICXX) -o $@ -c $< $(FLAGS) $(CXXFLAGS)
 clean:

@@ -22,7 +22,6 @@
 #include "atom_vec.h"
 #include "bond.h"
 #include "comm.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
@@ -426,7 +425,6 @@ void Respa::setup(int flag)
     if (level_outer == ilevel && pair_compute_flag) force->pair->compute_outer(eflag, vflag);
     if (level_bond == ilevel && force->bond) force->bond->compute(eflag, vflag);
     if (level_angle == ilevel && force->angle) force->angle->compute(eflag, vflag);
-    if (level_dihedral == ilevel && force->dihedral) force->dihedral->compute(eflag, vflag);
     if (level_improper == ilevel && force->improper) force->improper->compute(eflag, vflag);
     if (level_kspace == ilevel && force->kspace) {
       force->kspace->setup();
@@ -495,7 +493,6 @@ void Respa::setup_minimal(int flag)
     if (level_outer == ilevel && pair_compute_flag) force->pair->compute_outer(eflag, vflag);
     if (level_bond == ilevel && force->bond) force->bond->compute(eflag, vflag);
     if (level_angle == ilevel && force->angle) force->angle->compute(eflag, vflag);
-    if (level_dihedral == ilevel && force->dihedral) force->dihedral->compute(eflag, vflag);
     if (level_improper == ilevel && force->improper) force->improper->compute(eflag, vflag);
     if (level_kspace == ilevel && force->kspace) {
       force->kspace->setup();
@@ -679,10 +676,6 @@ void Respa::recurse(int ilevel)
     }
     if (level_angle == ilevel && force->angle) {
       force->angle->compute(eflag, vflag);
-      timer->stamp(Timer::BOND);
-    }
-    if (level_dihedral == ilevel && force->dihedral) {
-      force->dihedral->compute(eflag, vflag);
       timer->stamp(Timer::BOND);
     }
     if (level_improper == ilevel && force->improper) {

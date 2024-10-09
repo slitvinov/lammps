@@ -16,7 +16,6 @@
 #include "angle.h"
 #include "bond.h"
 #include "comm.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "force.h"
@@ -68,11 +67,6 @@ void WriteCoeff::command(int narg, char **arg)
     if (force->angle && force->angle->writedata) {
       fprintf(one, "# angle_style %s\nangle_coeff\n", force->angle_style);
       force->angle->write_data(one);
-      fprintf(one, "end\n");
-    }
-    if (force->dihedral && force->dihedral->writedata) {
-      fprintf(one, "# dihedral_style %s\ndihedral_coeff\n", force->dihedral_style);
-      force->dihedral->write_data(one);
       fprintf(one, "end\n");
     }
     if (force->improper && force->improper->writedata) {

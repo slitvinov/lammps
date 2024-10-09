@@ -19,7 +19,6 @@
 #include "atom_vec.h"
 #include "bond.h"
 #include "comm.h"
-#include "dihedral.h"
 #include "domain.h"
 #include "error.h"
 #include "fix_read_restart.h"
@@ -950,15 +949,6 @@ void ReadRestart::force_fields()
         utils::logmesg(lmp,"  restoring angle style {} from restart\n",
                        force->angle_style);
       force->angle->read_restart(fp);
-
-    } else if (flag == DIHEDRAL) {
-      style = read_string();
-      force->create_dihedral(style,1);
-      delete[] style;
-      if (comm->me ==0)
-        utils::logmesg(lmp,"  restoring dihedral style {} from restart\n",
-                       force->dihedral_style);
-      force->dihedral->read_restart(fp);
 
     } else if (flag == IMPROPER) {
       style = read_string();
