@@ -22,7 +22,6 @@
 #include "fix_read_restart.h"
 #include "force.h"
 #include "group.h"
-#include "irregular.h"
 #include "label_map.h"
 #include "memory.h"
 #include "modify.h"
@@ -433,9 +432,6 @@ void ReadRestart::command(int narg, char **arg)
       atom->map_set();
     }
     if (domain->triclinic) domain->x2lamda(atom->nlocal);
-    auto irregular = new Irregular(lmp);
-    irregular->migrate_atoms(1);
-    delete irregular;
     if (domain->triclinic) domain->lamda2x(atom->nlocal);
 
     // put extra atom info held by fix back into atom->extra

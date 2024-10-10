@@ -32,7 +32,6 @@
 #include "imbalance_neigh.h"
 #include "imbalance_store.h"
 #include "imbalance_var.h"
-#include "irregular.h"
 #include "memory.h"
 #include "modify.h"
 #include "pair.h"
@@ -345,10 +344,6 @@ void Balance::command(int narg, char **arg)
   // set disable = 0, so weights migrate with atoms for imbfinal calculation
 
   if (domain->triclinic) domain->x2lamda(atom->nlocal);
-  auto irregular = new Irregular(lmp);
-  if (style == BISECTION) irregular->migrate_atoms(sortflag,1,rcb->sendproc);
-  else irregular->migrate_atoms(sortflag);
-  delete irregular;
   if (domain->triclinic) domain->lamda2x(atom->nlocal);
 
   // output of final result

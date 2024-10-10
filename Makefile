@@ -49,7 +49,6 @@ imbalance_store.o \
 imbalance_var.o \
 input.o \
 integrate.o \
-irregular.o \
 label_map.o \
 lammps.o \
 lattice.o \

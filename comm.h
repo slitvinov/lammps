@@ -157,9 +157,6 @@ class Comm : protected Pointers {
   int multi_reduce;         // 1 if multi cutoff is intra-collection cutoff
 
   void init_exchange();
-  int rendezvous_irregular(int, char *, int, int, int *,
-                           int (*)(int, char *, int &, int *&, char *&, void *), int, char *&, int,
-                           void *, int);
   int rendezvous_all2all(int, char *, int, int, int *,
                          int (*)(int, char *, int &, int *&, char *&, void *), int, char *&, int,
                          void *, int);

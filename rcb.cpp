@@ -13,8 +13,6 @@
 ------------------------------------------------------------------------- */
 
 #include "rcb.h"
-
-#include "irregular.h"
 #include "memory.h"
 
 #include <cstring>
@@ -52,7 +50,6 @@ RCB::RCB(LAMMPS *lmp) : Pointers(lmp)
   recvproc = recvindex = sendproc = sendindex = nullptr;
 
   tree = nullptr;
-  irregular = nullptr;
 
   // create MPI data and function types for box and median AllReduce ops
 
@@ -83,8 +80,7 @@ RCB::~RCB()
   memory->destroy(sendindex);
 
   memory->sfree(tree);
-  delete irregular;
-
+  
   MPI_Type_free(&med_type);
   MPI_Type_free(&box_type);
   MPI_Op_free(&box_op);
@@ -1197,13 +1193,7 @@ void median_merge(void *in, void *inout, int * /*len*/, MPI_Datatype * /*dptr*/)
 
 void RCB::invert(int sortflag)
 {
-  // only create Irregular if not previously created
-  // allows Irregular to persist for multiple RCB calls by fix balance
-
-  if (!irregular) irregular = new Irregular(lmp);
-
   // nsend = # of dots to request from other procs
-
   int nsend = nfinal-nkeep;
 
   int *proclist;
@@ -1220,14 +1210,6 @@ void RCB::invert(int sortflag)
     m++;
   }
 
-  // perform inversion via irregular comm
-  // nrecv = # of my dots to send to other procs
-
-  int nrecv = irregular->create_data(nsend,proclist,sortflag);
-  auto rinvert = (Invert *) memory->smalloc(nrecv*sizeof(Invert),"RCB:rinvert");
-  irregular->exchange_data((char *) sinvert,sizeof(Invert),(char *) rinvert);
-  irregular->destroy_data();
-
   // set public variables from requests to send my dots
 
   if (noriginal > maxsend) {
@@ -1243,17 +1225,10 @@ void RCB::invert(int sortflag)
     sendindex[recvindex[i]] = i;
   }
 
-  for (int i = 0; i < nrecv; i++) {
-    m = rinvert[i].rindex;
-    sendproc[m] = rinvert[i].sproc;
-    sendindex[m] = rinvert[i].sindex;
-  }
-
   // clean-up
 
   memory->destroy(proclist);
   memory->destroy(sinvert);
-  memory->destroy(rinvert);
 }
 
 /* ----------------------------------------------------------------------
@@ -1263,7 +1238,6 @@ void RCB::invert(int sortflag)
 double RCB::memory_usage()
 {
   double bytes = 0;
-  if (irregular) bytes += irregular->memory_usage();
   return bytes;
 }
 

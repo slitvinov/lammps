@@ -24,7 +24,6 @@
 #include "domain.h"
 #include "error.h"
 #include "input.h"
-#include "irregular.h"
 #include "lattice.h"
 #include "math_const.h"
 #include "math_extra.h"

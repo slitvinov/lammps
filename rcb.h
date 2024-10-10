@@ -107,7 +107,6 @@ class RCB : protected Pointers {
   int maxrecv, maxsend;
 
   BBox bbox;
-  class Irregular *irregular;
 
   MPI_Op box_op, med_op;
   MPI_Datatype box_type, med_type;

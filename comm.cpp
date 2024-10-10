@@ -22,7 +22,6 @@
 #include "fix.h"
 #include "force.h"
 #include "group.h"
-#include "irregular.h"
 #include "memory.h"             // IWYU pragma: keep
 #include "modify.h"
 #include "neighbor.h"           // IWYU pragma: keep
@@ -846,82 +845,11 @@ rendezvous(int which, int n, char *inbuf, int insize,
            int (*callback)(int, char *, int &, int *&, char *&, void *),
            int outorder, char *&outbuf, int outsize, void *ptr, int statflag)
 {
-  if (which == 0)
-    return rendezvous_irregular(n,inbuf,insize,inorder,procs,callback,
-                                outorder,outbuf,outsize,ptr,statflag);
-  else
+  if (which == 0) {
+    return 0;
+  } else
     return rendezvous_all2all(n,inbuf,insize,inorder,procs,callback,
                               outorder,outbuf,outsize,ptr,statflag);
-}
-
-/* ---------------------------------------------------------------------- */
-
-int Comm::
-rendezvous_irregular(int n, char *inbuf, int insize, int inorder, int *procs,
-                     int (*callback)(int, char *, int &, int *&, char *&, void *),
-                     int outorder, char *&outbuf,
-                     int outsize, void *ptr, int statflag)
-{
-  // irregular comm of inbuf from caller decomp to rendezvous decomp
-
-  auto irregular = new Irregular(lmp);
-
-  int nrvous;
-  if (inorder) nrvous = irregular->create_data_grouped(n,procs);
-  else nrvous = irregular->create_data(n,procs);
-
-  // add 1 item to the allocated buffer size, so the returned pointer is not a null pointer
-
-  auto inbuf_rvous = (char *) memory->smalloc((bigint) nrvous*insize+1, "rendezvous:inbuf");
-  irregular->exchange_data(inbuf,insize,inbuf_rvous);
-
-  bigint irregular1_bytes = irregular->memory_usage();
-  irregular->destroy_data();
-  delete irregular;
-
-  // peform rendezvous computation via callback()
-  // callback() allocates/populates proclist_rvous and outbuf_rvous
-
-  int flag;
-  int *procs_rvous;
-  char *outbuf_rvous;
-  int nrvous_out = callback(nrvous,inbuf_rvous,flag, procs_rvous,outbuf_rvous,ptr);
-
-  if (flag != 1) memory->sfree(inbuf_rvous);  // outbuf_rvous = inbuf_vous
-  if (flag == 0) {
-    if (statflag) rendezvous_stats(n,0,nrvous,nrvous_out,insize,outsize,
-                                   (bigint) nrvous_out*sizeof(int) + irregular1_bytes);
-    return 0;    // all nout_rvous are 0, no 2nd comm stage
-  }
-
-  // irregular comm of outbuf from rendezvous decomp back to caller decomp
-  // caller will free outbuf
-
-  irregular = new Irregular(lmp);
-
-  int nout;
-  if (outorder) nout = irregular->create_data_grouped(nrvous_out,procs_rvous);
-  else nout = irregular->create_data(nrvous_out,procs_rvous);
-
-  // add 1 item to the allocated buffer size, so the returned pointer is not a null pointer
-
-  outbuf = (char *) memory->smalloc((bigint) nout*outsize+1, "rendezvous:outbuf");
-  irregular->exchange_data(outbuf_rvous,outsize,outbuf);
-
-  bigint irregular2_bytes = irregular->memory_usage();
-  irregular->destroy_data();
-  delete irregular;
-
-  memory->destroy(procs_rvous);
-  memory->sfree(outbuf_rvous);
-
-  // return number of output datums
-  // last arg to stats() = memory for procs_rvous + irregular comm
-
-  if (statflag) rendezvous_stats(n,nout,nrvous,nrvous_out,insize,outsize,
-                                 (bigint) nrvous_out*sizeof(int) +
-                                 MAX(irregular1_bytes,irregular2_bytes));
-  return nout;
 }
 
 /* ---------------------------------------------------------------------- */
