@@ -47,8 +47,6 @@ class AtomVec : protected Pointers {
   int size_restart_bonus_one;    // # in restart bonus comm
   int size_data_bonus;           // number of values in Bonus line
 
-  int kokkosable;    // 1 if atom style is KOKKOS-enabled
-
   int nargcopy;      // copy of command-line args for atom_style command
   char **argcopy;    // used when AtomVec is realloced (restart,replicate)
 

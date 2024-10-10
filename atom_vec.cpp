@@ -58,8 +58,6 @@ AtomVec::AtomVec(LAMMPS *lmp) : Pointers(lmp)
   bonus_flag = 0;
   size_forward_bonus = size_border_bonus = 0;
 
-  kokkosable = 0;
-
   nargcopy = 0;
   argcopy = nullptr;
 
@@ -148,9 +146,6 @@ void AtomVec::init()
   deform_vremap = domain->deform_vremap;
   deform_groupbit = domain->deform_groupbit;
   h_rate = domain->h_rate;
-
-  if (lmp->kokkos != nullptr && !kokkosable)
-    error->all(FLERR, "KOKKOS package requires a kokkos enabled atom_style");
 }
 
 static constexpr bigint DELTA = 16384;

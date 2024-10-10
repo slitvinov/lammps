@@ -106,8 +106,7 @@ class Compute : protected Pointers {
 
   ExecutionSpace execution_space;
   unsigned int datamask_read, datamask_modify;
-
-  int copymode, kokkosable;
+  int copymode;
 
   Compute(class LAMMPS *, int, char **);
   ~Compute() override;

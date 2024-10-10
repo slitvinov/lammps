@@ -96,7 +96,6 @@ Compute::Compute(LAMMPS *lmp, int narg, char **arg) :
   datamask_modify = ALL_MASK;
 
   copymode = 0;
-  kokkosable = 0;
 }
 
 /* ---------------------------------------------------------------------- */
