@@ -83,7 +83,6 @@ class Pointers {
     force(ptr->force),
     modify(ptr->modify),
     group(ptr->group),
-    output(ptr->output),
     timer(ptr->timer),
     world(ptr->world),
     infile(ptr->infile),
@@ -117,7 +116,6 @@ class Pointers {
   Force *&force;
   Modify *&modify;
   Group *&group;
-  Output *&output;
   Timer *&timer;
 
   MPI_Comm &world;

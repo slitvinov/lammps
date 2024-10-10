@@ -96,7 +96,6 @@ npair_half_size_multi_newtoff.o \
 npair_half_size_multi_newton.o \
 npair_half_size_multi_newton_tri.o \
 npair.o \
-output.o \
 pair_dpd.o \
 pair.o \
 platform.o \
@@ -106,7 +105,6 @@ random_park.o \
 rcb.o \
 reader_native.o \
 reader.o \
-reader_xyz.o \
 read_restart.o\
 region_block.o \
 region.o \

@@ -16,7 +16,6 @@
 
 #include "style_atom.h"      // IWYU pragma: keep
 #include "style_command.h"   // IWYU pragma: keep
-#include "style_dump.h"      // IWYU pragma: keep
 #include "style_integrate.h" // IWYU pragma: keep
 #include "style_pair.h"      // IWYU pragma: keep
 #include "style_region.h"    // IWYU pragma: keep
@@ -36,7 +35,6 @@
 #include "memory.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "output.h"
 #include "suffix.h"
 #include "timer.h"
 #include "universe.h"
@@ -111,7 +109,7 @@ using namespace LAMMPS_NS;
 LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   memory(nullptr), error(nullptr), universe(nullptr), input(nullptr), atom(nullptr),
   update(nullptr), neighbor(nullptr), comm(nullptr), domain(nullptr), force(nullptr),
-  modify(nullptr), group(nullptr), output(nullptr), timer(nullptr), kokkos(nullptr),
+  modify(nullptr), group(nullptr), timer(nullptr), kokkos(nullptr),
   atomKK(nullptr), memoryKK(nullptr), citeme(nullptr)
 {
   memory = new Memory(this);
@@ -827,8 +825,6 @@ void LAMMPS::create()
   if (kokkos) modify = new ModifyKokkos(this);
   else modify = new Modify(this);
 
-  output = new Output(this);  // must be after group, so "all" exists
-                              // must be after modify so can create Computes
   update = new Update(this);  // must be after output, force, neighbor
   timer = new Timer(this);
 
@@ -930,7 +926,6 @@ void LAMMPS::init()
   modify->init();        // modify must come after update, force, atom, domain
   neighbor->init();      // neighbor must come after force, modify
   comm->init();          // comm must come after force, modify, neighbor, atom
-  output->init();        // output must come after domain, force, modify
 }
 
 /* ----------------------------------------------------------------------
@@ -956,9 +951,6 @@ void LAMMPS::destroy()
 
   delete group;
   group = nullptr;
-
-  delete output;
-  output = nullptr;
 
   delete modify;          // modify must come after output, force, update
                           //   since they delete fixes
@@ -1234,14 +1226,6 @@ void _noopt LAMMPS::help()
 #define RegionStyle(key,Class) print_style(fp,#key,pos);
 #include "style_region.h"  // IWYU pragma: keep
 #undef REGION_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Dump styles:\n");
-#define DUMP_CLASS
-#define DumpStyle(key,Class) print_style(fp,#key,pos);
-#include "style_dump.h"  // IWYU pragma: keep
-#undef DUMP_CLASS
   fprintf(fp,"\n\n");
 
   pos = 80;
