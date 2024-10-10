@@ -99,8 +99,6 @@ procmap.o \
 random_mars.o \
 random_park.o \
 rcb.o \
-reader_native.o \
-reader.o \
 read_restart.o\
 region_block.o \
 region.o \
