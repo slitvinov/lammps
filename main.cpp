@@ -27,11 +27,6 @@
 #include <fenv.h>
 #endif
 
-// import MolSSI Driver Interface library
-#if defined(LMP_MDI)
-#include <mdi.h>
-#endif
-
 #include <execinfo.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -67,20 +62,6 @@ int main(int argc, char **argv)
   signal(SIGSEGV, handler);    // install our handler
   MPI_Init(&argc, &argv);
   MPI_Comm lammps_comm = MPI_COMM_WORLD;
-
-#if defined(LMP_MDI)
-  // initialize MDI interface, if compiled in
-
-  int mdi_flag;
-  if (MDI_Init(&argc, &argv)) MPI_Abort(MPI_COMM_WORLD, 1);
-  if (MDI_Initialized(&mdi_flag)) MPI_Abort(MPI_COMM_WORLD, 1);
-
-  // get the MPI communicator that spans all ranks running LAMMPS
-  // when using MDI, this may be a subset of MPI_COMM_WORLD
-
-  if (mdi_flag)
-    if (MDI_MPI_get_world_comm(&lammps_comm)) MPI_Abort(MPI_COMM_WORLD, 1);
-#endif
 
 #if defined(LAMMPS_TRAP_FPE) && defined(_GNU_SOURCE)
   // enable trapping selected floating point exceptions.
