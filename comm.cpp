@@ -19,7 +19,6 @@
 #include "atom_vec.h"
 #include "compute.h"
 #include "domain.h"             // IWYU pragma: keep
-#include "dump.h"
 #include "error.h"
 #include "fix.h"
 #include "force.h"
@@ -28,7 +27,6 @@
 #include "memory.h"             // IWYU pragma: keep
 #include "modify.h"
 #include "neighbor.h"           // IWYU pragma: keep
-#include "output.h"
 #include "pair.h"
 #include "procmap.h"
 #include "universe.h"
@@ -225,11 +223,6 @@ void Comm::init()
   for (const auto &compute : modify->get_compute_list()) {
     maxforward = MAX(maxforward,compute->comm_forward);
     maxreverse = MAX(maxreverse,compute->comm_reverse);
-  }
-
-  for (const auto &dump: output->get_dump_list()) {
-    maxforward = MAX(maxforward,dump->comm_forward);
-    maxreverse = MAX(maxreverse,dump->comm_reverse);
   }
 
   if (force->newton == 0) maxreverse = 0;

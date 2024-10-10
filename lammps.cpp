@@ -70,7 +70,6 @@ struct LAMMPS_NS::package_styles_lists {
   std::map<std::string,std::string> command_styles;
   std::map<std::string,std::string> compute_styles;
   std::map<std::string,std::string> dihedral_styles;
-  std::map<std::string,std::string> dump_styles;
   std::map<std::string,std::string> fix_styles;
   std::map<std::string,std::string> improper_styles;
   std::map<std::string,std::string> integrate_styles;
@@ -1000,12 +999,6 @@ void _noopt LAMMPS::init_pkg_lists()
 #include "packages_compute.h"
 #undef ComputeStyle
 #undef COMPUTE_CLASS
-#define DUMP_CLASS
-#define DumpStyle(key,Class)                    \
-  pkg_lists->dump_styles[#key] = PACKAGE;
-#include "packages_dump.h"
-#undef DumpStyle
-#undef DUMP_CLASS
 #define FIX_CLASS
 #define FixStyle(key,Class)                     \
   pkg_lists->fix_styles[#key] = PACKAGE;
@@ -1077,7 +1070,6 @@ const char *LAMMPS::match_style(const char *style, const char *name)
   check_for_match(bond,style,name);
   check_for_match(command,style,name);
   check_for_match(compute,style,name);
-  check_for_match(dump,style,name);
   check_for_match(fix,style,name);
   check_for_match(compute,style,name);
   check_for_match(integrate,style,name);

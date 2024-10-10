@@ -32,7 +32,6 @@
 #include "memory.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "output.h"
 #include "pair.h"
 #include "timer.h"
 #include "tokenizer.h"
@@ -280,9 +279,6 @@ void Thermo::init()
   for (int i = 0; i < nfix; i++) {
     fixes[i] = modify->get_fix_by_id(id_fix[i]);
     if (!fixes[i]) error->all(FLERR, "Could not find thermo fix ID {}", id_fix[i]);
-
-    if (output->thermo_every % fixes[i]->global_freq)
-      error->all(FLERR, "Thermo and fix {} not computed at compatible times", id_fix[i]);
   }
 
   // find current ptr for each Variable ID

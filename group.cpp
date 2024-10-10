@@ -18,7 +18,6 @@
 #include "comm.h"
 #include "compute.h"
 #include "domain.h"
-#include "dump.h"
 #include "error.h"
 #include "fix.h"
 #include "force.h"
@@ -27,7 +26,6 @@
 #include "math_eigen.h"
 #include "memory.h"
 #include "modify.h"
-#include "output.h"
 #include "region.h"
 #include "tokenizer.h"
 #include "variable.h"
@@ -111,9 +109,6 @@ void Group::assign(int narg, char **arg)
     for (const auto &i : modify->get_compute_list())
       if (i->igroup == igroup)
         error->all(FLERR,"Cannot delete group {} currently used by compute ID {}",arg[0],i->id);
-    for (const auto &i : output->get_dump_list())
-      if (i->igroup == igroup)
-        error->all(FLERR,"Cannot delete group {} currently used by dump ID {}",arg[0],i->id);
     if (atom->firstgroupname && strcmp(arg[0],atom->firstgroupname) == 0)
       error->all(FLERR,"Cannot delete group {} currently used by atom_modify first",arg[0]);
 

@@ -19,7 +19,6 @@
 #include "input.h"
 #include "integrate.h"
 #include "modify.h"
-#include "output.h"
 #include "timer.h"
 #include "update.h"
 
@@ -168,7 +167,7 @@ void Run::command(int narg, char **arg)
     if (preflag || update->first_update == 0) {
       lmp->init();
       update->integrate->setup(1);
-    } else output->setup(0);
+    }
 
     timer->init();
     timer->barrier_start();
@@ -206,7 +205,7 @@ void Run::command(int narg, char **arg)
       if (preflag || iter == 0) {
         lmp->init();
         update->integrate->setup(1);
-      } else output->setup(0);
+      }
 
       timer->init();
       timer->barrier_start();

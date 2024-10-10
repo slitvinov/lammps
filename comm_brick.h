@@ -39,8 +39,6 @@ class CommBrick : public Comm {
   void reverse_comm_variable(class Fix *) override;         // variable size reverse comm from a Fix
   void forward_comm(class Compute *) override;              // forward from a Compute
   void reverse_comm(class Compute *) override;              // reverse from a Compute
-  void forward_comm(class Dump *) override;                 // forward comm from a Dump
-  void reverse_comm(class Dump *) override;                 // reverse comm from a Dump
 
   void forward_comm_array(int, double **) override;            // forward comm of array
   int exchange_variable(int, double *, double *&) override;    // exchange on neigh stencil

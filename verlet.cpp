@@ -23,7 +23,6 @@
 #include "force.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "output.h"
 #include "pair.h"
 #include "timer.h"
 #include "update.h"
@@ -137,7 +136,6 @@ void Verlet::setup(int flag)
   if (force->newton) comm->reverse_comm();
 
   modify->setup(vflag);
-  output->setup(flag);
   update->setupflag = 0;
 }
 
@@ -300,14 +298,6 @@ void Verlet::run(int n)
     modify->final_integrate();
     if (n_end_of_step) modify->end_of_step();
     timer->stamp(Timer::MODIFY);
-
-    // all output
-
-    if (ntimestep == output->next) {
-      timer->stamp();
-      output->write(ntimestep);
-      timer->stamp(Timer::OUTPUT);
-    }
   }
 }
 

@@ -22,7 +22,6 @@
 #include "atom_vec.h"
 #include "compute.h"
 #include "domain.h"
-#include "dump.h"
 #include "error.h"
 #include "fix.h"
 #include "memory.h"
@@ -1651,87 +1650,6 @@ void CommTiled::reverse_comm(Compute *compute)
   }
 }
 
-/* ----------------------------------------------------------------------
-   forward communication invoked by a Dump
-   nsize used only to set recv buffer limit
-------------------------------------------------------------------------- */
-
-void CommTiled::forward_comm(Dump *dump)
-{
-  int i, irecv, n, nsend, nrecv;
-
-  int nsize = dump->comm_forward;
-
-  for (int iswap = 0; iswap < nswap; iswap++) {
-    nsend = nsendproc[iswap] - sendself[iswap];
-    nrecv = nrecvproc[iswap] - sendself[iswap];
-
-    if (recvother[iswap]) {
-      for (i = 0; i < nrecv; i++)
-        MPI_Irecv(&buf_recv[nsize * forward_recv_offset[iswap][i]], nsize * recvnum[iswap][i],
-                  MPI_DOUBLE, recvproc[iswap][i], 0, world, &requests[i]);
-    }
-    if (sendother[iswap]) {
-      for (i = 0; i < nsend; i++) {
-        n = dump->pack_forward_comm(sendnum[iswap][i], sendlist[iswap][i], buf_send,
-                                    pbc_flag[iswap][i], pbc[iswap][i]);
-        MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap][i], 0, world);
-      }
-    }
-    if (sendself[iswap]) {
-      dump->pack_forward_comm(sendnum[iswap][nsend], sendlist[iswap][nsend], buf_send,
-                              pbc_flag[iswap][nsend], pbc[iswap][nsend]);
-      dump->unpack_forward_comm(recvnum[iswap][nrecv], firstrecv[iswap][nrecv], buf_send);
-    }
-    if (recvother[iswap]) {
-      for (i = 0; i < nrecv; i++) {
-        MPI_Waitany(nrecv, requests, &irecv, MPI_STATUS_IGNORE);
-        dump->unpack_forward_comm(recvnum[iswap][irecv], firstrecv[iswap][irecv],
-                                  &buf_recv[nsize * forward_recv_offset[iswap][irecv]]);
-      }
-    }
-  }
-}
-
-/* ----------------------------------------------------------------------
-   reverse communication invoked by a Dump
-   nsize used only to set recv buffer limit
-------------------------------------------------------------------------- */
-
-void CommTiled::reverse_comm(Dump *dump)
-{
-  int i, irecv, n, nsend, nrecv;
-
-  int nsize = dump->comm_reverse;
-
-  for (int iswap = nswap - 1; iswap >= 0; iswap--) {
-    nsend = nsendproc[iswap] - sendself[iswap];
-    nrecv = nrecvproc[iswap] - sendself[iswap];
-
-    if (sendother[iswap]) {
-      for (i = 0; i < nsend; i++)
-        MPI_Irecv(&buf_recv[nsize * reverse_recv_offset[iswap][i]], nsize * sendnum[iswap][i],
-                  MPI_DOUBLE, sendproc[iswap][i], 0, world, &requests[i]);
-    }
-    if (recvother[iswap]) {
-      for (i = 0; i < nrecv; i++) {
-        n = dump->pack_reverse_comm(recvnum[iswap][i], firstrecv[iswap][i], buf_send);
-        MPI_Send(buf_send, n, MPI_DOUBLE, recvproc[iswap][i], 0, world);
-      }
-    }
-    if (sendself[iswap]) {
-      dump->pack_reverse_comm(recvnum[iswap][nrecv], firstrecv[iswap][nrecv], buf_send);
-      dump->unpack_reverse_comm(sendnum[iswap][nsend], sendlist[iswap][nsend], buf_send);
-    }
-    if (sendother[iswap]) {
-      for (i = 0; i < nsend; i++) {
-        MPI_Waitany(nsend, requests, &irecv, MPI_STATUS_IGNORE);
-        dump->unpack_reverse_comm(sendnum[iswap][irecv], sendlist[iswap][irecv],
-                                  &buf_recv[nsize * reverse_recv_offset[iswap][irecv]]);
-      }
-    }
-  }
-}
 
 /* ----------------------------------------------------------------------
    forward communication of Nsize values in per-atom array

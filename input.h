@@ -96,8 +96,6 @@ class Input : protected Pointers {
   void compute_modify();
   void dielectric();
   void dimension();
-  void dump();
-  void dump_modify();
   void fix();
   void fix_modify();
   void group_command();
@@ -117,13 +115,9 @@ class Input : protected Pointers {
   void restart();
   void run_style();
   void suffix();
-  void thermo();
-  void thermo_modify();
-  void thermo_style();
   void timestep();
   void timer_command();
   void uncompute();
-  void undump();
   void unfix();
   void units();
 };

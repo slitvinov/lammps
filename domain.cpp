@@ -28,7 +28,6 @@
 #include "lattice.h"
 #include "memory.h"
 #include "modify.h"
-#include "output.h"
 #include "region.h"
 #include "thermo.h"
 #include "universe.h"

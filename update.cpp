@@ -23,7 +23,6 @@
 #include "integrate.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "output.h"
 
 #include <cstring>
 
@@ -405,11 +404,6 @@ void Update::reset_timestep(bigint newstep, bool do_check)
     atime = 0.0;
     atimestep = newstep;
   }
-
-  // changes to output that depend on timestep
-  // no active dumps allowed
-
-  output->reset_timestep(ntimestep);
 
   // rerun will not be meaningful with this check active.
   if (do_check) {

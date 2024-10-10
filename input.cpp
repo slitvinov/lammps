@@ -32,7 +32,6 @@
 #include "memory.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "output.h"
 #include "pair.h"
 #include "style_command.h"      // IWYU pragma: keep
 #include "thermo.h"
@@ -767,8 +766,6 @@ int Input::execute_command()
   else if (mycmd == "compute_modify") compute_modify();
   else if (mycmd == "dielectric") dielectric();
   else if (mycmd == "dimension") dimension();
-  else if (mycmd == "dump") dump();
-  else if (mycmd == "dump_modify") dump_modify();
   else if (mycmd == "fix") fix();
   else if (mycmd == "fix_modify") fix_modify();
   else if (mycmd == "group") group_command();
@@ -788,13 +785,9 @@ int Input::execute_command()
   else if (mycmd == "restart") restart();
   else if (mycmd == "run_style") run_style();
   else if (mycmd == "suffix") suffix();
-  else if (mycmd == "thermo") thermo();
-  else if (mycmd == "thermo_modify") thermo_modify();
-  else if (mycmd == "thermo_style") thermo_style();
   else if (mycmd == "timestep") timestep();
   else if (mycmd == "timer") timer_command();
   else if (mycmd == "uncompute") uncompute();
-  else if (mycmd == "undump") undump();
   else if (mycmd == "unfix") unfix();
   else if (mycmd == "units") units();
 
@@ -1387,20 +1380,6 @@ void Input::dimension()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::dump()
-{
-  output->add_dump(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::dump_modify()
-{
-  output->modify_dump(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::fix()
 {
   modify->add_fix(narg,arg);
@@ -1612,13 +1591,6 @@ void Input::reset_timestep()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::restart()
-{
-  output->create_restart(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::run_style()
 {
   if (domain->box_exist == 0)
@@ -1660,34 +1632,6 @@ void Input::suffix()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::thermo()
-{
-  output->set_thermo(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::thermo_modify()
-{
-  output->thermo->modify_params(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::thermo_style()
-{
-  output->create_thermo(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::timer_command()
-{
-  timer->modify_params(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::timestep()
 {
   if (narg != 1) error->all(FLERR,"Illegal timestep command");
@@ -1709,7 +1653,6 @@ void Input::timestep()
 
   if (force->pair) force->pair->reset_dt();
   for (auto &ifix : modify->get_fix_list()) ifix->reset_dt();
-  output->reset_dt();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1720,13 +1663,6 @@ void Input::uncompute()
   modify->delete_compute(arg[0]);
 }
 
-/* ---------------------------------------------------------------------- */
-
-void Input::undump()
-{
-  if (narg != 1) error->all(FLERR,"Illegal undump command");
-  output->delete_dump(arg[0]);
-}
 
 /* ---------------------------------------------------------------------- */
 

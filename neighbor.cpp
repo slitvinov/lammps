@@ -36,7 +36,6 @@
 #include "neigh_list.h"
 #include "neigh_request.h"
 #include "npair.h"
-#include "output.h"
 #include "pair.h"
 #include "style_nbin.h"  // IWYU pragma: keep
 #include "style_npair.h"  // IWYU pragma: keep
@@ -448,9 +447,6 @@ void Neighbor::init()
   int respa = 0;
   // fixchecklist = other classes that can induce reneighboring in decide()
 
-  restart_check = 0;
-  if (output->restart_flag) restart_check = 1;
-
   delete[] fixchecklist;
   fixchecklist = nullptr;
   fixchecklist = new int[modify->nfix];
@@ -460,8 +456,6 @@ void Neighbor::init()
     if (modify->fix[i]->force_reneighbor)
       fixchecklist[fix_check++] = i;
 
-  must_check = 0;
-  if (restart_check || fix_check) must_check = 1;
   if (dist_check == 0) {
     memory->destroy(xhold);
     maxhold = 0;
@@ -1814,13 +1808,6 @@ void Neighbor::setup_bins()
 
 int Neighbor::decide()
 {
-  if (must_check) {
-    bigint n = update->ntimestep;
-    if (restart_check && n == output->next_restart) return 1;
-    for (int i = 0; i < fix_check; i++)
-      if (n == modify->fix[fixchecklist[i]]->next_reneighbor) return 1;
-  }
-
   ago++;
   if (ago >= delay && ago % every == 0) {
     if (build_once) return 0;

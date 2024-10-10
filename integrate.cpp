@@ -19,7 +19,6 @@
 #include "force.h"
 #include "modify.h"
 #include "pair.h"
-#include "output.h"
 #include "update.h"
 
 using namespace LAMMPS_NS;
@@ -137,8 +136,6 @@ void Integrate::ev_set(bigint ntimestep)
   int i,flag;
 
   int tdflag = 0;
-  if (output->any_time_dumps &&
-      output->next_time_dump_any == ntimestep) tdflag = 1;
 
   flag = 0;
   int eflag_global = 0;

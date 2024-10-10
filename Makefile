@@ -31,7 +31,6 @@ create_atoms.o \
 create_box.o \
 deprecated.o \
 domain.o \
-dump.o \
 error.o \
 fix_abf.o \
 fix_fileforce.o \
@@ -121,8 +120,6 @@ utils.o \
 variable.o \
 velocity.o \
 verlet.o \
-write_dump.o \
-write_restart.o \
 
 main: $(S:.cpp=.o)
 	$(MPICXX) -o main $(S:.cpp=.o) $(LDFLAGS) -ldl

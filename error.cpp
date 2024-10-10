@@ -16,7 +16,6 @@
 
 #include "accelerator_kokkos.h"
 #include "input.h"
-#include "output.h"
 #include "universe.h"
 
 #if defined(LAMMPS_EXCEPTIONS)
@@ -66,7 +65,6 @@ void Error::universe_all(const std::string &file, int line, const std::string &s
     if (universe->ulogfile) fputs(mesg.c_str(),universe->ulogfile);
   }
 
-  if (output) delete output;
   if (universe->nworlds > 1) {
     if (screen && screen != stdout) fclose(screen);
     if (logfile) fclose(logfile);
@@ -171,7 +169,6 @@ void Error::all(const std::string &file, int line, const std::string &str)
 
   throw LAMMPSException(msg);
 #else
-  if (output) delete output;
   if (screen && screen != stdout) fclose(screen);
   if (logfile) fclose(logfile);
 
@@ -313,7 +310,6 @@ void Error::done(int status)
 {
   MPI_Barrier(world);
 
-  if (output) delete output;
   if (screen && screen != stdout) fclose(screen);
   if (logfile) fclose(logfile);
 

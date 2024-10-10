@@ -50,8 +50,6 @@ class Info : public Command {
   static bool has_gpu_device();
   static std::string get_gpu_device_info();
   static std::string get_accelerator_info(const std::string &pkg = "");
-
-  void get_memory_info(double *);
   char **get_variable_names(int &num);
 
  private:
@@ -63,7 +61,6 @@ class Info : public Command {
   void fix_styles(FILE *out);
   void compute_styles(FILE *out);
   void region_styles(FILE *out);
-  void dump_styles(FILE *out);
   void command_styles(FILE *out);
 };
 

@@ -7,5 +7,3 @@
 #include "run.h"
 #include "set.h"
 #include "velocity.h"
-#include "write_dump.h"
-#include "write_restart.h"

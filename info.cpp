@@ -24,7 +24,6 @@
 #include "comm.h"
 #include "compute.h"
 #include "domain.h"
-#include "dump.h"
 #include "error.h"
 #include "fix.h"
 #include "force.h"
@@ -32,7 +31,6 @@
 #include "input.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "output.h"
 #include "pair.h"
 #include "region.h"
 #include "update.h"
@@ -313,26 +311,6 @@ void Info::command(int narg, char **arg)
       fmt::print(out,"\nAvailable GPU devices:\n{}\n",get_gpu_device_info());
   }
 
-  if (flags & MEMORY) {
-    double meminfo[3];
-
-    get_memory_info(meminfo);
-
-    fputs("\nMemory allocation information (MPI rank 0):\n\n",out);
-    fmt::print(out,"Total dynamically allocated memory: {:.4} Mbyte\n",
-               meminfo[0]);
-
-#if defined(_WIN32)
-    fmt::print(out,"Non-shared memory use: {:.4} Mbyte\n",meminfo[1]);
-    fmt::print(out,"Maximum working set size: {:.4} Mbyte\n",meminfo[2]);
-#else
-#if defined(__linux__)
-    fmt::print(out,"Current reserved memory pool size: {:.4} Mbyte\n",
-               meminfo[1]);
-#endif
-    fmt::print(out,"Maximum resident set size: {:.4} Mbyte\n",meminfo[2]);
-#endif
-  }
 
   if (flags & COMM) {
     int major,minor;
@@ -465,25 +443,6 @@ void Info::command(int narg, char **arg)
                  names[compute->igroup]);
   }
 
-  if (flags & DUMPS) {
-    int ndump = output->ndump;
-    Dump **dump = output->dump;
-    int *nevery = output->every_dump;           \
-    char **vnames = output->var_dump;
-    char **names = group->names;
-    fputs("\nDump information:\n",out);
-    for (int i=0; i < ndump; ++i) {
-      fmt::print(out,"Dump[{:3d}]:     {:16}  file = {:16}  style = {:16}  group = {:16}  ",
-                 i, std::string(dump[i]->id)+',',std::string(dump[i]->filename)+',',
-                 std::string(dump[i]->style)+',',std::string(names[dump[i]->igroup])+',');
-      if (nevery[i]) {
-        fmt::print(out,"every = {}\n", nevery[i]);
-      } else {
-        fmt::print(out,"every = {}\n", vnames[i]);
-      }
-    }
-  }
-
   if (flags & FIXES) {
     int i = 0;
     char **names = group->names;
@@ -556,7 +515,6 @@ void Info::available_styles(FILE * out, int flags)
   if (flags & FIX_STYLES)       fix_styles(out);
   if (flags & COMPUTE_STYLES)   compute_styles(out);
   if (flags & REGION_STYLES)    region_styles(out);
-  if (flags & DUMP_STYLES)      dump_styles(out);
   if (flags & COMMAND_STYLES)   command_styles(out);
 }
 
@@ -599,13 +557,6 @@ void Info::region_styles(FILE *out)
 {
   fputs("\nRegion styles:\n",out);
   print_columns(out, domain->region_map);
-  fputs("\n\n\n",out);
-}
-
-void Info::dump_styles(FILE *out)
-{
-  fputs("\nDump styles:\n",out);
-  print_columns(out,output->dump_map);
   fputs("\n\n\n",out);
 }
 
@@ -722,8 +673,6 @@ bool Info::is_defined(const char *category, const char *name)
 
   if (strcmp(category,"compute") == 0) {
     if (modify->get_compute_by_id(name)) return true;
-  } else if (strcmp(category,"dump") == 0) {
-    if (output->get_dump_by_id(name)) return true;
   } else if (strcmp(category,"fix") == 0) {
     if (modify->get_fix_by_id(name)) return true;
   } else if (strcmp(category,"group") == 0) {
@@ -751,8 +700,6 @@ bool Info::has_style(const std::string &category, const std::string &name)
     return find_style(lmp, modify->compute_map, name, true);
   } else if (category == "region") {
     return find_style(lmp, domain->region_map, name, false);
-  } else if (category == "dump") {
-    return find_style(lmp, output->dump_map, name, false);
   } else if (category == "command") {
     return find_style(lmp, input->command_map, name, false);
   }
@@ -773,8 +720,6 @@ std::vector<std::string> Info::get_available_styles(const std::string &category)
     return get_style_names(modify->compute_map);
   } else if (category == "region") {
     return get_style_names(domain->region_map);
-  } else if (category == "dump") {
-    return get_style_names(output->dump_map);
   } else if (category == "command") {
     return get_style_names(input->command_map);
   }
@@ -1074,53 +1019,6 @@ std::string Info::get_accelerator_info(const std::string &package)
     mesg += "\n";
   }
   return mesg;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Info::get_memory_info(double *meminfo)
-{
-  double bytes = 0;
-  bytes += atom->memory_usage();
-  bytes += neighbor->memory_usage();
-  bytes += comm->memory_usage();
-  bytes += update->memory_usage();
-  bytes += force->memory_usage();
-  bytes += modify->memory_usage();
-  for (int i = 0; i < output->ndump; i++)
-    bytes += output->dump[i]->memory_usage();
-  meminfo[0] = bytes/1024.0/1024.0;
-  meminfo[1] = 0;
-  meminfo[2] = 0;
-
-#if defined(_WIN32)
-  HANDLE phandle = GetCurrentProcess();
-  PROCESS_MEMORY_COUNTERS_EX pmc;
-  GetProcessMemoryInfo(phandle,(PROCESS_MEMORY_COUNTERS *)&pmc,sizeof(pmc));
-  meminfo[1] = (double)pmc.PrivateUsage/1048576.0;
-  meminfo[2] = (double)pmc.PeakWorkingSetSize/1048576.0;
-#else
-#if defined(__linux__)
-// __GLIBC_MINOR__ is only defined on real glibc (i.e. not on musl)
-#if defined(__GLIBC_MINOR__)
-// newer glibc versions have mallinfo2
-#if defined(__GLIBC__) && __GLIBC_PREREQ(2, 33)
-  struct mallinfo2 mi;
-  mi = mallinfo2();
-#else
-  struct mallinfo mi;
-  mi = mallinfo();
-#endif
-  meminfo[1] = (double)mi.uordblks/1048576.0+(double)mi.hblkhd/1048576.0;
-#endif
-// not glibc => may not have mallinfo/mallinfo2
-#else
-  meminfo[1] = 0.0;
-#endif
-  struct rusage ru;
-  if (getrusage(RUSAGE_SELF, &ru) == 0)
-    meminfo[2] = (double)ru.ru_maxrss/1024.0;
-#endif
 }
 
 /* ---------------------------------------------------------------------- */

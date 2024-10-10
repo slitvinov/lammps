@@ -28,7 +28,6 @@
 #include "math_const.h"
 #include "memory.h"
 #include "modify.h"
-#include "output.h"
 #include "random_mars.h"
 #include "region.h"
 #include "thermo.h"
@@ -1920,10 +1919,6 @@ double Variable::evaluate(char *str, Tree **tree, int ivar)
           if (domain->box_exist == 0)
             print_var_error(FLERR,"Variable evaluation before simulation box is defined",ivar);
 
-          int flag = output->thermo->evaluate_keyword(word,&value1);
-          if (flag)
-            print_var_error(FLERR,fmt::format("Invalid thermo keyword '{}' in variable formula",
-                                              word),ivar);
           if (tree) {
             auto newtree = new Tree();
             newtree->type = VALUE;
