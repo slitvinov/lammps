@@ -31,8 +31,6 @@ create_atoms.o \
 create_box.o \
 deprecated.o \
 domain.o \
-dump_atom.o \
-dump_local.o \
 dump.o \
 error.o \
 fix_abf.o \
