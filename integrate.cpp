@@ -14,7 +14,6 @@
 
 #include "integrate.h"
 
-#include "citeme.h"
 #include "compute.h"
 #include "force.h"
 #include "modify.h"
@@ -47,7 +46,6 @@ Integrate::~Integrate()
 
 void Integrate::init()
 {
-  if (lmp->citeme) lmp->citeme->flush();
   update->atimestep = update->ntimestep;
 
   // allow pair and Kspace compute() to be turned off via modify flags

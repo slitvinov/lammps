@@ -23,7 +23,6 @@
 #include "accelerator_kokkos.h"
 #include "accelerator_omp.h"
 #include "atom.h"
-#include "citeme.h"
 #include "comm.h"
 #include "comm_brick.h"
 #include "domain.h"
@@ -108,7 +107,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   memory(nullptr), error(nullptr), universe(nullptr), input(nullptr), atom(nullptr),
   update(nullptr), neighbor(nullptr), comm(nullptr), domain(nullptr), force(nullptr),
   modify(nullptr), group(nullptr), kokkos(nullptr),
-  atomKK(nullptr), memoryKK(nullptr), citeme(nullptr)
+  atomKK(nullptr), memoryKK(nullptr)
 {
   memory = new Memory(this);
   error = new Error(this);
@@ -180,10 +179,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   int restart2data = 0;
   int restart2dump = 0;
   int restartremap = 0;
-  int citeflag = 1;
-  int citescreen = CiteMe::TERSE;
-  int citelogfile = CiteMe::VERBOSE;
-  char *citefile = nullptr;
   int helpflag = 0;
   int nonbufflag = 0;
 
@@ -205,47 +200,11 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   iarg = 1;
   while (iarg < narg) {
 
-    if (strcmp(arg[iarg],"-cite") == 0 ||
-               strcmp(arg[iarg],"-c") == 0) {
-      if (iarg+2 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-
-      if (strcmp(arg[iarg+1],"both") == 0) {
-        citescreen = CiteMe::VERBOSE;
-        citelogfile = CiteMe::VERBOSE;
-        citefile = nullptr;
-      } else if (strcmp(arg[iarg+1],"none") == 0) {
-        citescreen = CiteMe::TERSE;
-        citelogfile = CiteMe::TERSE;
-        citefile = nullptr;
-      } else if (strcmp(arg[iarg+1],"screen") == 0) {
-        citescreen = CiteMe::VERBOSE;
-        citelogfile = CiteMe::TERSE;
-        citefile = nullptr;
-      } else if (strcmp(arg[iarg+1],"log") == 0) {
-        citescreen = CiteMe::TERSE;
-        citelogfile = CiteMe::VERBOSE;
-        citefile = nullptr;
-      } else {
-        citescreen = CiteMe::TERSE;
-        citelogfile = CiteMe::TERSE;
-        citefile = arg[iarg+1];
-      }
-      iarg += 2;
-
-    } else if (strcmp(arg[iarg],"-echo") == 0 ||
+    if (strcmp(arg[iarg],"-echo") == 0 ||
                strcmp(arg[iarg],"-e") == 0) {
       if (iarg+2 > narg)
         error->universe_all(FLERR,"Invalid command-line argument");
       iarg += 2;
-
-    } else if (strcmp(arg[iarg],"-help") == 0 ||
-               strcmp(arg[iarg],"-h") == 0) {
-      if (iarg+1 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      helpflag = 1;
-      citeflag = 0;
-      iarg += 1;
 
     } else if (strcmp(arg[iarg],"-in") == 0 ||
                strcmp(arg[iarg],"-i") == 0) {
@@ -283,12 +242,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
         error->universe_all(FLERR,"Invalid command-line argument");
       if (iarg != 1) error->universe_all(FLERR,"Invalid command-line argument");
       iarg += 2;
-
-    } else if (strcmp(arg[iarg],"-nocite") == 0 ||
-               strcmp(arg[iarg],"-nc") == 0) {
-      citeflag = 0;
-      iarg++;
-
     } else if (strcmp(arg[iarg],"-nonbuf") == 0 ||
                strcmp(arg[iarg],"-nb") == 0) {
       nonbufflag = 1;
@@ -656,13 +609,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
       error->all(FLERR,"Cannot use -kokkos on without KOKKOS installed");
   }
 
-  // allocate CiteMe class if enabled
-
-  if (citeflag) citeme = new CiteMe(this,citescreen,citelogfile,citefile);
-  else citeme = nullptr;
-
   // allocate input class now that MPI is fully setup
-
   input = new Input(this,narg,arg);
 
   // copy package cmdline arguments
@@ -721,10 +668,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
 LAMMPS::~LAMMPS()
 {
   const int me = comm->me;
-
-  delete citeme;
   destroy();
-
   if (num_package) {
     for (int i = 0; i < num_package; i++) {
       for (char **ptr = packargs[i]; *ptr != nullptr; ++ptr)

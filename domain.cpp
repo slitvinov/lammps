@@ -29,7 +29,6 @@
 #include "memory.h"
 #include "modify.h"
 #include "region.h"
-#include "thermo.h"
 #include "universe.h"
 #include "update.h"
 

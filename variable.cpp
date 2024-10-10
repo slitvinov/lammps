@@ -30,7 +30,6 @@
 #include "modify.h"
 #include "random_mars.h"
 #include "region.h"
-#include "thermo.h"
 #include "tokenizer.h"
 #include "universe.h"
 #include "update.h"

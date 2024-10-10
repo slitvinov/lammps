@@ -17,7 +17,6 @@ atom_vec_atomic.o \
 atom_vec_hybrid.o \
 atom_vec.o \
 balance.o \
-citeme.o \
 comm_brick.o \
 comm.o \
 comm_tiled.o \

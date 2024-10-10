@@ -22,7 +22,6 @@
 #include "accelerator_kokkos.h"
 #include "atom.h"
 #include "atom_vec.h"
-#include "citeme.h"
 #include "comm.h"
 #include "compute.h"
 #include "domain.h"
@@ -2036,9 +2035,6 @@ void Neighbor::set(int narg, char **arg)
     ncollections = atom->ntypes;
   } else if (strcmp(arg[1],"multi/old") == 0) style = Neighbor::MULTI_OLD;
   else error->all(FLERR,"Unknown neighbor {} argument: {}", arg[0], arg[1]);
-
-  if (style == Neighbor::MULTI_OLD && lmp->citeme) lmp->citeme->add(cite_neigh_multi_old);
-  if (style == Neighbor::MULTI && lmp->citeme) lmp->citeme->add(cite_neigh_multi);
 }
 
 /* ----------------------------------------------------------------------

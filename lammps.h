@@ -39,8 +39,6 @@ class LAMMPS {
   class KokkosLMP *kokkos;         // KOKKOS accelerator class
   class AtomKokkos *atomKK;        // KOKKOS version of Atom class
   class MemoryKokkos *memoryKK;    // KOKKOS version of Memory class
-  class CiteMe *citeme;            // handle citation info
-
   const char *version;    // LAMMPS version string = date
   int num_ver;            // numeric version id derived from *version*
                           // that is constructed so that will be greater
