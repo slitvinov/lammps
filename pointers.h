@@ -86,9 +86,7 @@ class Pointers {
     world(ptr->world),
     infile(ptr->infile),
     screen(ptr->screen),
-    logfile(ptr->logfile),
-    atomKK(ptr->atomKK),
-    memoryKK(ptr->memoryKK)
+    logfile(ptr->logfile)
     {}
   virtual ~Pointers() = default;
 
@@ -120,9 +118,6 @@ class Pointers {
   FILE *&infile;
   FILE *&screen;
   FILE *&logfile;
-
-  class AtomKokkos *&atomKK;
-  class MemoryKokkos *&memoryKK;
 };
 
 }

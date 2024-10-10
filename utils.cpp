@@ -293,24 +293,6 @@ int utils::read_lines_from_file(FILE *fp, int nlines, int nmax, char *buffer, in
   return 0;
 }
 
-/* ------------------------------------------------------------------ */
-
-std::string utils::check_packages_for_style(const std::string &style, const std::string &name,
-                                            LAMMPS *lmp)
-{
-  std::string errmsg = "Unrecognized " + style + " style '" + name + "'";
-  const char *pkg = lmp->match_style(style.c_str(), name.c_str());
-
-  if (pkg) {
-    errmsg += fmt::format(" is part of the {} package", pkg);
-    if (LAMMPS::is_installed_pkg(pkg))
-      errmsg += ", but seems to be missing because of a dependency";
-    else
-      errmsg += " which is not enabled in this LAMMPS binary.";
-  }
-  return errmsg;
-}
-
 /* ----------------------------------------------------------------------
    read a boolean value from a string
    transform to lower case before checking
@@ -1042,20 +1024,6 @@ std::string utils::star_subst(const std::string &name, bigint step, int pad)
 std::string utils::strip_style_suffix(const std::string &style, LAMMPS *lmp)
 {
   std::string newstyle = style;
-  if (lmp->suffix_enable) {
-    if (lmp->suffix) {
-      if (utils::strmatch(style, fmt::format("/{}$", lmp->suffix))) {
-        newstyle.resize(style.size() - strlen(lmp->suffix) - 1);
-        return newstyle;
-      }
-    }
-    if (lmp->suffix2) {
-      if (utils::strmatch(style, fmt::format("/{}$", lmp->suffix2))) {
-        newstyle.resize(style.size() - strlen(lmp->suffix2) - 1);
-        return newstyle;
-      }
-    }
-  }
   return newstyle;
 }
 

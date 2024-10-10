@@ -1,7 +1,6 @@
 #include "balance.h"
 #include "create_atoms.h"
 #include "create_box.h"
-#include "info.h"
 #include "read_restart.h"
 #include "run.h"
 #include "set.h"

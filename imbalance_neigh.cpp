@@ -12,8 +12,6 @@
 ------------------------------------------------------------------------- */
 
 #include "imbalance_neigh.h"
-
-#include "accelerator_kokkos.h"
 #include "atom.h"
 #include "comm.h"
 #include "error.h"
@@ -45,18 +43,6 @@ int ImbalanceNeigh::options(int narg, char **arg)
 void ImbalanceNeigh::compute(double *weight)
 {
   if (factor == 0.0) return;
-
-  // cannot use neighbor list weight with KOKKOS using GPUs
-
-  if (lmp->kokkos && lmp->kokkos->kokkos_exists) {
-    if (lmp->kokkos->ngpus > 0) {
-      if (comm->me == 0 && !did_warn)
-        error->warning(FLERR, "Balance weight neigh skipped with KOKKOS using GPUs");
-      did_warn = 1;
-      return;
-    }
-  }
-
   bigint neighsum = neighbor->get_nneigh_half();
   if (neighsum < 0) neighsum = neighbor->get_nneigh_full();
 

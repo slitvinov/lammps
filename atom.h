@@ -220,7 +220,7 @@ class Atom : protected Pointers {
   void add_peratom_change_columns(const std::string &, int);
   void add_peratom_vary(const std::string &, void *, int, int *, void *, int collength = 0);
   void create_avec(const std::string &, int, char **, int);
-  virtual AtomVec *new_avec(const std::string &, int, int &);
+  virtual AtomVec *new_avec(const std::string &);
 
   void init();
   void setup();

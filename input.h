@@ -104,7 +104,6 @@ class Input : protected Pointers {
   void neigh_modify();
   void neighbor_command();
   void newton();
-  void package();
   void pair_coeff();
   void pair_modify();
   void pair_style();
@@ -113,7 +112,6 @@ class Input : protected Pointers {
   void region();
   void reset_timestep();
   void run_style();
-  void suffix();
   void timestep();
   void uncompute();
   void unfix();

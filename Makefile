@@ -47,7 +47,6 @@ imbalance_neigh.o \
 imbalance.o \
 imbalance_store.o \
 imbalance_var.o \
-info.o \
 input.o \
 integrate.o \
 irregular.o \

@@ -474,66 +474,25 @@ void Atom::create_avec(const std::string &style, int narg, char **arg, int trysu
   if (avec) delete avec;
   atom_style = nullptr;
   avec = nullptr;
-
-  // unset atom style and array existence flags
-  // may have been set by old avec
-
   set_atomflag_defaults();
-
-  // create instance of AtomVec
-  // use grow() to initialize atom-based arrays to length 1
-  //   so that x[0][0] can always be referenced even if proc has no atoms
-
-  int sflag;
-  avec = new_avec(style,trysuffix,sflag);
+  avec = new_avec(style);
   avec->store_args(narg,arg);
   avec->process_args(narg,arg);
   avec->grow(1);
 
-  if (sflag) {
-    std::string estyle = style + "/";
-    if (sflag == 1) estyle += lmp->suffix;
-    else if (sflag == 2) estyle += lmp->suffix2;
-    else if (sflag == 3) estyle += lmp->non_pair_suffix();
-    atom_style = utils::strdup(estyle);
-  } else {
-    atom_style = utils::strdup(style);
-  }
+  atom_style = utils::strdup(style);
 }
 
 /* ----------------------------------------------------------------------
    generate an AtomVec class, first with suffix appended
 ------------------------------------------------------------------------- */
 
-AtomVec *Atom::new_avec(const std::string &style, int trysuffix, int &sflag)
+AtomVec *Atom::new_avec(const std::string &style)
 {
-  if (trysuffix && lmp->suffix_enable) {
-    if (lmp->non_pair_suffix()) {
-      sflag = 1 + 2*lmp->pair_only_flag;
-      std::string estyle = style + "/" + lmp->non_pair_suffix();
-      if (avec_map->find(estyle) != avec_map->end()) {
-        AtomVecCreator &avec_creator = (*avec_map)[estyle];
-        return avec_creator(lmp);
-      }
-    }
-
-    if (lmp->suffix2) {
-      sflag = 2;
-      std::string estyle = style + "/" + lmp->suffix2;
-      if (avec_map->find(estyle) != avec_map->end()) {
-        AtomVecCreator &avec_creator = (*avec_map)[estyle];
-        return avec_creator(lmp);
-      }
-    }
-  }
-
-  sflag = 0;
   if (avec_map->find(style) != avec_map->end()) {
     AtomVecCreator &avec_creator = (*avec_map)[style];
     return avec_creator(lmp);
   }
-
-  error->all(FLERR,utils::check_packages_for_style("atom",style,lmp));
   return nullptr;
 }
 

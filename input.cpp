@@ -14,7 +14,6 @@
 
 #include "input.h"
 
-#include "accelerator_kokkos.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "comm.h"
@@ -772,7 +771,6 @@ int Input::execute_command()
   else if (mycmd == "neigh_modify") neigh_modify();
   else if (mycmd == "neighbor") neighbor_command();
   else if (mycmd == "newton") newton();
-  else if (mycmd == "package") package();
   else if (mycmd == "pair_coeff") pair_coeff();
   else if (mycmd == "pair_modify") pair_modify();
   else if (mycmd == "pair_style") pair_style();
@@ -781,7 +779,6 @@ int Input::execute_command()
   else if (mycmd == "region") region();
   else if (mycmd == "reset_timestep") reset_timestep();
   else if (mycmd == "run_style") run_style();
-  else if (mycmd == "suffix") suffix();
   else if (mycmd == "timestep") timestep();
   else if (mycmd == "uncompute") uncompute();
   else if (mycmd == "unfix") unfix();
@@ -798,20 +795,6 @@ int Input::execute_command()
 
   if (mycmd == "reset_atoms") flag = meta(mycmd);
   if (flag) return 0;
-
-  // invoke commands added via style_command.h
-  // try suffixed version first
-
-  if (lmp->suffix_enable && lmp->non_pair_suffix()) {
-    mycmd = command + std::string("/") + lmp->non_pair_suffix();
-    if (command_map->find(mycmd) == command_map->end()) {
-      if (lmp->suffix2) {
-        mycmd = command + std::string("/") + lmp->suffix2;
-        if (command_map->find(mycmd) == command_map->end())
-          mycmd = command;
-      } else mycmd = command;
-    }
-  }
   if (command_map->find(mycmd) != command_map->end()) {
     CommandCreator &command_creator = (*command_map)[mycmd];
     Command *cmd = command_creator(lmp);
@@ -1329,8 +1312,7 @@ void Input::comm_style()
   } else if (strcmp(arg[0],"tiled") == 0) {
     if (comm->style == Comm::TILED) return;
     Comm *oldcomm = comm;
-    if (lmp->kokkos) comm = new CommTiledKokkos(lmp,oldcomm);
-    else comm = new CommTiled(lmp,oldcomm);
+    comm = new CommTiled(lmp,oldcomm);
     delete oldcomm;
   } else error->all(FLERR,"Unknown comm_style argument: {}", arg[0]);
 }
@@ -1447,49 +1429,6 @@ void Input::newton()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::package()
-{
-  if (domain->box_exist)
-    error->all(FLERR,"Package command after simulation box is defined");
-  if (narg < 1) error->all(FLERR,"Illegal package command");
-
-  // same checks for packages existing as in LAMMPS::post_create()
-  // since can be invoked here by package command in input script
-
-  if (strcmp(arg[0],"gpu") == 0) {
-    if (!modify->check_package("GPU"))
-      error->all(FLERR,"Package gpu command without GPU package installed");
-
-    std::string fixcmd = "package_gpu all GPU";
-    for (int i = 1; i < narg; i++) fixcmd += std::string(" ") + arg[i];
-    modify->add_fix(fixcmd);
-
-  } else if (strcmp(arg[0],"kokkos") == 0) {
-    if (lmp->kokkos == nullptr || lmp->kokkos->kokkos_exists == 0)
-      error->all(FLERR, "Package kokkos command without KOKKOS package enabled");
-    lmp->kokkos->accelerator(narg-1,&arg[1]);
-
-  } else if (strcmp(arg[0],"omp") == 0) {
-    if (!modify->check_package("OMP"))
-      error->all(FLERR, "Package omp command without OPENMP package installed");
-
-    std::string fixcmd = "package_omp all OMP";
-    for (int i = 1; i < narg; i++) fixcmd += std::string(" ") + arg[i];
-    modify->add_fix(fixcmd);
-
- } else if (strcmp(arg[0],"intel") == 0) {
-    if (!modify->check_package("INTEL"))
-      error->all(FLERR, "Package intel command without INTEL package installed");
-
-    std::string fixcmd = "package_intel all INTEL";
-    for (int i = 1; i < narg; i++) fixcmd += std::string(" ") + arg[i];
-    modify->add_fix(fixcmd);
-
-  } else error->all(FLERR,"Unknown package keyword: {}", arg[0]);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::pair_coeff()
 {
   if (domain->box_exist == 0)
@@ -1536,13 +1475,6 @@ void Input::pair_style()
     std::string style = arg[0];
     int match = 0;
     if (style == force->pair_style) match = 1;
-    if (!match && lmp->suffix_enable) {
-      if (lmp->suffix)
-        if (style + "/" + lmp->suffix == force->pair_style) match = 1;
-
-      if (lmp->suffix2)
-        if (style + "/" + lmp->suffix2 == force->pair_style) match = 1;
-    }
     if (match) {
       force->pair->settings(narg-1,&arg[1]);
       return;
@@ -1592,38 +1524,6 @@ void Input::run_style()
   if (domain->box_exist == 0)
     error->all(FLERR,"Run_style command before simulation box is defined");
   update->create_integrate(narg,arg,1);
-}
-
-
-/* ---------------------------------------------------------------------- */
-
-void Input::suffix()
-{
-  if (narg < 1) error->all(FLERR,"Illegal suffix command");
-
-  const std::string firstarg = arg[0];
-
-  if ((firstarg == "off") || (firstarg == "no") || (firstarg == "false")) {
-    lmp->suffix_enable = 0;
-  } else if ((firstarg == "on") || (firstarg == "yes") || (firstarg == "true")) {
-    lmp->suffix_enable = 1;
-    if (!lmp->suffix) error->all(FLERR,"May only enable suffixes after defining one");
-  } else {
-    lmp->suffix_enable = 1;
-
-    delete[] lmp->suffix;
-    delete[] lmp->suffix2;
-    lmp->suffix = lmp->suffix2 = nullptr;
-
-    if (firstarg == "hybrid") {
-      if (narg != 3) error->all(FLERR,"Illegal suffix command");
-      lmp->suffix = utils::strdup(arg[1]);
-      lmp->suffix2 = utils::strdup(arg[2]);
-    } else {
-      if (narg != 1) error->all(FLERR,"Illegal suffix command");
-      lmp->suffix = utils::strdup(arg[0]);
-    }
-  }
 }
 
 /* ---------------------------------------------------------------------- */

@@ -394,9 +394,6 @@ void Pair::write_restart(FILE *)
 
 void Pair::add_tally_callback(Compute *ptr)
 {
-  if (lmp->kokkos)
-    error->all(FLERR,"Cannot yet use compute tally with Kokkos");
-
   int i,found=-1;
 
   for (i=0; i < num_tally_compute; ++i) {

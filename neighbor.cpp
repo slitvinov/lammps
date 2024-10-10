@@ -19,7 +19,6 @@
 
 #include "neighbor.h"
 
-#include "accelerator_kokkos.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "comm.h"
@@ -312,8 +311,7 @@ void Neighbor::init()
 
   n = atom->ntypes;
   if (cutneighsq == nullptr) {
-    if (lmp->kokkos) init_cutneighsq_kokkos(n);
-    else memory->create(cutneighsq,n+1,n+1,"neigh:cutneighsq");
+    memory->create(cutneighsq,n+1,n+1,"neigh:cutneighsq");
     memory->create(cutneighghostsq,n+1,n+1,"neigh:cutneighghostsq");
     cuttype = new double[n+1];
     cuttypesq = new double[n+1];
@@ -482,13 +480,8 @@ void Neighbor::init()
   else exclude = 1;
 
   if (nex_type) {
-    if (lmp->kokkos)
-      init_ex_type_kokkos(n);
-    else {
-      memory->destroy(ex_type);
-      memory->create(ex_type,n+1,n+1,"neigh:ex_type");
-    }
-
+    memory->destroy(ex_type);
+    memory->create(ex_type,n+1,n+1,"neigh:ex_type");
     for (i = 1; i <= n; i++)
       for (j = 1; j <= n; j++)
         ex_type[i][j] = 0;
@@ -503,15 +496,10 @@ void Neighbor::init()
   }
 
   if (nex_group) {
-    if (lmp->kokkos)
-      init_ex_bit_kokkos();
-    else {
-      delete[] ex1_bit;
-      delete[] ex2_bit;
-      ex1_bit = new int[nex_group];
-      ex2_bit = new int[nex_group];
-    }
-
+    delete[] ex1_bit;
+    delete[] ex2_bit;
+    ex1_bit = new int[nex_group];
+    ex2_bit = new int[nex_group];
     for (i = 0; i < nex_group; i++) {
       ex1_bit[i] = group->bitmask[ex1_group[i]];
       ex2_bit[i] = group->bitmask[ex2_group[i]];
@@ -519,20 +507,11 @@ void Neighbor::init()
   }
 
   if (nex_mol) {
-    if (lmp->kokkos)
-      init_ex_mol_bit_kokkos();
-    else {
-      delete[] ex_mol_bit;
-      ex_mol_bit = new int[nex_mol];
-    }
-
+    delete[] ex_mol_bit;
+    ex_mol_bit = new int[nex_mol];
     for (i = 0; i < nex_mol; i++)
       ex_mol_bit[i] = group->bitmask[ex_mol_group[i]];
   }
-
-  if (lmp->kokkos)
-    set_binsize_kokkos();
-
   // ------------------------------------------------------------------
   // create pairwise lists
   // one-time call to init_styles() to scan style files and setup
@@ -728,9 +707,7 @@ int Neighbor::init_pair()
   // only for original requests, not ones added by Neighbor class
 
   for (i = 0; i < nrequest; i++) {
-    if (requests[i]->kokkos_host || requests[i]->kokkos_device)
-      create_kokkos_list(i);
-    else lists[i] = new NeighList(lmp);
+    lists[i] = new NeighList(lmp);
     lists[i]->index = i;
     lists[i]->requestor = requests[i]->requestor;
 
@@ -2147,10 +2124,7 @@ void Neighbor::modify_params(int narg, char **arg)
         if (nex_mol == maxex_mol) {
           maxex_mol += EXDELTA;
           memory->grow(ex_mol_group,maxex_mol,"neigh:ex_mol_group");
-          if (lmp->kokkos)
-            grow_ex_mol_intra_kokkos();
-          else
-            memory->grow(ex_mol_intra,maxex_mol,"neigh:ex_mol_intra");
+	  memory->grow(ex_mol_intra,maxex_mol,"neigh:ex_mol_intra");
         }
         ex_mol_group[nex_mol] = group->find(arg[iarg+2]);
         if (ex_mol_group[nex_mol] == -1)
@@ -2388,7 +2362,7 @@ bigint Neighbor::get_nneigh_full()
       int *numneigh = neighbor->lists[m]->numneigh;
       for (int i = 0; i < inum; i++)
         nneighfull += numneigh[ilist[i]];
-    } else if (lmp->kokkos) nneighfull = lmp->kokkos->neigh_count(m);
+    };
   }
   return nneighfull;
 }
@@ -2412,7 +2386,7 @@ bigint Neighbor::get_nneigh_half()
       int *numneigh = neighbor->lists[m]->numneigh;
       for (int i = 0; i < inum; i++)
         nneighhalf += numneigh[ilist[i]];
-    } else if (lmp->kokkos) nneighhalf = lmp->kokkos->neigh_count(m);
+    };
   }
   return nneighhalf;
 }

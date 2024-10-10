@@ -14,7 +14,6 @@
 
 #include "error.h"
 
-#include "accelerator_kokkos.h"
 #include "input.h"
 #include "universe.h"
 
@@ -80,7 +79,6 @@ void Error::universe_all(const std::string &file, int line, const std::string &s
 
   throw LAMMPSException(mesg);
 #else
-  KokkosLMP::finalize();
   MPI_Finalize();
   exit(1);
 #endif
@@ -106,7 +104,6 @@ void Error::universe_one(const std::string &file, int line, const std::string &s
 
   throw LAMMPSAbortException(mesg, universe->uworld);
 #else
-  KokkosLMP::finalize();
   MPI_Abort(universe->uworld,1);
   exit(1); // to trick "smart" compilers into believing this does not return
 #endif
@@ -171,8 +168,6 @@ void Error::all(const std::string &file, int line, const std::string &str)
 #else
   if (screen && screen != stdout) fclose(screen);
   if (logfile) fclose(logfile);
-
-  KokkosLMP::finalize();
   if (universe->nworlds > 1) MPI_Abort(universe->uworld,1);
   MPI_Finalize();
   exit(1);
@@ -211,7 +206,6 @@ void Error::one(const std::string &file, int line, const std::string &str)
   throw LAMMPSAbortException(mesg, world);
 #else
   utils::flush_buffers(lmp);
-  KokkosLMP::finalize();
   MPI_Abort(world,1);
   exit(1); // to trick "smart" compilers into believing this does not return
 #endif
@@ -313,7 +307,6 @@ void Error::done(int status)
   if (screen && screen != stdout) fclose(screen);
   if (logfile) fclose(logfile);
 
-  KokkosLMP::finalize();
   MPI_Finalize();
   exit(status);
 }

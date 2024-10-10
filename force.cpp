@@ -117,34 +117,12 @@ void Force::create_pair(const std::string &style, int trysuffix)
 
 Pair *Force::new_pair(const std::string &style, int trysuffix, int &sflag)
 {
-  if (trysuffix && lmp->suffix_enable) {
-    if (lmp->suffix) {
-      sflag = 1;
-      std::string estyle = style + "/" + lmp->suffix;
-      if (pair_map->find(estyle) != pair_map->end()) {
-        PairCreator &pair_creator = (*pair_map)[estyle];
-        return pair_creator(lmp);
-      }
-    }
-    if (lmp->suffix2) {
-      sflag = 2;
-      std::string estyle = style + "/" + lmp->suffix2;
-      if (pair_map->find(estyle) != pair_map->end()) {
-        PairCreator &pair_creator = (*pair_map)[estyle];
-        return pair_creator(lmp);
-      }
-    }
-  }
-
   sflag = 0;
   if (style == "none") return nullptr;
   if (pair_map->find(style) != pair_map->end()) {
     PairCreator &pair_creator = (*pair_map)[style];
     return pair_creator(lmp);
   }
-
-  error->all(FLERR, utils::check_packages_for_style("pair", style, lmp));
-
   return nullptr;
 }
 
@@ -189,13 +167,6 @@ char *Force::pair_match_ptr(Pair *ptr)
 char *Force::store_style(const std::string &style, int sflag)
 {
   std::string estyle = style;
-
-  if (sflag == 1)
-    estyle += std::string("/") + lmp->suffix;
-  else if (sflag == 2)
-    estyle += std::string("/") + lmp->suffix2;
-  else if ((sflag == 3) && lmp->non_pair_suffix())
-    estyle += std::string("/") + lmp->non_pair_suffix();
   return utils::strdup(estyle);
 }
 

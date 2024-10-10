@@ -88,10 +88,6 @@ void Verlet::setup(int flag)
   if (comm->me == 0 && screen) {
     fputs("Setting up Verlet run ...\n",screen);
   }
-
-  if (lmp->kokkos)
-    error->all(FLERR,"KOKKOS package requires run_style verlet/kk");
-
   update->setupflag = 1;
 
   // setup domain, communication and neighboring

@@ -235,19 +235,7 @@ class Neighbor : protected Pointers {
 
   int choose_bin(class NeighRequest *);
   int choose_pair(class NeighRequest *);
-
-  // dummy functions provided by NeighborKokkos, called in init()
-  // otherwise NeighborKokkos would have to overwrite init()
-
   int copymode;
-
-  virtual void init_cutneighsq_kokkos(int) {}
-  virtual void create_kokkos_list(int) {}
-  virtual void init_ex_type_kokkos(int) {}
-  virtual void init_ex_bit_kokkos() {}
-  virtual void init_ex_mol_bit_kokkos() {}
-  virtual void grow_ex_mol_intra_kokkos() {}
-  virtual void set_binsize_kokkos() {}
 };
 
 namespace NeighConst {

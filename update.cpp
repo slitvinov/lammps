@@ -303,25 +303,13 @@ void Update::create_integrate(int narg, char **arg, int trysuffix)
 
   delete[] integrate_style;
   delete integrate;
-
-  int sflag;
-
   if (narg - 1 > 0) {
-    new_integrate(arg[0], narg - 1, &arg[1], trysuffix, sflag);
+    new_integrate(arg[0], narg - 1, &arg[1]);
   } else {
-    new_integrate(arg[0], 0, nullptr, trysuffix, sflag);
+    new_integrate(arg[0], 0, nullptr);
   }
 
   std::string estyle = arg[0];
-  if (sflag) {
-    estyle += "/";
-    if (sflag == 1)
-      estyle += lmp->suffix;
-    else if (sflag == 2)
-      estyle += lmp->suffix2;
-    else if ((sflag == 3) && lmp->non_pair_suffix())
-      estyle += lmp->non_pair_suffix();
-  }
   integrate_style = utils::strdup(estyle);
 }
 
@@ -329,31 +317,8 @@ void Update::create_integrate(int narg, char **arg, int trysuffix)
    create the Integrate style, first with suffix appended
 ------------------------------------------------------------------------- */
 
-void Update::new_integrate(char *style, int narg, char **arg, int trysuffix, int &sflag)
+void Update::new_integrate(char *style, int narg, char **arg)
 {
-  if (trysuffix && lmp->suffix_enable) {
-    if (lmp->non_pair_suffix()) {
-      sflag = 1 + 2*lmp->pair_only_flag;
-      std::string estyle = style + std::string("/") + lmp->non_pair_suffix();
-      if (integrate_map->find(estyle) != integrate_map->end()) {
-        IntegrateCreator &integrate_creator = (*integrate_map)[estyle];
-        integrate = integrate_creator(lmp, narg, arg);
-        return;
-      }
-    }
-
-    if (lmp->suffix2) {
-      sflag = 2;
-      std::string estyle = style + std::string("/") + lmp->suffix2;
-      if (integrate_map->find(estyle) != integrate_map->end()) {
-        IntegrateCreator &integrate_creator = (*integrate_map)[estyle];
-        integrate = integrate_creator(lmp, narg, arg);
-        return;
-      }
-    }
-  }
-
-  sflag = 0;
   if (integrate_map->find(style) != integrate_map->end()) {
     IntegrateCreator &integrate_creator = (*integrate_map)[style];
     integrate = integrate_creator(lmp, narg, arg);

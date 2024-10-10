@@ -141,14 +141,6 @@ void FixPair::query_pstyle(LAMMPS *lmp) {
         nsub = utils::inumeric(FLERR,cptr+1,false,lmp);
     }
     pstyle = nullptr;
-    if (lmp->suffix_enable) {
-        if (lmp->suffix) {
-            pstyle = force->pair_match(fmt::format("{}/{}", pairname, lmp->suffix), 1, nsub);
-            if (pstyle == nullptr && (lmp->suffix2)) {
-                pstyle = force->pair_match(fmt::format("{}/{}", pairname, lmp->suffix2), 1, nsub);
-            }
-        }
-    }
     if (pstyle == nullptr) pstyle = force->pair_match(pairname, 1, nsub);
 }
 

@@ -14,7 +14,6 @@
 
 #include "comm.h"
 
-#include "accelerator_kokkos.h"
 #include "atom.h"               // IWYU pragma: keep
 #include "atom_vec.h"
 #include "compute.h"

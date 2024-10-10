@@ -21,7 +21,6 @@
 #include "error.h"
 #include "fix.h"
 #include "group.h"
-#include "info.h"
 #include "input.h"
 #include "label_map.h"
 #include "library.h"

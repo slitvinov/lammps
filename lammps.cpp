@@ -20,8 +20,6 @@
 #include "style_pair.h"      // IWYU pragma: keep
 #include "style_region.h"    // IWYU pragma: keep
 
-#include "accelerator_kokkos.h"
-#include "accelerator_omp.h"
 #include "atom.h"
 #include "comm.h"
 #include "comm_brick.h"
@@ -29,7 +27,6 @@
 #include "error.h"
 #include "force.h"
 #include "group.h"
-#include "info.h"
 #include "input.h"
 #include "memory.h"
 #include "modify.h"
@@ -48,8 +45,6 @@
 #include <cmath>
 #include <cstring>
 #include <map>
-
-#include "lmpinstalledpkgs.h"
 #include "lmpgitversion.h"
 
 #if defined(LAMMPS_UPDATE)
@@ -88,8 +83,7 @@ using namespace LAMMPS_NS;
 LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   memory(nullptr), error(nullptr), universe(nullptr), input(nullptr), atom(nullptr),
   update(nullptr), neighbor(nullptr), comm(nullptr), domain(nullptr), force(nullptr),
-  modify(nullptr), group(nullptr), kokkos(nullptr),
-  atomKK(nullptr), memoryKK(nullptr)
+  modify(nullptr), group(nullptr)
 {
   memory = new Memory(this);
   error = new Error(this);
@@ -100,8 +94,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   restart_ver = -1;
 
   external_comm = 0;
-  mdicomm = nullptr;
-
   skiprunflag = 0;
 
   screen = nullptr;
@@ -155,15 +147,12 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   int logflag = 0;
   int partscreenflag = 0;
   int partlogflag = 0;
-  int kokkosflag = 0;
   int restart2data = 0;
   int restart2dump = 0;
   int restartremap = 0;
   int helpflag = 0;
   int nonbufflag = 0;
 
-  suffix = suffix2 = nullptr;
-  suffix_enable = 0;
   pair_only_flag = 0;
   if (arg) exename = arg[0];
   else exename = nullptr;
@@ -192,22 +181,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
         error->universe_all(FLERR,"Invalid command-line argument");
       inflag = iarg + 1;
       iarg += 2;
-
-    } else if (strcmp(arg[iarg],"-kokkos") == 0 ||
-               strcmp(arg[iarg],"-k") == 0) {
-      if (iarg+2 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      const std::string kokkosarg = arg[iarg+1];
-      if ((kokkosarg == "on") || (kokkosarg == "yes") || (kokkosarg == "true"))
-        kokkosflag = 1;
-      else if ((kokkosarg == "off") || (kokkosarg == "no") || (kokkosarg == "false"))
-        kokkosflag = 0;
-      else error->universe_all(FLERR,"Invalid command-line argument");
-      iarg += 2;
-      // delimit any extra args for the Kokkos instantiation
-      kkfirst = iarg;
-      while (iarg < narg && arg[iarg][0] != '-') iarg++;
-      kklast = iarg;
 
     } else if (strcmp(arg[iarg],"-log") == 0 ||
                strcmp(arg[iarg],"-l") == 0) {
@@ -333,27 +306,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
                strcmp(arg[iarg],"-sr") == 0) {
       skiprunflag = 1;
       ++iarg;
-
-    } else if (strcmp(arg[iarg],"-suffix") == 0 ||
-               strcmp(arg[iarg],"-sf") == 0) {
-      if (iarg+2 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      delete[] suffix;
-      delete[] suffix2;
-      suffix = suffix2 = nullptr;
-      suffix_enable = 1;
-      // hybrid option to set fall-back for suffix2
-      if (strcmp(arg[iarg+1],"hybrid") == 0) {
-        if (iarg+4 > narg)
-          error->universe_all(FLERR,"Invalid command-line argument");
-        suffix = utils::strdup(arg[iarg+2]);
-        suffix2 = utils::strdup(arg[iarg+3]);
-        iarg += 4;
-      } else {
-        suffix = utils::strdup(arg[iarg+1]);
-        iarg += 2;
-      }
-
     } else if (strcmp(arg[iarg],"-var") == 0 ||
                strcmp(arg[iarg],"-v") == 0) {
       if (iarg+3 > narg)
@@ -577,18 +529,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
       sizeof(tagint) != 4 || sizeof(bigint) != 4)
     error->all(FLERR,"Small to big integers are not sized correctly");
 #endif
-
-  // create Kokkos class if KOKKOS installed, unless explicitly switched off
-  // instantiation creates dummy Kokkos class if KOKKOS is not installed
-  // add args between kkfirst and kklast to Kokkos instantiation
-
-  kokkos = nullptr;
-  if (kokkosflag == 1) {
-    kokkos = new KokkosLMP(this,kklast-kkfirst,&arg[kkfirst]);
-    if (!kokkos->kokkos_exists)
-      error->all(FLERR,"Cannot use -kokkos on without KOKKOS installed");
-  }
-
   // allocate input class now that MPI is fully setup
   input = new Input(this,narg,arg);
 
@@ -612,7 +552,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   // otherwise allocate top level classes.
 
   if (helpflag) {
-    if (universe->me == 0 && screen) help();
     error->done(0);
   } else {
     create();
@@ -687,10 +626,6 @@ LAMMPS::~LAMMPS()
 
   if (world != universe->uworld) MPI_Comm_free(&world);
 
-  delete kokkos;
-  delete[] suffix;
-  delete[] suffix2;
-
   // free the MPI comm created by -mpicolor cmdline arg processed in constructor
   // it was passed to universe as if original universe world
   // may have been split later by partitions, universe will free the splits
@@ -717,34 +652,15 @@ void LAMMPS::create()
 
   // Comm class must be created before Atom class
   // so that nthreads is defined when create_avec invokes grow()
-
-  if (kokkos) comm = new CommKokkos(this);
-  else comm = new CommBrick(this);
-
-  if (kokkos) neighbor = new NeighborKokkos(this);
-  else neighbor = new Neighbor(this);
-
-  if (kokkos) domain = new DomainKokkos(this);
-#ifdef LMP_OPENMP
-  else domain = new DomainOMP(this);
-#else
-  else domain = new Domain(this);
-#endif
-
-  if (kokkos) atom = new AtomKokkos(this);
-  else atom = new Atom(this);
-
-  if (kokkos)
-    atom->create_avec("atomic/kk",0,nullptr,1);
-  else
-    atom->create_avec("atomic",0,nullptr,1);
+  comm = new CommBrick(this);
+  neighbor = new Neighbor(this);
+  domain = new Domain(this);
+  atom = new Atom(this);
+  atom->create_avec("atomic",0,nullptr,1);
 
   group = new Group(this);
   force = new Force(this);    // must be after group, to create temperature
-
-  if (kokkos) modify = new ModifyKokkos(this);
-  else modify = new Modify(this);
-
+  modify = new Modify(this);
   update = new Update(this);  // must be after output, force, neighbor
 
   // auto-load plugins
@@ -768,13 +684,7 @@ void LAMMPS::post_create()
 
   // Don't unnecessarily reissue a package command via suffix
   int package_issued = Suffix::NONE;
-
-  // default package command triggered by "-k on"
-
-  if (kokkos && kokkos->kokkos_exists) input->one("package kokkos");
-
   // invoke any command-line package commands
-
   if (num_package) {
     std::string str;
     for (int i = 0; i < num_package; i++) {
@@ -790,39 +700,6 @@ void LAMMPS::post_create()
         str += *ptr;
       }
       input->one(str);
-    }
-  }
-
-  // check that KOKKOS package classes were instantiated
-  // check that GPU, INTEL, OPENMP fixes were compiled with LAMMPS
-  // do not re-issue package command if already issued
-
-  if (suffix_enable) {
-
-    if (strcmp(suffix,"gpu") == 0 && !modify->check_package("GPU"))
-      error->all(FLERR,"Using suffix gpu without GPU package installed");
-    if (strcmp(suffix,"intel") == 0 && !modify->check_package("INTEL"))
-      error->all(FLERR,"Using suffix intel without INTEL package installed");
-    if (strcmp(suffix,"kk") == 0 &&
-        (kokkos == nullptr || kokkos->kokkos_exists == 0))
-      error->all(FLERR,"Using suffix kk without KOKKOS package enabled");
-    if (strcmp(suffix,"omp") == 0 && !modify->check_package("OMP"))
-      error->all(FLERR,"Using suffix omp without OPENMP package installed");
-
-    if (strcmp(suffix,"gpu") == 0 && !(package_issued & Suffix::GPU))
-      input->one("package gpu 0");
-    if (strcmp(suffix,"intel") == 0 && !(package_issued & Suffix::INTEL))
-      input->one("package intel 1");
-    if (strcmp(suffix,"omp") == 0 && !(package_issued & Suffix::OMP))
-      input->one("package omp 0");
-
-    if (suffix2) {
-      if (strcmp(suffix2,"gpu") == 0 && !(package_issued & Suffix::GPU))
-        input->one("package gpu 0");
-      if (strcmp(suffix2,"intel") == 0 && !(package_issued & Suffix::INTEL))
-        input->one("package intel 1");
-      if (strcmp(suffix2,"omp") == 0 && !(package_issued & Suffix::OMP))
-        input->one("package omp 0");
     }
   }
 }
@@ -889,249 +766,3 @@ void LAMMPS::destroy()
   restart_ver = -1;       // reset last restart version id
 }
 
-/** \brief  Return suffix for non-pair styles depending on pair_only_flag
- *
- * \return  suffix or null pointer
- */
-const char *LAMMPS::non_pair_suffix() const
-{
-  const char *mysuffix;
-  if (pair_only_flag) {
-#ifdef LMP_KOKKOS_GPU
-    if (utils::strmatch(suffix,"^kk")) mysuffix = "kk/host";
-    else mysuffix = nullptr;
-#else
-    mysuffix = nullptr;
-#endif
-  } else {
-    mysuffix = suffix;
-  }
-  return mysuffix;
-}
-
-/* ----------------------------------------------------------------------
-   help message for command line options and styles present in executable
-------------------------------------------------------------------------- */
-
-void _noopt LAMMPS::help()
-{
-  FILE *fp = screen;
-  const char *pager = nullptr;
-
-  // if output is a console, use a pipe to a pager for paged output.
-  // this will avoid the most important help text to rush past the
-  // user. scrollback buffers are often not large enough. this is most
-  // beneficial to windows users, who are not used to command line.
-
-  int use_pager = platform::is_console(fp);
-
-  // cannot use this with OpenMPI since its console is non-functional
-
-#if defined(OPEN_MPI)
-  use_pager = 0;
-#endif
-
-  if (use_pager) {
-    pager = getenv("PAGER");
-    if (pager == nullptr) pager = "more";
-    fp = platform::popen(pager,"w");
-
-    // reset to original state, if pipe command failed
-    if (fp == nullptr) {
-      fp = screen;
-      pager = nullptr;
-    }
-  }
-
-  // general help message about command line and flags
-
-  if (has_git_info()) {
-    fprintf(fp,"\nLarge-scale Atomic/Molecular Massively Parallel Simulator - "
-            LAMMPS_VERSION UPDATE_STRING "\nGit info (%s / %s)\n\n",git_branch(), git_descriptor());
-  } else {
-    fprintf(fp,"\nLarge-scale Atomic/Molecular Massively Parallel Simulator - "
-            LAMMPS_VERSION UPDATE_STRING "\n\n");
-  }
-  fprintf(fp,
-          "Usage example: %s -var t 300 -echo screen -in in.alloy\n\n"
-          "List of command line options supported by this LAMMPS executable:\n\n"
-          "-echo none/screen/log/both  : echoing of input script (-e)\n"
-          "-help                       : print this help message (-h)\n"
-          "-in none/filename           : read input from file or stdin (default) (-i)\n"
-          "-kokkos on/off ...          : turn KOKKOS mode on or off (-k)\n"
-          "-log none/filename          : where to send log output (-l)\n"
-          "-mdi '<mdi flags>'          : pass flags to the MolSSI Driver Interface\n"
-          "-mpicolor color             : which exe in a multi-exe mpirun cmd (-m)\n"
-          "-cite                       : select citation reminder style (-c)\n"
-          "-nocite                     : disable citation reminder (-nc)\n"
-          "-nonbuf                     : disable screen/logfile buffering (-nb)\n"
-          "-package style ...          : invoke package command (-pk)\n"
-          "-partition size1 size2 ...  : assign partition sizes (-p)\n"
-          "-plog basename              : basename for partition logs (-pl)\n"
-          "-pscreen basename           : basename for partition screens (-ps)\n"
-          "-restart2data rfile dfile ... : convert restart to data file (-r2data)\n"
-          "-restart2dump rfile dgroup dstyle dfile ... \n"
-          "                            : convert restart to dump file (-r2dump)\n"
-          "-reorder topology-specs     : processor reordering (-r)\n"
-          "-screen none/filename       : where to send screen output (-sc)\n"
-          "-skiprun                    : skip loops in run and minimize (-sr)\n"
-          "-suffix gpu/intel/opt/omp   : style suffix to apply (-sf)\n"
-          "-var varname value          : set index style variable (-v)\n\n",
-          exename);
-
-  print_config(fp);
-  fprintf(fp,"List of individual style options included in this LAMMPS executable\n\n");
-
-  int pos = 80;
-  fprintf(fp,"* Atom styles:\n");
-#define ATOM_CLASS
-#define AtomStyle(key,Class) print_style(fp,#key,pos);
-#include "style_atom.h"  // IWYU pragma: keep
-#undef ATOM_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Integrate styles:\n");
-#define INTEGRATE_CLASS
-#define IntegrateStyle(key,Class) print_style(fp,#key,pos);
-#include "style_integrate.h"  // IWYU pragma: keep
-#undef INTEGRATE_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Pair styles:\n");
-#define PAIR_CLASS
-#define PairStyle(key,Class) print_style(fp,#key,pos);
-#include "style_pair.h"  // IWYU pragma: keep
-#undef PAIR_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Fix styles\n");
-#define FIX_CLASS
-#define FixStyle(key,Class) print_style(fp,#key,pos);
-#include "style_fix.h"  // IWYU pragma: keep
-#undef FIX_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Compute styles:\n");
-#define COMPUTE_CLASS
-#define ComputeStyle(key,Class) print_style(fp,#key,pos);
-#include "style_compute.h"  // IWYU pragma: keep
-#undef COMPUTE_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Region styles:\n");
-#define REGION_CLASS
-#define RegionStyle(key,Class) print_style(fp,#key,pos);
-#include "style_region.h"  // IWYU pragma: keep
-#undef REGION_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Command styles\n");
-#define COMMAND_CLASS
-#define CommandStyle(key,Class) print_style(fp,#key,pos);
-#include "style_command.h"  // IWYU pragma: keep
-#undef COMMAND_CLASS
-  fprintf(fp,"\n\n");
-
-  // close pipe to pager, if active
-
-  if (pager != nullptr) platform::pclose(fp);
-}
-
-/* ----------------------------------------------------------------------
-   print style names in columns
-   skip any internal style that starts with an upper-case letter
-   also skip "redundant" KOKKOS styles ending in kk/host or kk/device
-------------------------------------------------------------------------- */
-
-void print_style(FILE *fp, const char *str, int &pos)
-{
-  if (isupper(str[0]) || utils::strmatch(str,"/kk/host$")
-      || utils::strmatch(str,"/kk/device$")) return;
-
-  int len = strlen(str);
-  if (pos+len > 80) {
-    fprintf(fp,"\n");
-    pos = 0;
-  }
-
-  if (len < 16) {
-    fprintf(fp,"%-16s",str);
-    pos += 16;
-  } else if (len < 32) {
-    fprintf(fp,"%-32s",str);
-    pos += 32;
-  } else if (len < 48) {
-    fprintf(fp,"%-48s",str);
-    pos += 48;
-  } else if (len < 64) {
-    fprintf(fp,"%-64s",str);
-    pos += 64;
-  } else {
-    fprintf(fp,"%-80s",str);
-    pos += 80;
-  }
-}
-
-void LAMMPS::print_config(FILE *fp)
-{
-  const char *pkg;
-  int ncword, ncline = 0;
-
-  fmt::print(fp,"OS: {}\n\n",platform::os_info());
-
-  fmt::print(fp,"Compiler: {} with {}\nC++ standard: {}\n",
-             platform::compiler_info(),platform::openmp_standard(),
-             platform::cxx_standard());
-
-  int major,minor;
-  std::string infobuf = platform::mpi_info(major,minor);
-  fmt::print(fp,"MPI v{}.{}: {}\n\n",major,minor,infobuf);
-
-  fmt::print(fp,"Accelerator configuration:\n\n{}\n",
-             Info::get_accelerator_info());
-#if defined(LMP_GPU)
-  fmt::print(fp,"Compatible GPU present: {}\n\n",Info::has_gpu_device() ? "yes" : "no");
-#endif
-
-  fputs("Active compile time flags:\n\n",fp);
-  if (Info::has_gzip_support()) fputs("-DLAMMPS_GZIP\n",fp);
-  if (Info::has_png_support()) fputs("-DLAMMPS_PNG\n",fp);
-  if (Info::has_jpeg_support()) fputs("-DLAMMPS_JPEG\n",fp);
-  if (Info::has_ffmpeg_support()) fputs("-DLAMMPS_FFMPEG\n",fp);
-  if (Info::has_fft_single_support()) fputs("-DFFT_SINGLE\n",fp);
-  if (Info::has_exceptions()) fputs("-DLAMMPS_EXCEPTIONS\n",fp);
-#if defined(LAMMPS_BIGBIG)
-  fputs("-DLAMMPS_BIGBIG\n",fp);
-#elif defined(LAMMPS_SMALLBIG)
-  fputs("-DLAMMPS_SMALLBIG\n",fp);
-#else // defined(LAMMPS_SMALLSMALL)
-  fputs("-DLAMMPS_SMALLSMALL\n",fp);
-#endif
-
-  fmt::print(fp,"sizeof(smallint): {}-bit\n"
-             "sizeof(imageint): {}-bit\n"
-             "sizeof(tagint):   {}-bit\n"
-             "sizeof(bigint):   {}-bit\n",
-             sizeof(smallint)*8, sizeof(imageint)*8,
-             sizeof(tagint)*8, sizeof(bigint)*8);
-
-  if (Info::has_gzip_support()) fmt::print(fp,"\n{}\n",platform::compress_info());
-
-  fputs("\nInstalled packages:\n\n",fp);
-  for (int i = 0; nullptr != (pkg = installed_packages[i]); ++i) {
-    ncword = strlen(pkg);
-    if (ncline + ncword > 78) {
-      ncline = 0;
-      fputs("\n",fp);
-    }
-    fprintf(fp,"%s ",pkg);
-    ncline += ncword + 1;
-  }
-  fputs("\n\n",fp);
-}

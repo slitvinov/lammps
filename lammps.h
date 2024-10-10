@@ -36,9 +36,6 @@ class LAMMPS {
   class Modify *modify;            // fixes and computes
   class Group *group;              // groups of atoms
                                    //
-  class KokkosLMP *kokkos;         // KOKKOS accelerator class
-  class AtomKokkos *atomKK;        // KOKKOS version of Atom class
-  class MemoryKokkos *memoryKK;    // KOKKOS version of Memory class
   const char *version;    // LAMMPS version string = date
   int num_ver;            // numeric version id derived from *version*
                           // that is constructed so that will be greater
@@ -54,11 +51,7 @@ class LAMMPS {
                           //
   double initclock;       // wall clock at instantiation
   int skiprunflag;        // 1 inserts timer command to skip run and minimize loops
-
-  char *suffix, *suffix2;    // suffixes to add to input script style names
-  int suffix_enable;         // 1 if suffixes are enabled, 0 if disabled
   int pair_only_flag;        // 1 if only force field pair styles are accelerated, 0 if all
-  const char *non_pair_suffix() const;
   char *exename;             // pointer to argv[0]
 
   char ***packargs;    // arguments for cmdline package commands
@@ -67,13 +60,6 @@ class LAMMPS {
   MPI_Comm external_comm;    // MPI comm encompassing external programs
                              // when multiple programs launched by mpirun
                              // set by -mpicolor command line arg
-
-  void *mdicomm;    // for use with MDI code coupling library
-
-  const char *match_style(const char *style, const char *name);
-  static const char *installed_packages[];
-  static bool is_installed_pkg(const char *pkg);
-
   static bool has_git_info();
   static const char *git_commit();
   static const char *git_branch();
@@ -85,10 +71,8 @@ class LAMMPS {
   void post_create();
   void init();
   void destroy();
-  void print_config(FILE *);    // print compile time settings
 
  private:
-  void help();
   /// Default constructor. Declared private to prohibit its use
   LAMMPS(){};
   /// Copy constructor. Declared private to prohibit its use

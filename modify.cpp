@@ -842,16 +842,6 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix)
 
     int match = 0;
     if (strcmp(arg[2], fix[ifix]->style) == 0) match = 1;
-    if (!match && trysuffix && lmp->suffix_enable) {
-      if (lmp->non_pair_suffix()) {
-        std::string estyle = arg[2] + std::string("/") + lmp->non_pair_suffix();
-        if (estyle == fix[ifix]->style) match = 1;
-      }
-      if (lmp->suffix2) {
-        std::string estyle = arg[2] + std::string("/") + lmp->suffix2;
-        if (estyle == fix[ifix]->style) match = 1;
-      }
-    }
     if (!match) error->all(FLERR, "Replacing a fix, but new style != old style");
 
     if (fix[ifix]->igroup != igroup && comm->me == 0)
@@ -867,40 +857,11 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix)
       memory->grow(fmask, maxfix, "modify:fmask");
     }
   }
-
-  // create the Fix
-  // try first with suffix appended
-
   fix[ifix] = nullptr;
-
-  if (trysuffix && lmp->suffix_enable) {
-    if (lmp->non_pair_suffix()) {
-      std::string estyle = arg[2] + std::string("/") + lmp->non_pair_suffix();
-      if (fix_map->find(estyle) != fix_map->end()) {
-        FixCreator &fix_creator = (*fix_map)[estyle];
-        fix[ifix] = fix_creator(lmp, narg, arg);
-        delete[] fix[ifix]->style;
-        fix[ifix]->style = utils::strdup(estyle);
-      }
-    }
-    if ((fix[ifix] == nullptr) && lmp->suffix2) {
-      std::string estyle = arg[2] + std::string("/") + lmp->suffix2;
-      if (fix_map->find(estyle) != fix_map->end()) {
-        FixCreator &fix_creator = (*fix_map)[estyle];
-        fix[ifix] = fix_creator(lmp, narg, arg);
-        delete[] fix[ifix]->style;
-        fix[ifix]->style = utils::strdup(estyle);
-      }
-    }
-  }
-
   if ((fix[ifix] == nullptr) && (fix_map->find(arg[2]) != fix_map->end())) {
     FixCreator &fix_creator = (*fix_map)[arg[2]];
     fix[ifix] = fix_creator(lmp, narg, arg);
   }
-
-  if (fix[ifix] == nullptr) error->all(FLERR, utils::check_packages_for_style("fix", arg[2], lmp));
-
   // increment nfix and update fix_list vector (if new)
 
   if (newflag) {
@@ -1236,36 +1197,10 @@ Compute *Modify::add_compute(int narg, char **arg, int trysuffix)
   // try first with suffix appended
 
   compute[ncompute] = nullptr;
-
-  if (trysuffix && lmp->suffix_enable) {
-    if (lmp->non_pair_suffix()) {
-      std::string estyle = arg[2] + std::string("/") + lmp->non_pair_suffix();
-      if (compute_map->find(estyle) != compute_map->end()) {
-        ComputeCreator &compute_creator = (*compute_map)[estyle];
-        compute[ncompute] = compute_creator(lmp, narg, arg);
-        delete[] compute[ncompute]->style;
-        compute[ncompute]->style = utils::strdup(estyle);
-      }
-    }
-    if (compute[ncompute] == nullptr && lmp->suffix2) {
-      std::string estyle = arg[2] + std::string("/") + lmp->suffix2;
-      if (compute_map->find(estyle) != compute_map->end()) {
-        ComputeCreator &compute_creator = (*compute_map)[estyle];
-        compute[ncompute] = compute_creator(lmp, narg, arg);
-        delete[] compute[ncompute]->style;
-        compute[ncompute]->style = utils::strdup(estyle);
-      }
-    }
-  }
-
   if (compute[ncompute] == nullptr && compute_map->find(arg[2]) != compute_map->end()) {
     ComputeCreator &compute_creator = (*compute_map)[arg[2]];
     compute[ncompute] = compute_creator(lmp, narg, arg);
   }
-
-  if (compute[ncompute] == nullptr)
-    error->all(FLERR, utils::check_packages_for_style("compute", arg[2], lmp));
-
   compute_list = std::vector<Compute *>(compute, compute + ncompute + 1);
   return compute[ncompute++];
 }

@@ -181,16 +181,6 @@ namespace utils {
 
   int read_lines_from_file(FILE *fp, int nlines, int nmax, char *buffer, int me, MPI_Comm comm);
 
-  /*! Report if a requested style is in a package or may have a typo
-   *
-   *  \param style type of style that is to be checked for
-   *  \param name  name of style that was not found
-   *  \param lmp   pointer to top-level LAMMPS class instance
-   *  \return string usable for error messages */
-
-  std::string check_packages_for_style(const std::string &style, const std::string &name,
-                                       LAMMPS *lmp);
-
   /*! Convert a string to a boolean while checking whether it is a valid boolean term.
    *  Valid terms are 'yes', 'no', 'true', 'false', 'on', 'off', and '1', '0'. Only
    *  lower case is accepted.

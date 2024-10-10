@@ -63,7 +63,7 @@ class Update : protected Pointers {
   double memory_usage();
 
  private:
-  void new_integrate(char *, int, char **, int, int &);
+  void new_integrate(char *, int, char **);
 };
 
 }    // namespace LAMMPS_NS

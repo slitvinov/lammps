@@ -1387,35 +1387,12 @@ void Domain::add_region(int narg, char **arg)
   // create the Region
   Region *newregion = nullptr;
 
-  if (lmp->suffix_enable) {
-    if (lmp->non_pair_suffix()) {
-      std::string estyle = std::string(arg[1]) + "/" + lmp->non_pair_suffix();
-      if (region_map->find(estyle) != region_map->end()) {
-        RegionCreator &region_creator = (*region_map)[estyle];
-        newregion = region_creator(lmp, narg, arg);
-      }
-    }
-
-    if (!newregion && lmp->suffix2) {
-      std::string estyle = std::string(arg[1]) + "/" + lmp->suffix2;
-      if (region_map->find(estyle) != region_map->end()) {
-        RegionCreator &region_creator = (*region_map)[estyle];
-        newregion = region_creator(lmp, narg, arg);
-      }
-    }
-  }
-
   if (!newregion && (region_map->find(arg[1]) != region_map->end())) {
     RegionCreator &region_creator = (*region_map)[arg[1]];
     newregion = region_creator(lmp, narg, arg);
   }
-
-  if (!newregion)
-    error->all(FLERR,utils::check_packages_for_style("region",arg[1],lmp));
-
   // initialize any region variables via init()
   // in case region is used between runs, e.g. to print a variable
-
   newregion->init();
   regions.insert(newregion);
 }
