@@ -19,7 +19,6 @@
 
 #include "comm.h"
 #include "dump.h"
-#include "dump_cfg.h"
 #include "error.h"
 #include "output.h"
 #include "update.h"
@@ -57,7 +56,6 @@ void WriteDump::command(int narg, char **arg)
 
   // write out one frame and then delete the dump again
   // set multifile_override for DumpImage so that filename needs no "*"
-  if (strcmp(arg[1], "cfg") == 0) (dynamic_cast<DumpCFG *>(dump))->multifile_override = 1;
   if ((update->first_update == 0) && (comm->me == 0))
     error->warning(FLERR, "Calling write_dump before a full system init.");
 

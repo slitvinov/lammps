@@ -46,8 +46,6 @@ class Set : public Command {
 
   void selection(int);
   void set(int);
-  void setrandom(int);
-  void topology(int);
   void varparse(const char *, int);
 };
 

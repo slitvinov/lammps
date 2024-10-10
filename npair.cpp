@@ -17,7 +17,6 @@
 #include "neighbor.h"
 #include "neigh_request.h"
 #include "nbin.h"
-#include "nstencil.h"
 #include "atom.h"
 #include "update.h"
 #include "memory.h"
@@ -28,11 +27,10 @@ using namespace LAMMPS_NS;
 /* ---------------------------------------------------------------------- */
 
 NPair::NPair(LAMMPS *lmp)
-  : Pointers(lmp), nb(nullptr), ns(nullptr), bins(nullptr), stencil(nullptr)
+  : Pointers(lmp), nb(nullptr), bins(nullptr)
 {
   last_build = -1;
   mycutneighsq = nullptr;
-  molecular = atom->molecular;
   copymode = 0;
   execution_space = Host;
 }
@@ -160,31 +158,12 @@ void NPair::copy_bin_info()
 }
 
 /* ----------------------------------------------------------------------
-   copy info from NStencil class to this build class
-------------------------------------------------------------------------- */
-
-void NPair::copy_stencil_info()
-{
-  nstencil = ns->nstencil;
-  stencil = ns->stencil;
-  stencilxyz = ns->stencilxyz;
-  nstencil_multi_old = ns->nstencil_multi_old;
-  stencil_multi_old = ns->stencil_multi_old;
-  distsq_multi_old = ns->distsq_multi_old;
-
-  nstencil_multi = ns->nstencil_multi;
-  stencil_multi = ns->stencil_multi;
-}
-
-/* ----------------------------------------------------------------------
    copy info from NBin and NStencil classes to this build class
 ------------------------------------------------------------------------- */
 
 void NPair::build_setup()
 {
   if (nb) copy_bin_info();
-  if (ns) copy_stencil_info();
-
   // set here, since build_setup() always called before build()
   last_build = update->ntimestep;
 }
@@ -196,7 +175,7 @@ void NPair::build_setup()
 ------------------------------------------------------------------------- */
 
 int NPair::exclusion(int i, int j, int itype, int jtype,
-                     int *mask, tagint *molecule) const {
+                     int *mask) const {
   int m;
 
   if (nex_type && ex_type[itype][jtype]) return 1;
@@ -207,22 +186,6 @@ int NPair::exclusion(int i, int j, int itype, int jtype,
       if (mask[i] & ex2_bit[m] && mask[j] & ex1_bit[m]) return 1;
     }
   }
-
-  if (nex_mol) {
-    for (m = 0; m < nex_mol; m++)
-
-      // intra-chain: exclude i-j pair if in same molecule
-      // inter-chain: exclude i-j pair if in different molecules
-
-      if (ex_mol_intra[m]) {
-        if (mask[i] & ex_mol_bit[m] && mask[j] & ex_mol_bit[m] &&
-            molecule[i] == molecule[j]) return 1;
-      } else {
-        if (mask[i] & ex_mol_bit[m] && mask[j] & ex_mol_bit[m] &&
-            molecule[i] != molecule[j]) return 1;
-      }
-  }
-
   return 0;
 }
 

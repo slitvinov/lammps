@@ -39,7 +39,6 @@ void NPairHalfBinAtomonlyNewton::build(NeighList *list)
   double **x = atom->x;
   int *type = atom->type;
   int *mask = atom->mask;
-  tagint *molecule = atom->molecule;
   int nlocal = atom->nlocal;
   if (includegroup) nlocal = atom->nfirst;
 
@@ -74,7 +73,7 @@ void NPairHalfBinAtomonlyNewton::build(NeighList *list)
       }
 
       jtype = type[j];
-      if (exclude && exclusion(i, j, itype, jtype, mask, molecule)) continue;
+      if (exclude && exclusion(i, j, itype, jtype, mask)) continue;
 
       delx = xtmp - x[j][0];
       dely = ytmp - x[j][1];
@@ -87,21 +86,6 @@ void NPairHalfBinAtomonlyNewton::build(NeighList *list)
     // loop over all atoms in other bins in stencil, store every pair
 
     ibin = atom2bin[i];
-
-    for (k = 0; k < nstencil; k++) {
-      for (j = binhead[ibin + stencil[k]]; j >= 0; j = bins[j]) {
-        jtype = type[j];
-        if (exclude && exclusion(i, j, itype, jtype, mask, molecule)) continue;
-
-        delx = xtmp - x[j][0];
-        dely = ytmp - x[j][1];
-        delz = ztmp - x[j][2];
-        rsq = delx * delx + dely * dely + delz * delz;
-
-        if (rsq <= cutneighsq[itype][jtype]) neighptr[n++] = j;
-      }
-    }
-
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;

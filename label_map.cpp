@@ -166,18 +166,6 @@ void LabelMap::merge_lmap(LabelMap *lmap2, int mode)
     case Atom::ATOM:
       for (auto &it : lmap2->typelabel) find_or_create(it, typelabel, typelabel_map);
       break;
-    case Atom::BOND:
-      for (auto &it : lmap2->btypelabel) find_or_create(it, btypelabel, btypelabel_map);
-      break;
-    case Atom::ANGLE:
-      for (auto &it : lmap2->atypelabel) find_or_create(it, atypelabel, atypelabel_map);
-      break;
-    case Atom::DIHEDRAL:
-      for (auto &it : lmap2->dtypelabel) find_or_create(it, dtypelabel, dtypelabel_map);
-      break;
-    case Atom::IMPROPER:
-      for (auto &it : lmap2->itypelabel) find_or_create(it, itypelabel, itypelabel_map);
-      break;
   }
 }
 
@@ -192,22 +180,6 @@ void LabelMap::create_lmap2lmap(LabelMap *lmap2, int mode)
     case Atom::ATOM:
       for (int i = 0; i < natomtypes; ++i)
         lmap2lmap.atom[i] = search(typelabel[i], lmap2->typelabel_map);
-      break;
-    case Atom::BOND:
-      for (int i = 0; i < nbondtypes; ++i)
-        lmap2lmap.bond[i] = search(btypelabel[i], lmap2->btypelabel_map);
-      break;
-    case Atom::ANGLE:
-      for (int i = 0; i < nangletypes; ++i)
-        lmap2lmap.angle[i] = search(atypelabel[i], lmap2->atypelabel_map);
-      break;
-    case Atom::DIHEDRAL:
-      for (int i = 0; i < ndihedraltypes; ++i)
-        lmap2lmap.dihedral[i] = search(dtypelabel[i], lmap2->dtypelabel_map);
-      break;
-    case Atom::IMPROPER:
-      for (int i = 0; i < nimpropertypes; ++i)
-        lmap2lmap.improper[i] = search(itypelabel[i], lmap2->itypelabel_map);
       break;
   }
 }
@@ -255,18 +227,6 @@ int LabelMap::find(const std::string &mylabel, int mode) const
     case Atom::ATOM:
       return search(mylabel, typelabel_map);
       break;
-    case Atom::BOND:
-      return search(mylabel, btypelabel_map);
-      break;
-    case Atom::ANGLE:
-      return search(mylabel, atypelabel_map);
-      break;
-    case Atom::DIHEDRAL:
-      return search(mylabel, dtypelabel_map);
-      break;
-    case Atom::IMPROPER:
-      return search(mylabel, itypelabel_map);
-      break;
     default:
       return -1;
   }
@@ -295,18 +255,6 @@ bool LabelMap::is_complete(int mode) const
     case Atom::ATOM:
       return static_cast<int>(typelabel_map.size()) == natomtypes;
       break;
-    case Atom::BOND:
-      return static_cast<int>(btypelabel_map.size()) == nbondtypes;
-      break;
-    case Atom::ANGLE:
-      return static_cast<int>(atypelabel_map.size()) == nangletypes;
-      break;
-    case Atom::DIHEDRAL:
-      return static_cast<int>(dtypelabel_map.size()) == ndihedraltypes;
-      break;
-    case Atom::IMPROPER:
-      return static_cast<int>(itypelabel_map.size()) == nimpropertypes;
-      break;
   }
   return false;
 }
@@ -320,16 +268,6 @@ void LabelMap::write_data(FILE *fp)
   if (is_complete(Atom::ATOM)) {
     fmt::print(fp, "\nAtom Type Labels\n\n");
     for (int i = 0; i < natomtypes; i++) fmt::print(fp, "{} {}\n", i + 1, typelabel[i]);
-  }
-
-  if (force->bond && is_complete(Atom::BOND)) {
-    fmt::print(fp, "\nBond Type Labels\n\n");
-    for (int i = 0; i < nbondtypes; i++) fmt::print(fp, "{} {}\n", i + 1, btypelabel[i]);
-  }
-
-  if (force->angle && is_complete(Atom::ANGLE)) {
-    fmt::print(fp, "\nAngle Type Labels\n\n");
-    for (int i = 0; i < nangletypes; i++) fmt::print(fp, "{} {}\n", i + 1, atypelabel[i]);
   }
 }
 

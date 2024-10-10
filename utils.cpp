@@ -838,32 +838,6 @@ int utils::expand_args(const char *file, int line, int narg, char **arg, int mod
 
 static const char *labeltypes[] = {"Atom", "Bond", "Angle", "Dihedral", "Improper"};
 
-/* -------------------------------------------------------------------------
-   Expand type string to numeric string from labelmap.
-   Return copy of expanded type or null pointer.
-------------------------------------------------------------------------- */
-
-char *utils::expand_type(const char *file, int line, const std::string &str, int mode, LAMMPS *lmp)
-{
-  if (!lmp) return nullptr;
-  if (!lmp->atom->labelmapflag) return nullptr;
-
-  const std::string typestr = utils::utf8_subst(utils::trim(str));
-  if (is_type(typestr) == 1) {
-    if (!lmp->atom->labelmapflag)
-      lmp->error->all(file, line, "{} type string {} cannot be used without a labelmap",
-                      labeltypes[mode], typestr);
-
-    int type = lmp->atom->lmap->find(typestr, mode);
-    if (type == -1)
-      lmp->error->all(file, line, "{} type string {} not found in labelmap", labeltypes[mode],
-                      typestr);
-
-    return utils::strdup(std::to_string(type));
-  } else
-    return nullptr;
-}
-
 /* ----------------------------------------------------------------------
    Check grid reference for valid Compute or Fix which produces per-grid data
    errstr = name of calling command used if error is generated

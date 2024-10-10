@@ -23,8 +23,7 @@ class AtomVec : protected Pointers {
  public:
   enum { PER_ATOM = 0, PER_TYPE = 1 };
   int molecular;    // 0 = atomic, 1 = molecular system, 2 = molecular template system
-  int bonds_allow, angles_allow;           // 1 if bonds, angles are used
-  int dihedrals_allow, impropers_allow;    // 1 if dihedrals, impropers used
+  int bonds_allow;           // 1 if bonds, angles are used
   int mass_type;                           // 1 if per-type masses
   int dipole_type;                         // 1 if per-type dipole moments
   int forceclearflag;                      // 1 if has forceclear() method
@@ -47,9 +46,6 @@ class AtomVec : protected Pointers {
   int size_border_bonus;         // # in border bonus comm
   int size_restart_bonus_one;    // # in restart bonus comm
   int size_data_bonus;           // number of values in Bonus line
-
-  class Molecule **onemols;    // list of molecules for style template
-  int nset;                    // # of molecules in list
 
   int kokkosable;    // 1 if atom style is KOKKOS-enabled
 
@@ -131,26 +127,13 @@ class AtomVec : protected Pointers {
   virtual void data_bonds_post(int, int, tagint, tagint, tagint) {}
 
   virtual void pack_data(double **);
-  virtual void write_data(FILE *, int, double **);
   virtual void pack_data_pre(int) {}
   virtual void pack_data_post(int) {}
 
   virtual void data_vel(int, const std::vector<std::string> &);
   virtual void pack_vel(double **);
-  virtual void write_vel(FILE *, int, double **);
-
-  virtual int pack_bond(tagint **);
-  virtual void write_bond(FILE *, int, tagint **, int);
-  virtual int pack_angle(tagint **);
-  virtual void write_angle(FILE *, int, tagint **, int);
-  virtual int pack_dihedral(tagint **);
-  virtual void write_dihedral(FILE *, int, tagint **, int);
-  virtual int pack_improper(tagint **);
-  virtual void write_improper(FILE *, int, tagint **, int);
 
   virtual int pack_data_bonus(double *, int) { return 0; }
-  virtual void write_data_bonus(FILE *, int, double *, int) {}
-
   virtual int property_atom(const std::string &) { return -1; }
   virtual void pack_property_atom(int, double *, int, int) {}
 

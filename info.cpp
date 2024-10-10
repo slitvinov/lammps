@@ -20,7 +20,6 @@
 #include "info.h"
 
 #include "accelerator_kokkos.h"
-#include "angle.h"
 #include "atom.h"
 #include "bond.h"
 #include "comm.h"
@@ -84,7 +83,6 @@ enum {COMPUTES=1<<0,
       MINIMIZE_STYLES=1<<14,
       PAIR_STYLES=1<<15,
       BOND_STYLES=1<<16,
-      ANGLE_STYLES=1<<17,
       KSPACE_STYLES=1<<20,
       FIX_STYLES=1<<21,
       COMPUTE_STYLES=1<<22,
@@ -95,7 +93,7 @@ enum {COMPUTES=1<<0,
       ALL=~0};
 
 static const int STYLES = ATOM_STYLES | INTEGRATE_STYLES | MINIMIZE_STYLES
-                        | PAIR_STYLES | BOND_STYLES | ANGLE_STYLES
+                        | PAIR_STYLES | BOND_STYLES
                         | KSPACE_STYLES
                         | FIX_STYLES | COMPUTE_STYLES | REGION_STYLES
                         | DUMP_STYLES | COMMAND_STYLES;
@@ -221,9 +219,6 @@ void Info::command(int narg, char **arg)
           ++idx;
         } else if (strncmp(arg[idx],"bond",3) == 0) {
           flags |= BOND_STYLES;
-          ++idx;
-        } else if (strncmp(arg[idx],"angle",3) == 0) {
-          flags |= ANGLE_STYLES;
           ++idx;
         } else if (strncmp(arg[idx],"kspace",3) == 0) {
           flags |= KSPACE_STYLES;
@@ -395,35 +390,8 @@ void Info::command(int narg, char **arg)
     fmt::print(out,"Units         = {}\n", update->unit_style);
     fmt::print(out,"Atom style    = {}\n", atom->get_style());
     fmt::print(out,"Atom map      = {}\n", mapstyles[atom->map_style]);
-    if (atom->molecular != Atom::ATOMIC) {
-      const char *msg;
-      msg = (atom->molecular == Atom::TEMPLATE) ? "template" : "standard";
-      fmt::print(out,"Molecule type = {}\n",msg);
-    }
     fmt::print(out,"Atoms     = {:12},  types = {:8d},  style = {}\n",
                atom->natoms, atom->ntypes, force->pair_style);
-
-    if (atom->molecular != Atom::ATOMIC) {
-      const char *msg;
-      msg = force->bond_style ? force->bond_style : "none";
-      fmt::print(out,"Bonds     = {:12},  types = {:8},  style = {}\n",
-                 atom->nbonds, atom->nbondtypes, msg);
-
-      msg = force->angle_style ? force->angle_style : "none";
-      fmt::print(out,"Angles    = {:12},  types = {:8},  style = {}\n",
-                 atom->nangles, atom->nangletypes, msg);
-
-      const double * const special_lj   = force->special_lj;
-      const double * const special_coul = force->special_coul;
-
-      fmt::print(out,"Special bond factors lj =    {:<8} {:<8} {:<8}\n"
-                 "Special bond factors coul =  {:<8} {:<8} {:<8}\n",
-                 special_lj[1],special_lj[2],special_lj[3],
-                 special_coul[1],special_coul[2],special_coul[3]);
-    }
-
-    fmt::print(out,"Kspace style = {}\n",
-               force->kspace ? force->kspace_style : "none");
 
     if (domain->box_exist) {
       fmt::print(out,"\nDimensions = {}\n",domain->dimension);
@@ -457,30 +425,6 @@ void Info::command(int narg, char **arg)
           if (pair->allocated && pair->setflag[i][j]) fputs(" is set\n",out);
           else fputs(" is not set\n",out);
         }
-    }
-    if (force->bond) {
-      Bond *bond=force->bond;
-
-      if (bond) {
-        fputs("\nBond Coeffs:\n",out);
-        for (int i=1; i <= atom->nbondtypes; ++i) {
-          fmt::print(out,"{:6d}:",i);
-          if (bond->allocated && bond->setflag[i]) fputs(" is set\n",out);
-          else fputs (" is not set\n",out);
-        }
-      }
-    }
-    if (force->angle) {
-      Angle *angle=force->angle;
-
-      if (angle) {
-        fputs("\nAngle Coeffs:\n",out);
-        for (int i=1; i <= atom->nangletypes; ++i) {
-          fmt::print(out,"{:6d}:",i);
-          if (angle->allocated && angle->setflag[i]) fputs(" is set\n",out);
-          else fputs (" is not set\n",out);
-        }
-      }
     }
   }
 
@@ -611,9 +555,6 @@ void Info::available_styles(FILE * out, int flags)
   if (flags & INTEGRATE_STYLES) integrate_styles(out);
   if (flags & MINIMIZE_STYLES)  minimize_styles(out);
   if (flags & PAIR_STYLES)      pair_styles(out);
-  if (flags & BOND_STYLES)      bond_styles(out);
-  if (flags & ANGLE_STYLES)     angle_styles(out);
-  if (flags & KSPACE_STYLES)    kspace_styles(out);
   if (flags & FIX_STYLES)       fix_styles(out);
   if (flags & COMPUTE_STYLES)   compute_styles(out);
   if (flags & REGION_STYLES)    region_styles(out);
@@ -646,27 +587,6 @@ void Info::pair_styles(FILE *out)
 {
   fputs("\nPair styles:\n",out);
   print_columns(out, force->pair_map);
-  fputs("\n\n\n",out);
-}
-
-void Info::bond_styles(FILE *out)
-{
-  fputs("\nBond styles:\n",out);
-  print_columns(out, force->bond_map);
-  fputs("\n\n\n",out);
-}
-
-void Info::angle_styles(FILE *out)
-{
-  fputs("\nAngle styles:\n",out);
-  print_columns(out, force->angle_map);
-  fputs("\n\n\n",out);
-}
-
-void Info::kspace_styles(FILE *out)
-{
-  fputs("\nKSpace styles:\n",out);
-  print_columns(out, force->kspace_map);
   fputs("\n\n\n",out);
 }
 
@@ -729,7 +649,6 @@ bool Info::is_active(const char *category, const char *name)
 
   } else if (strcmp(category,"newton") == 0) {
     if (strcmp(name,"pair") == 0) return (force->newton_pair != 0);
-    else if (strcmp(name,"bond") == 0) return (force->newton_bond != 0);
     else if (strcmp(name,"any") == 0) return (force->newton != 0);
     else error->all(FLERR,"Unknown name for info newton category: {}", name);
 
@@ -752,12 +671,6 @@ bool Info::is_active(const char *category, const char *name)
     style = atom->atom_style;
   } else if (strcmp(category,"pair_style") == 0) {
     style = force->pair_style;
-  } else if (strcmp(category,"bond_style") == 0) {
-    style = force->bond_style;
-  } else if (strcmp(category,"angle_style") == 0) {
-    style = force->angle_style;
-  } else if (strcmp(category,"kspace_style") == 0) {
-    style = force->kspace_style;
   } else error->all(FLERR,"Unknown category for info is_active(): {}", category);
 
   int match = 0;
@@ -845,12 +758,6 @@ bool Info::has_style(const std::string &category, const std::string &name)
     return find_style(lmp, update->minimize_map, name, true);
   } else if (category == "pair") {
     return find_style(lmp, force->pair_map, name, true);
-  } else if (category == "bond") {
-    return find_style(lmp, force->bond_map, name, true);
-  } else if (category == "angle") {
-    return find_style(lmp, force->angle_map, name, true);
-  } else if (category == "kspace") {
-    return find_style(lmp, force->kspace_map, name, true);
   } else if (category == "fix") {
     return find_style(lmp, modify->fix_map, name, true);
   } else if (category == "compute") {
@@ -875,12 +782,6 @@ std::vector<std::string> Info::get_available_styles(const std::string &category)
     return get_style_names(update->minimize_map);
   } else if (category == "pair") {
     return get_style_names(force->pair_map);
-  } else if (category == "bond") {
-    return get_style_names(force->bond_map);
-  } else if (category == "angle") {
-    return get_style_names(force->angle_map);
-  } else if (category == "kspace") {
-    return get_style_names(force->kspace_map);
   } else if (category == "fix") {
     return get_style_names(modify->fix_map);
   } else if (category == "compute") {

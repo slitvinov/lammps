@@ -83,18 +83,12 @@ class Input : protected Pointers {
   void partition();
   void plugin();
   void print();
-  void python();
   void quit();
   void shell();
   void variable_command();
 
-  void angle_coeff();    // LAMMPS commands
-  void angle_style();
   void atom_modify();
   void atom_style();
-  void bond_coeff();
-  void bond_style();
-  void bond_write();
   void boundary();
   void comm_modify();
   void comm_style();
@@ -107,9 +101,6 @@ class Input : protected Pointers {
   void fix();
   void fix_modify();
   void group_command();
-  void kspace_modify();
-  void kspace_style();
-  void labelmap();
   void lattice();
   void mass();
   void min_modify();
@@ -127,7 +118,6 @@ class Input : protected Pointers {
   void reset_timestep();
   void restart();
   void run_style();
-  void special_bonds();
   void suffix();
   void thermo();
   void thermo_modify();

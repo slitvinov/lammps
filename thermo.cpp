@@ -17,7 +17,6 @@
 
 #include "thermo.h"
 
-#include "angle.h"
 #include "arg_info.h"
 #include "atom.h"
 #include "bond.h"
@@ -29,7 +28,6 @@
 #include "force.h"
 #include "group.h"
 #include "input.h"
-#include "kspace.h"
 #include "lattice.h"
 #include "math_const.h"
 #include "memory.h"
@@ -69,7 +67,7 @@ using namespace MathConst;
 
 enum { ONELINE, MULTILINE, YAMLLINE };
 // style "one"
-static constexpr char ONE[] = "step temp epair emol etotal press";
+static constexpr char ONE[] = "step temp epair etotal press";
 #define FORMAT_FLOAT_ONE_DEFAULT "% -14.8g"
 #define FORMAT_INT_ONE_DEFAULT "%10d "
 // style "multi"
@@ -855,25 +853,9 @@ void Thermo::parse_fields(const std::string &str)
     } else if (word == "epair") {
       addfield("E_pair", &Thermo::compute_epair, FLOAT);
       index_pe = add_compute(id_pe, SCALAR);
-    } else if (word == "ebond") {
-      addfield("E_bond", &Thermo::compute_ebond, FLOAT);
-      index_pe = add_compute(id_pe, SCALAR);
-    } else if (word == "eangle") {
-      addfield("E_angle", &Thermo::compute_eangle, FLOAT);
-      index_pe = add_compute(id_pe, SCALAR);
     } else if (word == "eimp") {
       addfield("E_impro", &Thermo::compute_eimp, FLOAT);
       index_pe = add_compute(id_pe, SCALAR);
-    } else if (word == "emol") {
-      addfield("E_mol", &Thermo::compute_emol, FLOAT);
-      index_pe = add_compute(id_pe, SCALAR);
-    } else if (word == "elong") {
-      addfield("E_long", &Thermo::compute_elong, FLOAT);
-      index_pe = add_compute(id_pe, SCALAR);
-    } else if (word == "etail") {
-      addfield("E_tail", &Thermo::compute_etail, FLOAT);
-      index_pe = add_compute(id_pe, SCALAR);
-
     } else if (word == "enthalpy") {
       addfield("Enthalpy", &Thermo::compute_enthalpy, FLOAT);
       index_temp = add_compute(id_temp, SCALAR);
@@ -924,15 +906,6 @@ void Thermo::parse_fields(const std::string &str)
       addfield("Ylat", &Thermo::compute_ylat, FLOAT);
     } else if (word == "zlat") {
       addfield("Zlat", &Thermo::compute_zlat, FLOAT);
-
-    } else if (word == "bonds") {
-      addfield("Bonds", &Thermo::compute_bonds, BIGINT);
-    } else if (word == "angles") {
-      addfield("Angles", &Thermo::compute_angles, BIGINT);
-    } else if (word == "dihedrals") {
-      addfield("Diheds", &Thermo::compute_dihedrals, BIGINT);
-    } else if (word == "impropers") {
-      addfield("Impros", &Thermo::compute_impropers, BIGINT);
 
     } else if (word == "pxx") {
       addfield("Pxx", &Thermo::compute_pxx, FLOAT);
@@ -1272,22 +1245,6 @@ int Thermo::evaluate_keyword(const std::string &word, double *answer)
     compute_atoms();
     dvalue = bivalue;
 
-  } else if (word == "bonds") {
-    compute_bonds();
-    dvalue = bivalue;
-
-  } else if (word == "angles") {
-    compute_angles();
-    dvalue = bivalue;
-
-  } else if (word == "dihedrals") {
-    compute_dihedrals();
-    dvalue = bivalue;
-
-  } else if (word == "impropers") {
-    compute_impropers();
-    dvalue = bivalue;
-
   } else if (word == "temp") {
     check_temp(word);
     compute_temp();
@@ -1321,30 +1278,9 @@ int Thermo::evaluate_keyword(const std::string &word, double *answer)
     check_pe(word);
     compute_epair();
 
-  } else if (word == "ebond") {
-    check_pe(word);
-    compute_ebond();
-
-  } else if (word == "eangle") {
-    check_pe(word);
-    compute_eangle();
-
   } else if (word == "eimp") {
     check_pe(word);
     compute_eimp();
-
-  } else if (word == "emol") {
-    check_pe(word);
-    compute_emol();
-
-  } else if (word == "elong") {
-    check_pe(word);
-    compute_elong();
-
-  } else if (word == "etail") {
-    if (update->eflag_global != update->ntimestep)
-      error->all(FLERR, "Energy was not tallied on needed timestep");
-    compute_etail();
 
   } else if (word == "enthalpy") {
     check_pe(word);
@@ -1763,7 +1699,6 @@ void Thermo::compute_epair()
   if (force->pair) tmp += force->pair->eng_vdwl + force->pair->eng_coul;
   MPI_Allreduce(&tmp, &dvalue, 1, MPI_DOUBLE, MPI_SUM, world);
 
-  if (force->kspace) dvalue += force->kspace->energy;
   if (force->pair && force->pair->tail_flag) {
     double volume = domain->xprd * domain->yprd * domain->zprd;
     dvalue += force->pair->etail / volume;
@@ -1774,70 +1709,9 @@ void Thermo::compute_epair()
 
 /* ---------------------------------------------------------------------- */
 
-void Thermo::compute_ebond()
-{
-  if (force->bond) {
-    double tmp = force->bond->energy;
-    MPI_Allreduce(&tmp, &dvalue, 1, MPI_DOUBLE, MPI_SUM, world);
-    if (normflag) dvalue /= natoms;
-  } else
-    dvalue = 0.0;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Thermo::compute_eangle()
-{
-  if (force->angle) {
-    double tmp = force->angle->energy;
-    MPI_Allreduce(&tmp, &dvalue, 1, MPI_DOUBLE, MPI_SUM, world);
-    if (normflag) dvalue /= natoms;
-  } else
-    dvalue = 0.0;
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Thermo::compute_eimp()
 {
   dvalue = 0.0;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Thermo::compute_emol()
-{
-  double tmp = 0.0;
-  if (atom->molecular != Atom::ATOMIC) {
-    if (force->bond) tmp += force->bond->energy;
-    if (force->angle) tmp += force->angle->energy;
-    MPI_Allreduce(&tmp, &dvalue, 1, MPI_DOUBLE, MPI_SUM, world);
-    if (normflag) dvalue /= natoms;
-  } else
-    dvalue = 0.0;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Thermo::compute_elong()
-{
-  if (force->kspace) {
-    dvalue = force->kspace->energy;
-    if (normflag) dvalue /= natoms;
-  } else
-    dvalue = 0.0;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Thermo::compute_etail()
-{
-  if (force->pair && force->pair->tail_flag) {
-    double volume = domain->xprd * domain->yprd * domain->zprd;
-    dvalue = force->pair->etail / volume;
-    if (normflag) dvalue /= natoms;
-  } else
-    dvalue = 0.0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1981,33 +1855,6 @@ void Thermo::compute_zlat()
   dvalue = domain->lattice->zlattice;
 }
 
-/* ---------------------------------------------------------------------- */
-
-void Thermo::compute_bonds()
-{
-  bivalue = atom->nbonds;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Thermo::compute_angles()
-{
-  bivalue = atom->nangles;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Thermo::compute_dihedrals()
-{
-  bivalue = atom->ndihedrals;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Thermo::compute_impropers()
-{
-  bivalue = atom->nimpropers;
-}
 
 /* ---------------------------------------------------------------------- */
 

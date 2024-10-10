@@ -17,7 +17,6 @@
 #include "citeme.h"
 #include "compute.h"
 #include "force.h"
-#include "kspace.h"
 #include "modify.h"
 #include "pair.h"
 #include "output.h"
@@ -56,8 +55,6 @@ void Integrate::init()
 
   if (force->pair && force->pair->compute_flag) pair_compute_flag = 1;
   else pair_compute_flag = 0;
-  if (force->kspace && force->kspace->compute_flag) kspace_compute_flag = 1;
-  else kspace_compute_flag = 0;
 
   // should add checks:
   // for any acceleration package that has its own integrate/minimize

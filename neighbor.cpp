@@ -37,12 +37,10 @@
 #include "neigh_list.h"
 #include "neigh_request.h"
 #include "npair.h"
-#include "nstencil.h"
 #include "output.h"
 #include "pair.h"
 #include "style_nbin.h"  // IWYU pragma: keep
 #include "style_npair.h"  // IWYU pragma: keep
-#include "style_nstencil.h"  // IWYU pragma: keep
 #include "suffix.h"
 #include "tokenizer.h"
 #include "update.h"
@@ -149,13 +147,8 @@ pairclass(nullptr), pairnames(nullptr), pairmasks(nullptr)
   nbin = 0;
   neigh_bin = nullptr;
 
-  nstencil = 0;
-  neigh_stencil = nullptr;
-
   neigh_pair = nullptr;
 
-  nstencil_perpetual = 0;
-  slist = nullptr;
 
   npair_perpetual = 0;
   plist = nullptr;
@@ -175,18 +168,6 @@ pairclass(nullptr), pairnames(nullptr), pairmasks(nullptr)
   binclass = nullptr;
   binnames = nullptr;
   binmasks = nullptr;
-  stencilclass = nullptr;
-  stencilnames = nullptr;
-  stencilmasks = nullptr;
-
-  // topology lists
-
-  bondwhich = anglewhich = dihedralwhich = improperwhich = NONE;
-
-  neigh_bond = nullptr;
-  neigh_angle = nullptr;
-  neigh_dihedral = nullptr;
-  neigh_improper = nullptr;
 
   // coords at last neighboring
 
@@ -242,14 +223,11 @@ Neighbor::~Neighbor()
 
   for (int i = 0; i < nlist; i++) delete lists[i];
   for (int i = 0; i < nbin; i++) delete neigh_bin[i];
-  for (int i = 0; i < nstencil; i++) delete neigh_stencil[i];
   for (int i = 0; i < nlist; i++) delete neigh_pair[i];
   delete[] lists;
   delete[] neigh_bin;
-  delete[] neigh_stencil;
   delete[] neigh_pair;
 
-  delete[] slist;
   delete[] plist;
 
   for (int i = 0; i < nrequest; i++)
@@ -264,9 +242,6 @@ Neighbor::~Neighbor()
   delete[] binclass;
   delete[] binnames;
   delete[] binmasks;
-  delete[] stencilclass;
-  delete[] stencilnames;
-  delete[] stencilmasks;
   delete[] pairclass;
   delete[] pairnames;
   delete[] pairmasks;
@@ -488,46 +463,6 @@ void Neighbor::init()
 
   must_check = 0;
   if (restart_check || fix_check) must_check = 1;
-
-  // set special_flag for 1-2, 1-3, 1-4 neighbors
-  // flag[0] is not used, flag[1] = 1-2, flag[2] = 1-3, flag[3] = 1-4
-  // flag = 0 if both LJ/Coulomb special values are 0.0
-  // flag = 1 if both LJ/Coulomb special values are 1.0
-  // flag = 2 otherwise or if KSpace solver is enabled
-  // b/c pairwise portion of KSpace solver uses all 1-2,1-3,1-4 neighbors
-  // some Coulomb-approximation pair styles also require it (below)
-
-  if (force->special_lj[1] == 0.0 && force->special_coul[1] == 0.0)
-    special_flag[1] = 0;
-  else if (force->special_lj[1] == 1.0 && force->special_coul[1] == 1.0)
-    special_flag[1] = 1;
-  else special_flag[1] = 2;
-
-  if (force->special_lj[2] == 0.0 && force->special_coul[2] == 0.0)
-    special_flag[2] = 0;
-  else if (force->special_lj[2] == 1.0 && force->special_coul[2] == 1.0)
-    special_flag[2] = 1;
-  else special_flag[2] = 2;
-
-  if (force->special_lj[3] == 0.0 && force->special_coul[3] == 0.0)
-    special_flag[3] = 0;
-  else if (force->special_lj[3] == 1.0 && force->special_coul[3] == 1.0)
-    special_flag[3] = 1;
-  else special_flag[3] = 2;
-
-  // cannot remove special neighbors with kspace or kspace-like pair styles
-  //   b/c exclusion needs to remove the full coulomb and not the damped interaction
-  // special treatment required for hybrid pair styles since Force::pair_match()
-  //   will only return a non-NULL pointer if there is only one substyle of the kind
-
-  if (force->kspace) {
-    special_flag[1] = special_flag[2] = special_flag[3] = 2;
-  }
-  // ------------------------------------------------------------------
-  // xhold array
-
-  // free if not needed for this run
-
   if (dist_check == 0) {
     memory->destroy(xhold);
     maxhold = 0;
@@ -603,10 +538,6 @@ void Neighbor::init()
       ex_mol_bit[i] = group->bitmask[ex_mol_group[i]];
   }
 
-  if (exclude && force->kspace && me == 0)
-    error->warning(FLERR,"Neighbor exclusions used with KSpace solver "
-                   "may give inconsistent Coulombic energies");
-
   if (lmp->kokkos)
     set_binsize_kokkos();
 
@@ -624,7 +555,6 @@ void Neighbor::init()
   // copied once per run in case any cutoff, exclusion, special info changed
 
   for (i = 0; i < nbin; i++) neigh_bin[i]->copy_neighbor_info();
-  for (i = 0; i < nstencil; i++) neigh_stencil[i]->copy_neighbor_info();
   for (i = 0; i < nlist; i++)
     if (neigh_pair[i]) neigh_pair[i]->copy_neighbor_info();
 
@@ -639,12 +569,6 @@ void Neighbor::init()
     requests[i] = nullptr;
   }
   nrequest = 0;
-
-  // ------------------------------------------------------------------
-  // create topology lists
-  // instantiated topo styles can change from run to run
-
-  init_topology();
 }
 
 /* ----------------------------------------------------------------------
@@ -678,32 +602,6 @@ void Neighbor::init_styles()
 #include "style_nbin.h"  // IWYU pragma: keep
 #undef NBinStyle
 #undef NBIN_CLASS
-
-  // extract info from NStencil classes listed in style_nstencil.h
-
-  nsclass = 0;
-
-#define NSTENCIL_CLASS
-#define NStencilStyle(key,Class,bitmasks) nsclass++;
-#include "style_nstencil.h"  // IWYU pragma: keep
-#undef NStencilStyle
-#undef NSTENCIL_CLASS
-
-  stencilclass = new StencilCreator[nsclass];
-  stencilnames = new char*[nsclass];
-  stencilmasks = new int[nsclass];
-  nsclass = 0;
-
-#define NSTENCIL_CLASS
-#define NStencilStyle(key,Class,bitmasks) \
-  stencilnames[nsclass] = (char *) #key; \
-  stencilclass[nsclass] = &style_creator<NStencil, Class>;   \
-  stencilmasks[nsclass++] = bitmasks;
-#include "style_nstencil.h"  // IWYU pragma: keep
-#undef NStencilStyle
-#undef NSTENCIL_CLASS
-
-  // extract info from NPair classes listed in style_npair.h
 
   npclass = 0;
 
@@ -759,7 +657,6 @@ int Neighbor::init_pair()
   else
     for (i = 0; i < nrequest; i++)
       if (requests[i]->identical(old_requests[i]) == 0) same = 0;
-
 #ifdef NEIGH_LIST_DEBUG
   if (comm->me == 0) printf("SAME flag %d\n",same);
 #endif
@@ -771,11 +668,9 @@ int Neighbor::init_pair()
 
   for (i = 0; i < nlist; i++) delete lists[i];
   for (i = 0; i < nbin; i++) delete neigh_bin[i];
-  for (i = 0; i < nstencil; i++) delete neigh_stencil[i];
   for (i = 0; i < nlist; i++) delete neigh_pair[i];
   delete[] lists;
   delete[] neigh_bin;
-  delete[] neigh_stencil;
   delete[] neigh_pair;
 
   // error check on requests
@@ -834,7 +729,6 @@ int Neighbor::init_pair()
 
   lists = new NeighList*[nrequest];
   neigh_bin = new NBin*[nrequest];
-  neigh_stencil = new NStencil*[nrequest];
   neigh_pair = new NPair*[nrequest];
 
   // allocate new lists
@@ -883,11 +777,6 @@ int Neighbor::init_pair()
     if (flag < 0)
       error->all(FLERR,"Requested neighbor bin option does not exist");
 
-    flag = choose_stencil(requests[i]);
-    lists[i]->stencil_method = flag;
-    if (flag < 0)
-      error->all(FLERR,"Requested neighbor stencil method does not exist");
-
     flag = choose_pair(requests[i]);
     lists[i]->pair_method = flag;
     if (flag < 0)
@@ -921,36 +810,6 @@ int Neighbor::init_pair()
     nbin++;
   }
 
-  nstencil = 0;
-  for (i = 0; i < nrequest; i++) {
-    requests[i]->index_stencil = -1;
-    flag = lists[i]->stencil_method;
-    if (flag == 0) continue;
-    if (!requests[i]->unique) {
-      for (j = 0; j < nstencil; j++)
-        if (neigh_stencil[j]->istyle == flag &&
-            neigh_stencil[j]->cutoff_custom == 0.0) break;
-      if (j < nstencil) {
-        requests[i]->index_stencil = j;
-        continue;
-      }
-    }
-
-    StencilCreator &stencil_creator = stencilclass[flag-1];
-    neigh_stencil[nstencil] = stencil_creator(lmp);
-    neigh_stencil[nstencil]->post_constructor(requests[i]);
-    neigh_stencil[nstencil]->istyle = flag;
-
-    if (lists[i]->bin_method > 0) {
-      neigh_stencil[nstencil]->nb = neigh_bin[requests[i]->index_bin];
-      if (neigh_stencil[nstencil]->nb == nullptr)
-        error->all(FLERR,"Could not assign bin method to neighbor stencil");
-    }
-
-    requests[i]->index_stencil = nstencil;
-    nstencil++;
-  }
-
   // instantiate one Pair class per list in neigh_pair vec
 
   for (i = 0; i < nrequest; i++) {
@@ -971,12 +830,6 @@ int Neighbor::init_pair()
       if (neigh_pair[i]->nb == nullptr)
         error->all(FLERR,"Could not assign bin method to neighbor pair");
     }
-    if (lists[i]->stencil_method > 0) {
-      neigh_pair[i]->ns = neigh_stencil[requests[i]->index_stencil];
-      if (neigh_pair[i]->ns == nullptr)
-        error->all(FLERR,"Could not assign stencil method to neighbor pair");
-    }
-
     requests[i]->index_pair = i;
   }
 
@@ -1005,23 +858,12 @@ int Neighbor::init_pair()
   // slist = indices of perpetual NStencil classes
   //         perpetual = used by any perpetual NPair class
 
-  delete[] slist;
   delete[] plist;
-  nstencil_perpetual = npair_perpetual = 0;
-  slist = new int[nstencil];
   plist = new int[nlist];
 
   for (i = 0; i < nlist; i++) {
     if (lists[i]->occasional == 0 && lists[i]->pair_method)
       plist[npair_perpetual++] = i;
-  }
-
-  for (i = 0; i < nstencil; i++) {
-    flag = 0;
-    for (j = 0; j < npair_perpetual; j++)
-      if (lists[plist[j]]->stencil_method == neigh_stencil[i]->istyle)
-        flag = 1;
-    if (flag) slist[nstencil_perpetual++] = i;
   }
 
   // reorder plist vector if necessary
@@ -1508,113 +1350,6 @@ void Neighbor::morph_copy_trim()
   }
 }
 
-/* ----------------------------------------------------------------------
-   create and initialize NTopo classes
-------------------------------------------------------------------------- */
-
-void Neighbor::init_topology()
-{
-  int i,m;
-
-  if (atom->molecular == Atom::ATOMIC) return;
-
-  // set flags that determine which topology neighbor classes to use
-  // these settings could change from run to run, depending on fixes defined
-  // bonds,etc can only be broken for atom->molecular = Atom::MOLECULAR, not Atom::TEMPLATE
-  // SHAKE sets bonds and angles negative
-  // gcmc sets all bonds, angles, etc negative
-  // partial_flag sets bonds to 0
-  // delete_bonds sets all interactions negative
-
-  int bond_off = 0;
-  int angle_off = 0;
-  for (i = 0; i < modify->nfix; i++)
-    if (utils::strmatch(modify->fix[i]->style,"^shake")
-        || utils::strmatch(modify->fix[i]->style,"^rattle"))
-      bond_off = angle_off = 1;
-  if (force->bond)
-    if (force->bond->partial_flag)
-      bond_off = 1;
-
-  if (atom->avec->bonds_allow && atom->molecular == Atom::MOLECULAR) {
-    for (i = 0; i < atom->nlocal; i++) {
-      if (bond_off) break;
-      for (m = 0; m < atom->num_bond[i]; m++)
-        if (atom->bond_type[i][m] <= 0) bond_off = 1;
-    }
-  }
-
-  if (atom->avec->angles_allow && atom->molecular == Atom::MOLECULAR) {
-    for (i = 0; i < atom->nlocal; i++) {
-      if (angle_off) break;
-      for (m = 0; m < atom->num_angle[i]; m++)
-        if (atom->angle_type[i][m] <= 0) angle_off = 1;
-    }
-  }
-
-  int dihedral_off = 0;
-  if (atom->avec->dihedrals_allow && atom->molecular == Atom::MOLECULAR) {
-    for (i = 0; i < atom->nlocal; i++) {
-      if (dihedral_off) break;
-      for (m = 0; m < atom->num_dihedral[i]; m++)
-        if (atom->dihedral_type[i][m] <= 0) dihedral_off = 1;
-    }
-  }
-
-  int improper_off = 0;
-  if (atom->avec->impropers_allow && atom->molecular == Atom::MOLECULAR) {
-    for (i = 0; i < atom->nlocal; i++) {
-      if (improper_off) break;
-      for (m = 0; m < atom->num_improper[i]; m++)
-        if (atom->improper_type[i][m] <= 0) improper_off = 1;
-    }
-  }
-
-  for (i = 0; i < modify->nfix; i++)
-    if ((strcmp(modify->fix[i]->style,"gcmc") == 0))
-      bond_off = angle_off = dihedral_off = improper_off = 1;
-
-  // sync on/off settings across all procs
-
-  int onoff = bond_off;
-  MPI_Allreduce(&onoff,&bond_off,1,MPI_INT,MPI_MAX,world);
-  onoff = angle_off;
-  MPI_Allreduce(&onoff,&angle_off,1,MPI_INT,MPI_MAX,world);
-  onoff = dihedral_off;
-  MPI_Allreduce(&onoff,&dihedral_off,1,MPI_INT,MPI_MAX,world);
-  onoff = improper_off;
-  MPI_Allreduce(&onoff,&improper_off,1,MPI_INT,MPI_MAX,world);
-
-  // instantiate NTopo classes
-
-  if (atom->avec->bonds_allow) {
-    int old_bondwhich = bondwhich;
-    if (atom->molecular == Atom::TEMPLATE) bondwhich = TEMPLATE;
-    else if (bond_off) bondwhich = PARTIAL;
-    else bondwhich = ALL;
-  }
-
-  if (atom->avec->angles_allow) {
-    int old_anglewhich = anglewhich;
-    if (atom->molecular == Atom::TEMPLATE) anglewhich = TEMPLATE;
-    else if (angle_off) anglewhich = PARTIAL;
-    else anglewhich = ALL;
-  }
-
-  if (atom->avec->dihedrals_allow) {
-    int old_dihedralwhich = dihedralwhich;
-    if (atom->molecular == Atom::TEMPLATE) dihedralwhich = TEMPLATE;
-    else if (dihedral_off) dihedralwhich = PARTIAL;
-    else dihedralwhich = ALL;
-  }
-
-  if (atom->avec->impropers_allow) {
-    int old_improperwhich = improperwhich;
-    if (atom->molecular == Atom::TEMPLATE) improperwhich = TEMPLATE;
-    else if (improper_off) improperwhich = PARTIAL;
-    else improperwhich = ALL;
-  }
-}
 
 /* ----------------------------------------------------------------------
    output summary of pairwise neighbor list info
@@ -1727,10 +1462,6 @@ void Neighbor::print_pairwise_info()
     out += "      ";
     if (lists[i]->pair_method == 0) out += "pair build: none\n";
     else out += fmt::format("pair build: {}\n",pairnames[lists[i]->pair_method-1]);
-
-    out += "      ";
-    if (lists[i]->stencil_method == 0) out += "stencil: none\n";
-    else out += fmt::format("stencil: {}\n",stencilnames[lists[i]->stencil_method-1]);
 
     out += "      ";
     if (lists[i]->bin_method == 0) out += "bin: none\n";
@@ -1854,98 +1585,6 @@ int Neighbor::choose_bin(NeighRequest *rq)
 }
 
 /* ----------------------------------------------------------------------
-   assign NStencil class to a NeighList
-   use neigh request settings to build mask
-   match mask to list of masks of known NStencil classes
-   return index+1 of match in list of masks
-   return 0 for no binning
-   return -1 if no match
-------------------------------------------------------------------------- */
-
-int Neighbor::choose_stencil(NeighRequest *rq)
-{
-  // no stencil creation needed
-
-  if (style == Neighbor::NSQ) return 0;
-  if (rq->skip || rq->copy || rq->halffull) return 0;
-
-  // convert newton request to newtflag = on or off
-
-  int newtflag = 1;
-  if (rq->newton == 0 && newton_pair) newtflag = 1;
-  else if (rq->newton == 0 && !newton_pair) newtflag = 0;
-  else if (rq->newton == 1) newtflag = 1;
-  else if (rq->newton == 2) newtflag = 0;
-
-  // request a full stencil if building full neighbor list or newton is off
-  int fullflag = 0;
-  if (rq->full) fullflag = 1;
-  if (!newtflag) fullflag = 1;
-
-  //printf("STENCIL RQ FLAGS: hff %d %d n %d g %d s %d newtflag %d fullflag %d\n",
-  //       rq->half,rq->full,rq->newton,rq->ghost,rq->ssa,
-  //       newtflag, fullflag);
-
-  // use request and system settings to match exactly one NStencil class mask
-  // checks are bitwise using NeighConst bit masks
-
-  int mask;
-
-  for (int i = 0; i < nsclass; i++) {
-    mask = stencilmasks[i];
-
-    //printf("III %d: half %d full %d ghost %d ssa %d\n",
-    //       i,mask & NS_HALF,mask & NS_FULL,mask & NS_GHOST,mask & NS_SSA);
-
-    // exactly one of half or full is set and must match
-
-    if (fullflag) {
-      if (!(mask & NS_FULL)) continue;
-    } else {
-      if (!(mask & NS_HALF)) continue;
-    }
-
-    // require match of these request flags and mask bits
-    // (!A != !B) is effectively a logical xor
-
-    if (!rq->ghost != !(mask & NS_GHOST)) continue;
-    if (!rq->ssa != !(mask & NS_SSA)) continue;
-
-    // neighbor style is one of BIN, MULTI_OLD, or MULTI and must match
-
-    if (style == Neighbor::BIN) {
-      if (!(mask & NS_BIN)) continue;
-    } else if (style == Neighbor::MULTI_OLD) {
-      if (!(mask & NS_MULTI_OLD)) continue;
-    } else if (style == Neighbor::MULTI) {
-      if (!(mask & NS_MULTI)) continue;
-    }
-
-    // dimension is 2 or 3 and must match
-
-    if (dimension == 2) {
-      if (!(mask & NS_2D)) continue;
-    } else if (dimension == 3) {
-      if (!(mask & NS_3D)) continue;
-    }
-
-    // domain triclinic flag is on or off and must match
-
-    if (triclinic) {
-      if (!(mask & NS_TRI)) continue;
-    } else if (!triclinic) {
-      if (!(mask & NS_ORTHO)) continue;
-    }
-
-    return i+1;
-  }
-
-  // error return if matched none
-
-  return -1;
-}
-
-/* ----------------------------------------------------------------------
    assign NPair class to a NeighList
    use neigh request settings to build mask
    match mask to list of masks of known NPair classes
@@ -1969,19 +1608,6 @@ int Neighbor::choose_pair(NeighRequest *rq)
   else if (rq->newton == 1) newtflag = true;
   else if (rq->newton == 2) newtflag = false;
   else error->all(FLERR,"Illegal 'newton' flag in neighbor list request");
-
-  int molecular = atom->molecular;
-
-  //printf("PAIR RQ FLAGS: hf %d %d n %d g %d sz %d gos %d r %d b %d o %d i %d "
-  //       "kk %d %d ss %d dn %d sk %d cp %d hf %d oo %d\n",
-  //        rq->half,rq->full,rq->newton,rq->ghost,rq->size,
-  //        rq->granonesided,rq->respaouter,rq->bond,rq->omp,rq->intel,
-  //       rq->kokkos_host,rq->kokkos_device,rq->ssa,rq->dnum,
-  //      rq->skip,rq->copy,rq->halffull,rq->off2on);
-
-  // use request and system settings to match exactly one NPair class mask
-  // checks are bitwise using NeighConst bit masks
-
   int mask;
 
   for (int i = 0; i < npclass; i++) {
@@ -2028,12 +1654,7 @@ int Neighbor::choose_pair(NeighRequest *rq)
 
     // if molecular on, do not match ATOMONLY (b/c a MOLONLY Npair exists)
     // if molecular off, do not match MOLONLY (b/c an ATOMONLY Npair exists)
-
-    if (molecular != Atom::ATOMIC) {
-      if (mask & NP_ATOMONLY) continue;
-    } else if (molecular == Atom::ATOMIC) {
-      if (mask & NP_MOLONLY) continue;
-    }
+    if (mask & NP_MOLONLY) continue;
 
     // require match of these request flags and mask bits
     // (!A != !B) is effectively a logical xor
@@ -2186,11 +1807,6 @@ void Neighbor::setup_bins()
 
   // invoke create_setup() and create() for all perpetual NStencil
   // same ops performed for occasional lists in build_one()
-
-  for (int i = 0; i < nstencil_perpetual; i++) {
-    neigh_stencil[slist[i]]->create_setup();
-    neigh_stencil[slist[i]]->create();
-  }
 
   last_setup_bins = update->ntimestep;
 }
@@ -2408,12 +2024,6 @@ void Neighbor::build_one(class NeighList *mylist, int preflag)
 
   // create stencil if hasn't been created since last setup_bins() call
 
-  NStencil *ns = np->ns;
-  if (ns && ns->last_stencil < last_setup_bins) {
-    ns->create_setup();
-    ns->create();
-  }
-
   // build the list
 
   if (!mylist->copy || mylist->trim || mylist->kk2cpu)
@@ -2455,8 +2065,6 @@ void Neighbor::reset_timestep(bigint /*ntimestep*/)
 {
   for (int i = 0; i < nbin; i++)
     neigh_bin[i]->last_bin = -1;
-  for (int i = 0; i < nstencil; i++)
-    neigh_stencil[i]->last_stencil = -1;
   for (int i = 0; i < nlist; i++) {
     if (!neigh_pair[i]) continue;
     neigh_pair[i]->last_build = -1;
@@ -2554,9 +2162,6 @@ void Neighbor::modify_params(int narg, char **arg)
       } else if (strcmp(arg[iarg+1],"molecule/inter") == 0 ||
                  strcmp(arg[iarg+1],"molecule/intra") == 0) {
         if (iarg+3 > narg) utils::missing_cmd_args(FLERR, "neigh_modify exclude molecule", error);
-        if (atom->molecule_flag == 0)
-          error->all(FLERR,"Neigh_modify exclude molecule "
-                     "requires atom attribute molecule");
         if (nex_mol == maxex_mol) {
           maxex_mol += EXDELTA;
           memory->grow(ex_mol_group,maxex_mol,"neigh:ex_mol_group");
@@ -2842,8 +2447,6 @@ double Neighbor::memory_usage()
 
   for (int i = 0; i < nlist; i++)
     if (lists[i]) bytes += lists[i]->memory_usage();
-  for (int i = 0; i < nstencil; i++)
-    bytes += neigh_stencil[i]->memory_usage();
   for (int i = 0; i < nbin; i++)
     bytes += neigh_bin[i]->memory_usage();
   return bytes;

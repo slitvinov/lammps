@@ -191,9 +191,7 @@ class Neighbor : protected Pointers {
   int old_style, old_triclinic;    // previous run info
   int old_pgsize, old_oneatom;     // used to avoid re-creating neigh lists
 
-  int nstencil_perpetual;    // # of perpetual NeighStencil classes
   int npair_perpetual;       // #x of perpetual NeighPair classes
-  int *slist;                // indices of them in neigh_stencil
   int *plist;                // indices of them in neigh_pair
 
   int maxex_type;     // max # in exclusion type list
@@ -205,9 +203,8 @@ class Neighbor : protected Pointers {
 
   // info for other Neigh classes: NBin,NStencil,NPair,NTopo
 
-  int nbin, nstencil;
-  int nbclass, nsclass, npclass;
-  int bondwhich, anglewhich, dihedralwhich, improperwhich;
+  int nbin;
+  int nbclass, npclass;
 
   typedef class NBin *(*BinCreator)(class LAMMPS *);
   BinCreator *binclass;
@@ -215,29 +212,17 @@ class Neighbor : protected Pointers {
   int *binmasks;
   class NBin **neigh_bin;
 
-  typedef class NStencil *(*StencilCreator)(class LAMMPS *);
-  StencilCreator *stencilclass;
-  char **stencilnames;
-  int *stencilmasks;
-  class NStencil **neigh_stencil;
-
   typedef class NPair *(*PairCreator)(class LAMMPS *);
   PairCreator *pairclass;
   char **pairnames;
   int *pairmasks;
   class NPair **neigh_pair;
 
-  class NTopo *neigh_bond;
-  class NTopo *neigh_angle;
-  class NTopo *neigh_dihedral;
-  class NTopo *neigh_improper;
-
   // internal methods
   // including creator methods for Nbin,Nstencil,Npair instances
 
   void init_styles();
   int init_pair();
-  virtual void init_topology();
 
   void sort_requests();
 
@@ -251,7 +236,6 @@ class Neighbor : protected Pointers {
   void requests_new2old();
 
   int choose_bin(class NeighRequest *);
-  int choose_stencil(class NeighRequest *);
   int choose_pair(class NeighRequest *);
 
   // dummy functions provided by NeighborKokkos, called in init()

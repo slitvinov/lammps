@@ -56,8 +56,6 @@ void handler(int sig)
 // for convenience
 static void finalize()
 {
-  lammps_kokkos_finalize();
-  lammps_python_finalize();
 }
 
 /* ----------------------------------------------------------------------

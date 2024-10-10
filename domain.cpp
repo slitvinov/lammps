@@ -24,9 +24,7 @@
 #include "comm.h"
 #include "error.h"
 #include "fix.h"
-#include "fix_deform.h"
 #include "force.h"
-#include "kspace.h"
 #include "lattice.h"
 #include "memory.h"
 #include "modify.h"
@@ -177,15 +175,6 @@ void Domain::init()
   // check for fix deform
 
   deform_flag = deform_vremap = deform_groupbit = 0;
-  for (const auto &fix : fixes)
-    if (utils::strmatch(fix->style,"^deform")) {
-      deform_flag = 1;
-      if ((dynamic_cast<FixDeform *>(fix))->remapflag == Domain::V_REMAP) {
-        deform_vremap = 1;
-        deform_groupbit = fix->groupbit;
-      }
-    }
-
   // region inits
 
   for (auto &reg : regions) reg->init();
@@ -497,15 +486,6 @@ void Domain::reset_box()
 
   set_global_box();
   set_local_box();
-
-  // if shrink-wrapped & kspace is defined (i.e. using MSM), call setup()
-  // also call init() (to test for compatibility) ?
-
-  if (nonperiodic == 2 && force->kspace) {
-    //force->kspace->init();
-    force->kspace->setup();
-  }
-
   // if shrink-wrapped & triclinic, re-convert to lamda coords for new box
   // re-invoke pbc() b/c x2lamda result can be outside [0,1] due to roundoff
 

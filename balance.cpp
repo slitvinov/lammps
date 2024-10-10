@@ -26,7 +26,6 @@
 #include "neighbor.h"
 #include "comm.h"
 #include "domain.h"
-#include "fix_store_atom.h"
 #include "force.h"
 #include "imbalance.h"
 #include "imbalance_group.h"
@@ -67,7 +66,6 @@ Balance::Balance(LAMMPS *lmp) : Command(lmp)
 
   nimbalance = 0;
   imbalances = nullptr;
-  fixstore = nullptr;
 
   fp = nullptr;
   firststep = 1;
@@ -100,12 +98,6 @@ Balance::~Balance()
 
   for (int i = 0; i < nimbalance; i++) delete imbalances[i];
   delete[] imbalances;
-
-  // check nfix in case all fixes have already been deleted
-
-  if (fixstore && modify->nfix) modify->delete_fix(fixstore->id);
-  fixstore = nullptr;
-
   if (fp) fclose(fp);
 }
 
@@ -253,7 +245,6 @@ void Balance::command(int narg, char **arg)
   // process remaining optional args
 
   options(iarg,narg,arg,1);
-  if (wtflag) weight_storage(nullptr);
 
   // ensure particles are in current box & update box via shrink-wrap
   // init entire system since comm->setup is done
@@ -276,8 +267,6 @@ void Balance::command(int narg, char **arg)
   // imbinit = initial imbalance
 
   double maxinit;
-  init_imbalance(0);
-  set_weights();
   double imbinit = imbalance_factor(maxinit);
 
   // no load-balance if imbalance doesn't exceed threshold
@@ -358,7 +347,6 @@ void Balance::command(int narg, char **arg)
 
   if (domain->triclinic) domain->x2lamda(atom->nlocal);
   auto irregular = new Irregular(lmp);
-  if (wtflag) fixstore->disable = 0;
   if (style == BISECTION) irregular->migrate_atoms(sortflag,1,rcb->sendproc);
   else irregular->migrate_atoms(sortflag);
   delete irregular;
@@ -389,7 +377,6 @@ void Balance::command(int narg, char **arg)
 
   double maxfinal;
   double imbfinal = imbalance_factor(maxfinal);
-  if (wtflag) fixstore->disable = 1;
 
   // stats output
 
@@ -434,8 +421,6 @@ void Balance::options(int iarg, int narg, char **arg, int sortflag_default)
   if (nimbalance) imbalances = new Imbalance*[nimbalance];
   nimbalance = 0;
 
-  wtflag = 0;
-  varflag = 0;
   sortflag = sortflag_default;
   outflag = 0;
   int outarg = 0;
@@ -443,37 +428,7 @@ void Balance::options(int iarg, int narg, char **arg, int sortflag_default)
   oldrcb = 0;
 
   while (iarg < narg) {
-    if (strcmp(arg[iarg],"weight") == 0) {
-      wtflag = 1;
-      Imbalance *imb;
-      int nopt = 0;
-      if (strcmp(arg[iarg+1],"group") == 0) {
-        imb = new ImbalanceGroup(lmp);
-        nopt = imb->options(narg-iarg,arg+iarg+2);
-        imbalances[nimbalance++] = imb;
-      } else if (strcmp(arg[iarg+1],"time") == 0) {
-        imb = new ImbalanceTime(lmp);
-        nopt = imb->options(narg-iarg,arg+iarg+2);
-        imbalances[nimbalance++] = imb;
-      } else if (strcmp(arg[iarg+1],"neigh") == 0) {
-        imb = new ImbalanceNeigh(lmp);
-        nopt = imb->options(narg-iarg,arg+iarg+2);
-        imbalances[nimbalance++] = imb;
-      } else if (strcmp(arg[iarg+1],"var") == 0) {
-        varflag = 1;
-        imb = new ImbalanceVar(lmp);
-        nopt = imb->options(narg-iarg,arg+iarg+2);
-        imbalances[nimbalance++] = imb;
-      } else if (strcmp(arg[iarg+1],"store") == 0) {
-        imb = new ImbalanceStore(lmp);
-        nopt = imb->options(narg-iarg,arg+iarg+2);
-        imbalances[nimbalance++] = imb;
-      } else {
-        error->all(FLERR,"Unknown (fix) balance weight method: {}", arg[iarg+1]);
-      }
-      iarg += 2+nopt;
-
-    } else if (strcmp(arg[iarg+1],"sort") == 0) {
+    if (strcmp(arg[iarg+1],"sort") == 0) {
       if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "balance sort", error);
       sortflag = utils::logical(FLERR,arg[iarg+1],false,lmp);
       iarg += 2;
@@ -501,54 +456,6 @@ void Balance::options(int iarg, int narg, char **arg, int sortflag_default)
 }
 
 /* ----------------------------------------------------------------------
-   allocate per-particle weight storage via FixStore
-   use prefix to distinguish Balance vs FixBalance storage
-   fix could already be allocated if fix balance is re-specified
-------------------------------------------------------------------------- */
-
-void Balance::weight_storage(char *prefix)
-{
-  std::string cmd;
-
-  if (prefix) cmd = prefix;
-  cmd += "IMBALANCE_WEIGHTS";
-
-  fixstore = dynamic_cast<FixStoreAtom *>(modify->get_fix_by_id(cmd));
-  if (!fixstore)
-    fixstore = dynamic_cast<FixStoreAtom *>(modify->add_fix(cmd + " all STORE/ATOM 1 0 0 0"));
-
-  // do not carry weights with atoms during normal atom migration
-
-  fixstore->disable = 1;
-}
-
-/* ----------------------------------------------------------------------
-   invoke init() for each Imbalance class
-   flag = 0 for call from Balance, 1 for call from FixBalance
-------------------------------------------------------------------------- */
-
-void Balance::init_imbalance(int flag)
-{
-  if (!wtflag) return;
-  for (int n = 0; n < nimbalance; n++) imbalances[n]->init(flag);
-}
-
-/* ----------------------------------------------------------------------
-   set weight for each particle
-   via list of Nimbalance classes
-------------------------------------------------------------------------- */
-
-void Balance::set_weights()
-{
-  if (!wtflag) return;
-  weight = fixstore->vstore;
-
-  int nlocal = atom->nlocal;
-  for (int i = 0; i < nlocal; i++) weight[i] = 1.0;
-  for (int n = 0; n < nimbalance; n++) imbalances[n]->compute(weight);
-}
-
-/* ----------------------------------------------------------------------
    calculate imbalance factor based on particle count or particle weights
    return max = max load per proc
    return imbalance = max load per proc / ave load per proc
@@ -557,15 +464,7 @@ void Balance::set_weights()
 double Balance::imbalance_factor(double &maxcost)
 {
   double mycost,totalcost;
-
-  if (wtflag) {
-    weight = fixstore->vstore;
-    int nlocal = atom->nlocal;
-
-    mycost = 0.0;
-    for (int i = 0; i < nlocal; i++) mycost += weight[i];
-
-  } else mycost = atom->nlocal;
+  mycost = atom->nlocal;
 
   MPI_Allreduce(&mycost,&maxcost,1,MPI_DOUBLE,MPI_MAX,world);
   MPI_Allreduce(&mycost,&totalcost,1,MPI_DOUBLE,MPI_SUM,world);
@@ -654,15 +553,9 @@ int *Balance::bisection()
   //       ditto in rcb.cpp, or make it an option
 
   if (oldrcb) {
-    if (wtflag) {
-      weight = fixstore->vstore;
-      rcb->compute_old(dim,atom->nlocal,atom->x,weight,shrinklo,shrinkhi);
-    } else rcb->compute_old(dim,atom->nlocal,atom->x,nullptr,shrinklo,shrinkhi);
+    rcb->compute_old(dim,atom->nlocal,atom->x,nullptr,shrinklo,shrinkhi);
   } else {
-    if (wtflag) {
-      weight = fixstore->vstore;
-      rcb->compute(dim,atom->nlocal,atom->x,weight,shrinklo,shrinkhi);
-    } else rcb->compute(dim,atom->nlocal,atom->x,nullptr,shrinklo,shrinkhi);
+    rcb->compute(dim,atom->nlocal,atom->x,nullptr,shrinklo,shrinkhi);
   }
 
   if (triclinic) domain->lamda2x(nlocal);
@@ -833,12 +726,7 @@ int Balance::shift()
 
     // target[i] = desired sum at split I
 
-    if (wtflag) {
-      weight = fixstore->vstore;
-      int nlocal = atom->nlocal;
-      mycost = 0.0;
-      for (i = 0; i < nlocal; i++) mycost += weight[i];
-    } else mycost = atom->nlocal;
+    mycost = atom->nlocal;
 
     MPI_Allreduce(&mycost,&totalcost,1,MPI_DOUBLE,MPI_SUM,world);
 
@@ -1041,18 +929,10 @@ void Balance::tally(int dim, int n, double *split)
   int nlocal = atom->nlocal;
   int index;
 
-  if (wtflag) {
-    weight = fixstore->vstore;
-    for (int i = 0; i < nlocal; i++) {
-      index = utils::binary_search(x[i][dim],n,split);
-      onecost[index] += weight[i];
-    }
-  } else {
     for (int i = 0; i < nlocal; i++) {
       index = utils::binary_search(x[i][dim],n,split);
       onecost[index] += 1.0;
     }
-  }
 
   MPI_Allreduce(onecost,allcost,n,MPI_DOUBLE,MPI_SUM,world);
 
@@ -1143,23 +1023,13 @@ double Balance::imbalance_splits()
   int nlocal = atom->nlocal;
   int ix,iy,iz;
 
-  if (wtflag) {
-    weight = fixstore->vstore;
-    for (int i = 0; i < nlocal; i++) {
-      ix = utils::binary_search(x[i][0],nx,xsplit);
-      iy = utils::binary_search(x[i][1],ny,ysplit);
-      iz = utils::binary_search(x[i][2],nz,zsplit);
-      proccost[iz*nx*ny + iy*nx + ix] += weight[i];
-    }
-  } else {
-    for (int i = 0; i < nlocal; i++) {
-      ix = utils::binary_search(x[i][0],nx,xsplit);
-      iy = utils::binary_search(x[i][1],ny,ysplit);
-      iz = utils::binary_search(x[i][2],nz,zsplit);
-      proccost[iz*nx*ny + iy*nx + ix] += 1.0;
-    }
+  for (int i = 0; i < nlocal; i++) {
+    ix = utils::binary_search(x[i][0],nx,xsplit);
+    iy = utils::binary_search(x[i][1],ny,ysplit);
+    iz = utils::binary_search(x[i][2],nz,zsplit);
+    proccost[iz*nx*ny + iy*nx + ix] += 1.0;
   }
-
+  
   // one proc's particles may map to many partitions, so must Allreduce
 
   MPI_Allreduce(proccost,allproccost,nprocs,MPI_DOUBLE,MPI_SUM,world);

@@ -94,7 +94,7 @@ NeighRequest::NeighRequest(LAMMPS *_lmp) : Pointers(_lmp)
 
   // internal settings
 
-  index_bin = index_stencil = index_pair = -1;
+  index_bin = index_pair = -1;
 }
 
 /* ---------------------------------------------------------------------- */

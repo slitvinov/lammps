@@ -38,7 +38,7 @@ void NPairFullBinAtomonly::build(NeighList *list)
   double **x = atom->x;
   int *type = atom->type;
   int *mask = atom->mask;
-  tagint *molecule = atom->molecule;
+  tagint *molecule = NULL;
   int nlocal = atom->nlocal;
   if (includegroup) nlocal = atom->nfirst;
 
@@ -63,22 +63,6 @@ void NPairFullBinAtomonly::build(NeighList *list)
     // skip i = j
 
     ibin = atom2bin[i];
-
-    for (k = 0; k < nstencil; k++) {
-      for (j = binhead[ibin + stencil[k]]; j >= 0; j = bins[j]) {
-        if (i == j) continue;
-
-        jtype = type[j];
-        if (exclude && exclusion(i, j, itype, jtype, mask, molecule)) continue;
-
-        delx = xtmp - x[j][0];
-        dely = ytmp - x[j][1];
-        delz = ztmp - x[j][2];
-        rsq = delx * delx + dely * dely + delz * delz;
-
-        if (rsq <= cutneighsq[itype][jtype]) neighptr[n++] = j;
-      }
-    }
 
     ilist[inum++] = i;
     firstneigh[i] = neighptr;

@@ -90,8 +90,8 @@ class Pointers {
     screen(ptr->screen),
     logfile(ptr->logfile),
     atomKK(ptr->atomKK),
-    memoryKK(ptr->memoryKK),
-    python(ptr->python) {}
+    memoryKK(ptr->memoryKK)
+    {}
   virtual ~Pointers() = default;
 
   // remove other default members
@@ -127,7 +127,6 @@ class Pointers {
 
   class AtomKokkos *&atomKK;
   class MemoryKokkos *&memoryKK;
-  class Python *&python;
 };
 
 }

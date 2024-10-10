@@ -29,7 +29,6 @@ class NeighList : protected Pointers {
                 // and the npair list of NPair classes
 
   int bin_method;        // 0 if no binning, else 1-N index into binnames
-  int stencil_method;    // 0 if no stencil, else 1-N index into stencilnames
   int pair_method;       // 0 if no pair, else 1-N index into pairnames
 
   // settings from NeighRequest

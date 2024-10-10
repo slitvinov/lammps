@@ -37,7 +37,7 @@ NPairHalfSizeBinNewtonTri::NPairHalfSizeBinNewtonTri(LAMMPS *lmp) :
 
 void NPairHalfSizeBinNewtonTri::build(NeighList *list)
 {
-  int i,j,jh,k,n,ibin,which,imol,iatom,moltemplate;
+  int i,j,jh,k,n,ibin,which;
   tagint tagprev;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   double radi,radsum,cutsq;
@@ -48,17 +48,8 @@ void NPairHalfSizeBinNewtonTri::build(NeighList *list)
   int *type = atom->type;
   int *mask = atom->mask;
   tagint *tag = atom->tag;
-  tagint *molecule = atom->molecule;
-  tagint **special = atom->special;
-  int **nspecial = atom->nspecial;
   int nlocal = atom->nlocal;
   if (includegroup) nlocal = atom->nfirst;
-
-  int *molindex = atom->molindex;
-  int *molatom = atom->molatom;
-  Molecule **onemols = atom->avec->onemols;
-  if (molecular == Atom::TEMPLATE) moltemplate = 1;
-  else moltemplate = 0;
 
   int history = list->history;
   int *ilist = list->ilist;
@@ -79,48 +70,7 @@ void NPairHalfSizeBinNewtonTri::build(NeighList *list)
     ytmp = x[i][1];
     ztmp = x[i][2];
     radi = radius[i];
-    if (moltemplate) {
-      imol = molindex[i];
-      iatom = molatom[i];
-      tagprev = tag[i] - iatom - 1;
-    }
-
-    // loop over all atoms in bins in stencil
-    // pairs for atoms j "below" i are excluded
-    // below = lower z or (equal z and lower y) or (equal zy and lower x)
-    //         (equal zyx and j <= i)
-    // latter excludes self-self interaction but allows superposed atoms
-
     ibin = atom2bin[i];
-    for (k = 0; k < nstencil; k++) {
-      for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
-        if (x[j][2] < ztmp) continue;
-        if (x[j][2] == ztmp) {
-          if (x[j][1] < ytmp) continue;
-          if (x[j][1] == ytmp) {
-            if (x[j][0] < xtmp) continue;
-            if (x[j][0] == xtmp && j <= i) continue;
-          }
-        }
-
-        if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
-
-        delx = xtmp - x[j][0];
-        dely = ytmp - x[j][1];
-        delz = ztmp - x[j][2];
-        rsq = delx*delx + dely*dely + delz*delz;
-        radsum = radi + radius[j];
-        cutsq = (radsum+skin) * (radsum+skin);
-
-        if (rsq <= cutsq) {
-          jh = j;
-          if (history && rsq < radsum*radsum)
-            jh = jh ^ mask_history;
-	  neighptr[n++] = jh;
-        }
-      }
-    }
-
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;

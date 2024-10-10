@@ -61,9 +61,6 @@ class Info : public Command {
   void integrate_styles(FILE *out);
   void minimize_styles(FILE *out);
   void pair_styles(FILE *out);
-  void bond_styles(FILE *out);
-  void angle_styles(FILE *out);
-  void kspace_styles(FILE *out);
   void fix_styles(FILE *out);
   void compute_styles(FILE *out);
   void region_styles(FILE *out);

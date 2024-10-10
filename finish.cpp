@@ -20,7 +20,6 @@
 #include "comm.h"
 #include "error.h"
 #include "force.h"
-#include "kspace.h"
 #include "memory.h"             // IWYU pragma: keep
 #include "min.h"
 #include "neighbor.h"           // IWYU pragma: keep
@@ -64,7 +63,7 @@ void Finish::end(int flag)
   int i,nneigh,nneighfull;
   int histo[10];
   int minflag,prdflag,tadflag,hyperflag;
-  int timeflag,fftflag,histoflag,neighflag;
+  int timeflag,histoflag,neighflag;
   double time,tmp,ave,max,min;
   double time_loop,time_other,cpu_loop;
 
@@ -89,7 +88,7 @@ void Finish::end(int flag)
   // turn off neighflag for Kspace partition of verlet/split integrator
 
   minflag = prdflag = tadflag = hyperflag = 0;
-  timeflag = fftflag = histoflag = neighflag = 0;
+  timeflag = histoflag = neighflag = 0;
   time_loop = cpu_loop = time_other = 0.0;
 
   if (flag == 1) {
@@ -99,8 +98,6 @@ void Finish::end(int flag)
     if (update->whichflag == 1 &&
         strncmp(update->integrate_style,"verlet/split",12) == 0 &&
         universe->iworld == 1) neighflag = 0;
-    if (force->kspace && force->kspace_match("^pppm",0)
-        && force->kspace->fftbench) fftflag = 1;
   }
   if (flag == 2) prdflag = timeflag = histoflag = neighflag = 1;
   if (flag == 3) tadflag = histoflag = neighflag = 1;
@@ -327,13 +324,6 @@ void Finish::end(int flag)
     }
 
     mpi_timings("Pair",timer,Timer::PAIR, world,nprocs,nthreads,me,time_loop,screen,logfile);
-
-    if (atom->molecular != Atom::ATOMIC)
-      mpi_timings("Bond",timer,Timer::BOND,world,nprocs,nthreads,me,time_loop,screen,logfile);
-
-    if (force->kspace)
-      mpi_timings("Kspace",timer,Timer::KSPACE,world,nprocs,nthreads,me,time_loop,screen,logfile);
-
     mpi_timings("Neigh",timer,Timer::NEIGH,world,nprocs,nthreads,me,time_loop,screen,logfile);
     mpi_timings("Comm",timer,Timer::COMM,world,nprocs,nthreads,me,time_loop,screen,logfile);
     mpi_timings("Output",timer,Timer::OUTPUT,world,nprocs,nthreads,me,time_loop,screen,logfile);
@@ -402,61 +392,6 @@ if (fixomp && timer->has_full()) {
                        "Using 'export CUDA_LAUNCH_BLOCKING=1' will give an "
                        "accurate timing breakdown but will reduce performance");
       }
-
-  // FFT timing statistics
-  // time3d,time1d = total time during run for 3d and 1d FFTs
-  // loop on timing() until nsample FFTs require at least 1.0 CPU sec
-  // time_kspace may be 0.0 if another partition is doing Kspace
-
-  if (fftflag) {
-    if (me == 0) utils::logmesg(lmp,"\n");
-    int nsteps = update->nsteps;
-
-    double time3d;
-    int nsample = 1;
-    int nfft = force->kspace->timing_3d(nsample,time3d);
-    while (time3d < 1.0) {
-      nsample *= 2;
-      nfft = force->kspace->timing_3d(nsample,time3d);
-    }
-
-    time3d = nsteps * time3d / nsample;
-    MPI_Allreduce(&time3d,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
-    time3d = tmp/nprocs;
-
-    double time1d;
-    nsample = 1;
-    nfft = force->kspace->timing_1d(nsample,time1d);
-    while (time1d < 1.0) {
-      nsample *= 2;
-      nfft = force->kspace->timing_1d(nsample,time1d);
-    }
-
-    time1d = nsteps * time1d / nsample;
-    MPI_Allreduce(&time1d,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
-    time1d = tmp/nprocs;
-
-    double time_kspace = timer->get_wall(Timer::KSPACE);
-    MPI_Allreduce(&time_kspace,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
-    time_kspace = tmp/nprocs;
-
-    double ntotal = 1.0 * force->kspace->nx_pppm *
-      force->kspace->ny_pppm * force->kspace->nz_pppm;
-    double nflops = 5.0 * ntotal * log(ntotal);
-
-    double fraction,flop3,flop1;
-    if (nsteps) {
-      if (time_kspace) fraction = time3d/time_kspace*100.0;
-      else fraction = 0.0;
-      flop3 = nfft*nflops/1.0e9/(time3d/nsteps);
-      flop1 = nfft*nflops/1.0e9/(time1d/nsteps);
-    } else fraction = flop3 = flop1 = 0.0;
-
-    if (me == 0)
-      utils::logmesg(lmp,"FFT time (% of Kspce) = {:.6} ({:.4})\n"
-                     "FFT Gflps 3d (1d only) = {:.8} {:.8}\n",
-                     time3d,fraction,flop3,flop1);
-  }
 
   nneigh = nneighfull = 0;
   if (histoflag) {

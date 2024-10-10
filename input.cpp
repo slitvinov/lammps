@@ -15,7 +15,6 @@
 #include "input.h"
 
 #include "accelerator_kokkos.h"
-#include "angle.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "bond.h"
@@ -30,7 +29,6 @@
 #include "force.h"
 #include "group.h"
 #include "integrate.h"
-#include "kspace.h"
 #include "label_map.h"
 #include "memory.h"
 #include "min.h"
@@ -38,7 +36,6 @@
 #include "neighbor.h"
 #include "output.h"
 #include "pair.h"
-#include "special.h"
 #include "style_command.h"      // IWYU pragma: keep
 #include "thermo.h"
 #include "timer.h"
@@ -759,18 +756,12 @@ int Input::execute_command()
   else if (mycmd == "next") next_command();
   else if (mycmd == "partition") partition();
   else if (mycmd == "print") print();
-  else if (mycmd == "python") python();
   else if (mycmd == "quit") quit();
   else if (mycmd == "shell") shell();
   else if (mycmd == "variable") variable_command();
 
-  else if (mycmd == "angle_coeff") angle_coeff();
-  else if (mycmd == "angle_style") angle_style();
   else if (mycmd == "atom_modify") atom_modify();
   else if (mycmd == "atom_style") atom_style();
-  else if (mycmd == "bond_coeff") bond_coeff();
-  else if (mycmd == "bond_style") bond_style();
-  else if (mycmd == "bond_write") bond_write();
   else if (mycmd == "boundary") boundary();
   else if (mycmd == "comm_modify") comm_modify();
   else if (mycmd == "comm_style") comm_style();
@@ -783,9 +774,6 @@ int Input::execute_command()
   else if (mycmd == "fix") fix();
   else if (mycmd == "fix_modify") fix_modify();
   else if (mycmd == "group") group_command();
-  else if (mycmd == "kspace_modify") kspace_modify();
-  else if (mycmd == "kspace_style") kspace_style();
-  else if (mycmd == "labelmap") labelmap();
   else if (mycmd == "lattice") lattice();
   else if (mycmd == "mass") mass();
   else if (mycmd == "min_modify") min_modify();
@@ -803,7 +791,6 @@ int Input::execute_command()
   else if (mycmd == "reset_timestep") reset_timestep();
   else if (mycmd == "restart") restart();
   else if (mycmd == "run_style") run_style();
-  else if (mycmd == "special_bonds") special_bonds();
   else if (mycmd == "suffix") suffix();
   else if (mycmd == "thermo") thermo();
   else if (mycmd == "thermo_modify") thermo_modify();
@@ -1193,12 +1180,6 @@ void Input::print()
   }
 }
 
-/* ---------------------------------------------------------------------- */
-
-void Input::python()
-{
-  variable->python_command(narg,arg);
-}
 
 /* ---------------------------------------------------------------------- */
 
@@ -1319,33 +1300,6 @@ void Input::variable_command()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::angle_coeff()
-{
-  if (domain->box_exist == 0)
-    error->all(FLERR,"Angle_coeff command before simulation box is defined");
-  if (force->angle == nullptr)
-    error->all(FLERR,"Angle_coeff command before angle_style is defined");
-  if (atom->avec->angles_allow == 0)
-    error->all(FLERR,"Angle_coeff command when no angles allowed");
-  char *newarg = utils::expand_type(FLERR, arg[0], Atom::ANGLE, lmp);
-  if (newarg) arg[0] = newarg;
-  force->angle->coeff(narg,arg);
-  delete[] newarg;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::angle_style()
-{
-  if (narg < 1) error->all(FLERR,"Illegal angle_style command");
-  if (atom->avec->angles_allow == 0)
-    error->all(FLERR,"Angle_style command when no angles allowed");
-  force->create_angle(arg[0],1);
-  if (force->angle) force->angle->settings(narg-1,&arg[1]);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::atom_modify()
 {
   atom->modify_params(narg,arg);
@@ -1359,44 +1313,6 @@ void Input::atom_style()
   if (domain->box_exist)
     error->all(FLERR,"Atom_style command after simulation box is defined");
   atom->create_avec(arg[0],narg-1,&arg[1],1);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::bond_coeff()
-{
-  if (domain->box_exist == 0)
-    error->all(FLERR,"Bond_coeff command before simulation box is defined");
-  if (force->bond == nullptr)
-    error->all(FLERR,"Bond_coeff command before bond_style is defined");
-  if (atom->avec->bonds_allow == 0)
-    error->all(FLERR,"Bond_coeff command when no bonds allowed");
-  char *newarg = utils::expand_type(FLERR, arg[0], Atom::BOND, lmp);
-  if (newarg) arg[0] = newarg;
-  force->bond->coeff(narg,arg);
-  delete[] newarg;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::bond_style()
-{
-  if (narg < 1) error->all(FLERR,"Illegal bond_style command");
-  if (atom->avec->bonds_allow == 0)
-    error->all(FLERR,"Bond_style command when no bonds allowed");
-  force->create_bond(arg[0],1);
-  if (force->bond) force->bond->settings(narg-1,&arg[1]);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::bond_write()
-{
-  if (atom->avec->bonds_allow == 0)
-    error->all(FLERR,"Bond_write command when no bonds allowed");
-  if (force->bond == nullptr)
-    error->all(FLERR,"Bond_write command before bond_style is defined");
-  else force->bond->write_file(narg,arg);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1510,31 +1426,6 @@ void Input::group_command()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::kspace_modify()
-{
-  if (force->kspace == nullptr)
-    error->all(FLERR,"KSpace style has not yet been set");
-  force->kspace->modify_params(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::kspace_style()
-{
-  force->create_kspace(arg[0],1);
-  if (force->kspace) force->kspace->settings(narg-1,&arg[1]);
-}
-/* ---------------------------------------------------------------------- */
-
-void Input::labelmap()
-{
-  if (domain->box_exist == 0) error->all(FLERR,"Labelmap command before simulation box is defined");
-  if (!atom->labelmapflag) atom->add_label_map();
-  atom->lmap->modify_lmap(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::lattice()
 {
   domain->set_lattice(narg,arg);
@@ -1595,10 +1486,6 @@ void Input::newton()
 
   force->newton_pair = newton_pair;
 
-  if (domain->box_exist && (newton_bond != force->newton_bond))
-    error->all(FLERR,"Newton bond change after simulation box is defined");
-  force->newton_bond = newton_bond;
-
   if (newton_pair || newton_bond) force->newton = 1;
   else force->newton = 0;
 }
@@ -1657,11 +1544,6 @@ void Input::pair_coeff()
   if (force->pair->one_coeff && ((strcmp(arg[0],"*") != 0) || (strcmp(arg[1],"*") != 0)))
     error->all(FLERR,"Pair_coeff must start with * * for pair style {}", force->pair_style);
 
-  char *newarg0 = utils::expand_type(FLERR, arg[0], Atom::ATOM, lmp);
-  if (newarg0) arg[0] = newarg0;
-  char *newarg1 = utils::expand_type(FLERR, arg[1], Atom::ATOM, lmp);
-  if (newarg1) arg[1] = newarg1;
-
   // if arg[1] < arg[0], and neither contain a wildcard, reorder
 
   int itype,jtype;
@@ -1676,8 +1558,6 @@ void Input::pair_coeff()
   }
 
   force->pair->coeff(narg,arg);
-  delete[] newarg0;
-  delete[] newarg1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1766,34 +1646,6 @@ void Input::run_style()
   update->create_integrate(narg,arg,1);
 }
 
-/* ---------------------------------------------------------------------- */
-
-void Input::special_bonds()
-{
-  // store 1-3,1-4 and dihedral/extra flag values before change
-  // change in 1-2 coeffs will not change the special list
-
-  double lj2 = force->special_lj[2];
-  double lj3 = force->special_lj[3];
-  double coul2 = force->special_coul[2];
-  double coul3 = force->special_coul[3];
-  int onefive = force->special_onefive;
-  int angle = force->special_angle;
-
-  force->set_special(narg,arg);
-
-  // if simulation box defined and saved values changed, redo special list
-
-  if (domain->box_exist && atom->molecular == Atom::MOLECULAR) {
-    if (lj2 != force->special_lj[2] || lj3 != force->special_lj[3] ||
-        coul2 != force->special_coul[2] || coul3 != force->special_coul[3] ||
-        onefive != force->special_onefive ||
-        angle != force->special_angle) {
-      Special special(lmp);
-      special.build();
-    }
-  }
-}
 
 /* ---------------------------------------------------------------------- */
 

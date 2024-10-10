@@ -22,7 +22,6 @@
 
 #include "min.h"
 
-#include "angle.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "bond.h"
@@ -32,7 +31,6 @@
 #include "error.h"
 #include "fix_minimize.h"
 #include "force.h"
-#include "kspace.h"
 #include "math_const.h"
 #include "memory.h"
 #include "modify.h"
@@ -168,9 +166,6 @@ void Min::init()
 
   if (force->pair && force->pair->compute_flag) pair_compute_flag = 1;
   else pair_compute_flag = 0;
-  if (force->kspace && force->kspace->compute_flag) kspace_compute_flag = 1;
-  else kspace_compute_flag = 0;
-
   // orthogonal vs triclinic simulation box
 
   triclinic = domain->triclinic;
@@ -297,17 +292,6 @@ void Min::setup(int flag)
   if (pair_compute_flag) force->pair->compute(eflag,vflag);
   else if (force->pair) force->pair->compute_dummy(eflag,vflag);
 
-  if (atom->molecular != Atom::ATOMIC) {
-    if (force->bond) force->bond->compute(eflag,vflag);
-    if (force->angle) force->angle->compute(eflag,vflag);
-  }
-
-  if (force->kspace) {
-    force->kspace->setup();
-    if (kspace_compute_flag) force->kspace->compute(eflag,vflag);
-    else force->kspace->compute_dummy(eflag,vflag);
-  }
-
   modify->setup_pre_reverse(eflag,vflag);
   if (force->newton) comm->reverse_comm();
 
@@ -374,18 +358,6 @@ void Min::setup_minimal(int flag)
 
   if (pair_compute_flag) force->pair->compute(eflag,vflag);
   else if (force->pair) force->pair->compute_dummy(eflag,vflag);
-
-  if (atom->molecular != Atom::ATOMIC) {
-    if (force->bond) force->bond->compute(eflag,vflag);
-    if (force->angle) force->angle->compute(eflag,vflag);
-  }
-
-  if (force->kspace) {
-    force->kspace->setup();
-    if (kspace_compute_flag) force->kspace->compute(eflag,vflag);
-    else force->kspace->compute_dummy(eflag,vflag);
-  }
-
   modify->setup_pre_reverse(eflag,vflag);
   if (force->newton) comm->reverse_comm();
 
@@ -542,17 +514,6 @@ double Min::energy_force(int resetflag)
   if (pair_compute_flag) {
     force->pair->compute(eflag,vflag);
     timer->stamp(Timer::PAIR);
-  }
-
-  if (atom->molecular != Atom::ATOMIC) {
-    if (force->bond) force->bond->compute(eflag,vflag);
-    if (force->angle) force->angle->compute(eflag,vflag);
-    timer->stamp(Timer::BOND);
-  }
-
-  if (kspace_compute_flag) {
-    force->kspace->compute(eflag,vflag);
-    timer->stamp(Timer::KSPACE);
   }
 
   if (modify->n_min_pre_reverse) {

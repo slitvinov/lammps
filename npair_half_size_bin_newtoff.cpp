@@ -37,7 +37,7 @@ NPairHalfSizeBinNewtoff::NPairHalfSizeBinNewtoff(LAMMPS *lmp) : NPair(lmp) {}
 
 void NPairHalfSizeBinNewtoff::build(NeighList *list)
 {
-  int i,j,jh,k,n,ibin,which,imol,iatom,moltemplate;
+  int i,j,jh,k,n,ibin,which;
   tagint tagprev;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   double radi,radsum,cutsq;
@@ -48,17 +48,8 @@ void NPairHalfSizeBinNewtoff::build(NeighList *list)
   int *type = atom->type;
   int *mask = atom->mask;
   tagint *tag = atom->tag;
-  tagint *molecule = atom->molecule;
-  tagint **special = atom->special;
-  int **nspecial = atom->nspecial;
   int nlocal = atom->nlocal;
   if (includegroup) nlocal = atom->nfirst;
-
-  int *molindex = atom->molindex;
-  int *molatom = atom->molatom;
-  Molecule **onemols = atom->avec->onemols;
-  if (molecular == Atom::TEMPLATE) moltemplate = 1;
-  else moltemplate = 0;
 
   int history = list->history;
   int *ilist = list->ilist;
@@ -80,38 +71,6 @@ void NPairHalfSizeBinNewtoff::build(NeighList *list)
     ztmp = x[i][2];
     radi = radius[i];
     ibin = atom2bin[i];
-    if (moltemplate) {
-      imol = molindex[i];
-      iatom = molatom[i];
-      tagprev = tag[i] - iatom - 1;
-    }
-
-    // loop over all atoms in surrounding bins in stencil including self
-    // only store pair if i < j
-    // stores own/own pairs only once
-    // stores own/ghost pairs on both procs
-
-    for (k = 0; k < nstencil; k++) {
-      for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
-        if (j <= i) continue;
-        if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
-
-        delx = xtmp - x[j][0];
-        dely = ytmp - x[j][1];
-        delz = ztmp - x[j][2];
-        rsq = delx*delx + dely*dely + delz*delz;
-        radsum = radi + radius[j];
-        cutsq = (radsum+skin) * (radsum+skin);
-
-        if (rsq <= cutsq) {
-          jh = j;
-          if (history && rsq < radsum*radsum)
-            jh = jh ^ mask_history;
-	  neighptr[n++] = jh;
-        }
-      }
-    }
-
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;

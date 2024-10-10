@@ -41,7 +41,7 @@ class ComputePressure : public Compute {
   Compute *temperature;
   char *id_temp;
   double virial[6];    // ordering: xx,yy,zz,xy,xz,yz
-  int keflag, pairflag, bondflag, angleflag;
+  int keflag, pairflag, bondflag;
   int fixflag, kspaceflag;
 
   void virial_compute(int, int);

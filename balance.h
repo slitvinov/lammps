@@ -27,9 +27,6 @@ namespace LAMMPS_NS {
 class Balance : public Command {
  public:
   class RCB *rcb;
-  class FixStoreAtom *fixstore;    // per-atom weights stored in FixStorePeratom
-  int wtflag;                      // 1 if particle weighting is used
-  int varflag;                     // 1 if weight style var(iable) is used
   int sortflag;                    // 1 if sorting of comm messages is done
   int outflag;                     // 1 for output of balance results to file
 
@@ -37,9 +34,6 @@ class Balance : public Command {
   ~Balance() override;
   void command(int, char **) override;
   void options(int, int, char **, int);
-  void weight_storage(char *);
-  void init_imbalance(int);
-  void set_weights();
   double imbalance_factor(double &);
   void shift_setup(char *, int, double);
   int shift();
@@ -78,7 +72,6 @@ class Balance : public Command {
 
   int nimbalance;                  // number of user-specified weight styles
   class Imbalance **imbalances;    // list of Imb classes, one per weight style
-  double *weight;                  // ptr to FixStore weight vector
 
   FILE *fp;    // balance output file
   int firststep;

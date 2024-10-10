@@ -23,7 +23,6 @@ class NeighRequest : protected Pointers {
   friend class NBin;
   friend class NeighList;
   friend class NPair;
-  friend class NStencil;
   friend class NeighborKokkos;
   friend class NPairSkipIntel;
   friend class FixIntel;
@@ -115,7 +114,6 @@ class NeighRequest : protected Pointers {
   // -----------------------------
 
   int index_bin;        // index of NBin class assigned to this request
-  int index_stencil;    // index of NStencil class assigned to this request
   int index_pair;       // index of NPair class assigned to this request
 
   // methods

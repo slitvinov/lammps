@@ -127,9 +127,6 @@ void lammps_close(void *handle);
 
 void lammps_mpi_init();
 void lammps_mpi_finalize();
-void lammps_kokkos_finalize();
-void lammps_python_finalize();
-
 void lammps_error(void *handle, int error_type, const char *error_text);
 
 /* ----------------------------------------------------------------------
@@ -156,7 +153,6 @@ void lammps_reset_box(void *handle, double *boxlo, double *boxhi, double xy, dou
 void lammps_memory_usage(void *handle, double *meminfo);
 int lammps_get_mpi_comm(void *handle);
 
-int lammps_extract_setting(void *handle, const char *keyword);
 int lammps_extract_global_datatype(void *handle, const char *name);
 void *lammps_extract_global(void *handle, const char *name);
 

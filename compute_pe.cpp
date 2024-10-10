@@ -12,15 +12,12 @@
 ------------------------------------------------------------------------- */
 
 #include "compute_pe.h"
-
-#include "angle.h"
 #include "atom.h"
 #include "atom_masks.h"
 #include "bond.h"
 #include "domain.h"
 #include "error.h"
 #include "force.h"
-#include "kspace.h"
 #include "modify.h"
 #include "pair.h"
 #include "update.h"
@@ -43,12 +40,12 @@ ComputePE::ComputePE(LAMMPS *lmp, int narg, char **arg) : Compute(lmp, narg, arg
 
   if (narg == 3) {
     pairflag = 1;
-    bondflag = angleflag = 1;
+    bondflag = 1;
     kspaceflag = 1;
     fixflag = 1;
   } else {
     pairflag = 0;
-    bondflag = angleflag = 0;
+    bondflag = 0;
     kspaceflag = 0;
     fixflag = 0;
     int iarg = 3;
@@ -57,8 +54,6 @@ ComputePE::ComputePE(LAMMPS *lmp, int narg, char **arg) : Compute(lmp, narg, arg
         pairflag = 1;
       else if (strcmp(arg[iarg], "bond") == 0)
         bondflag = 1;
-      else if (strcmp(arg[iarg], "angle") == 0)
-        angleflag = 1;
       else if (strcmp(arg[iarg], "kspace") == 0)
         kspaceflag = 1;
       else if (strcmp(arg[iarg], "fix") == 0)
@@ -80,19 +75,9 @@ double ComputePE::compute_scalar()
   invoked_scalar = update->ntimestep;
   if (update->eflag_global != invoked_scalar)
     error->all(FLERR, "Energy was not tallied on needed timestep");
-
   double one = 0.0;
   if (pairflag && force->pair) one += force->pair->eng_vdwl + force->pair->eng_coul;
-
-  if (atom->molecular != Atom::ATOMIC) {
-    if (bondflag && force->bond) one += force->bond->energy;
-    if (angleflag && force->angle) one += force->angle->energy;
-  }
-
   MPI_Allreduce(&one, &scalar, 1, MPI_DOUBLE, MPI_SUM, world);
-
-  if (kspaceflag && force->kspace) scalar += force->kspace->energy;
-
   if (pairflag && force->pair && force->pair->tail_flag) {
     double volume = domain->xprd * domain->yprd * domain->zprd;
     scalar += force->pair->etail / volume;

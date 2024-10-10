@@ -49,7 +49,6 @@ class ReadRestart : public Command {
   std::string file_search(const std::string &);
   void header();
   void type_arrays();
-  void force_fields();
 
   void magic_string();
   void endian();

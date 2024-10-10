@@ -150,12 +150,10 @@ void Bond::ev_setup(int eflag, int vflag, int alloc)
     for (i = 0; i < 6; i++) virial[i] = 0.0;
   if (eflag_atom && alloc) {
     n = atom->nlocal;
-    if (force->newton_bond) n += atom->nghost;
     for (i = 0; i < n; i++) eatom[i] = 0.0;
   }
   if (vflag_atom && alloc) {
     n = atom->nlocal;
-    if (force->newton_bond) n += atom->nghost;
     for (i = 0; i < n; i++) {
       vatom[i][0] = 0.0;
       vatom[i][1] = 0.0;

@@ -2,9 +2,6 @@
 
 #include "abf_const.h"
 #include "atom.h"
-#include "atom_vec_ellipsoid.h"
-#include "atom_vec_line.h"
-#include "atom_vec_tri.h"
 #include "comm.h"
 #include "domain.h"
 #include "error.h"
@@ -1195,9 +1192,6 @@ void FixABF::setup_bodies_static()
   double *radius = atom->radius;
   double *rmass = atom->rmass;
   double *mass = atom->mass;
-  int *ellipsoid = atom->ellipsoid;
-  int *line = atom->line;
-  int *tri = atom->tri;
   int *type = atom->type;
   int nlocal = atom->nlocal;
 

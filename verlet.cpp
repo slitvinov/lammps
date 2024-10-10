@@ -14,7 +14,6 @@
 
 #include "verlet.h"
 
-#include "angle.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "bond.h"
@@ -23,7 +22,6 @@
 #include "error.h"
 #include "fix.h"
 #include "force.h"
-#include "kspace.h"
 #include "modify.h"
 #include "neighbor.h"
 #include "output.h"
@@ -136,17 +134,6 @@ void Verlet::setup(int flag)
   if (pair_compute_flag) force->pair->compute(eflag,vflag);
   else if (force->pair) force->pair->compute_dummy(eflag,vflag);
 
-  if (atom->molecular != Atom::ATOMIC) {
-    if (force->bond) force->bond->compute(eflag,vflag);
-    if (force->angle) force->angle->compute(eflag,vflag);
-  }
-
-  if (force->kspace) {
-    force->kspace->setup();
-    if (kspace_compute_flag) force->kspace->compute(eflag,vflag);
-    else force->kspace->compute_dummy(eflag,vflag);
-  }
-
   modify->setup_pre_reverse(eflag,vflag);
   if (force->newton) comm->reverse_comm();
 
@@ -193,17 +180,6 @@ void Verlet::setup_minimal(int flag)
 
   if (pair_compute_flag) force->pair->compute(eflag,vflag);
   else if (force->pair) force->pair->compute_dummy(eflag,vflag);
-
-  if (atom->molecular != Atom::ATOMIC) {
-    if (force->bond) force->bond->compute(eflag,vflag);
-    if (force->angle) force->angle->compute(eflag,vflag);
-  }
-
-  if (force->kspace) {
-    force->kspace->setup();
-    if (kspace_compute_flag) force->kspace->compute(eflag,vflag);
-    else force->kspace->compute_dummy(eflag,vflag);
-  }
 
   modify->setup_pre_reverse(eflag,vflag);
   if (force->newton) comm->reverse_comm();
@@ -305,17 +281,6 @@ void Verlet::run(int n)
     if (pair_compute_flag) {
       force->pair->compute(eflag,vflag);
       timer->stamp(Timer::PAIR);
-    }
-
-    if (atom->molecular != Atom::ATOMIC) {
-      if (force->bond) force->bond->compute(eflag,vflag);
-      if (force->angle) force->angle->compute(eflag,vflag);
-      timer->stamp(Timer::BOND);
-    }
-
-    if (kspace_compute_flag) {
-      force->kspace->compute(eflag,vflag);
-      timer->stamp(Timer::KSPACE);
     }
 
     if (n_pre_reverse) {

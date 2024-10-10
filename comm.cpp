@@ -218,9 +218,6 @@ void Comm::init()
   if (force->pair) maxforward = MAX(maxforward,force->pair->comm_forward);
   if (force->pair) maxreverse = MAX(maxreverse,force->pair->comm_reverse);
 
-  if (force->bond) maxforward = MAX(maxforward,force->bond->comm_forward);
-  if (force->bond) maxreverse = MAX(maxreverse,force->bond->comm_reverse);
-
   for (const auto &fix : fix_list) {
     maxforward = MAX(maxforward, fix->comm_forward);
     maxreverse = MAX(maxreverse, fix->comm_reverse);
@@ -238,7 +235,6 @@ void Comm::init()
 
   if (force->newton == 0) maxreverse = 0;
   if (force->pair) maxreverse = MAX(maxreverse,force->pair->comm_reverse_off);
-  if (force->bond) maxreverse = MAX(maxreverse,force->bond->comm_reverse_off);
 
   // maxexchange_atom = size of an exchanged atom, set by AtomVec
   //   only needs to be set if size > BUFEXTRA
@@ -681,26 +677,6 @@ void Comm::set_proc_grid(int outflag)
 double Comm::get_comm_cutoff()
 {
   double maxcommcutoff, maxbondcutoff = 0.0;
-
-  if (force->bond) {
-    int n = atom->nbondtypes;
-    for (int i = 1; i <= n; ++i)
-      maxbondcutoff = MAX(maxbondcutoff,force->bond->equilibrium_distance(i));
-
-    // apply bond length based heuristics.
-
-    if (force->newton_bond) {
-      maxbondcutoff *=1.5;
-    } else {
-      if (force->angle) {
-        maxbondcutoff *= 2.25;
-      } else {
-        maxbondcutoff *=1.5;
-      }
-    }
-    maxbondcutoff += neighbor->skin;
-  }
-
   // always take the larger of max neighbor list and user specified cutoff
 
   maxcommcutoff = MAX(cutghostuser,neighbor->cutneighmax);

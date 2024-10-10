@@ -145,12 +145,7 @@ class Thermo : protected Pointers {
   void compute_evdwl();
   void compute_ecoul();
   void compute_epair();
-  void compute_ebond();
-  void compute_eangle();
   void compute_eimp();
-  void compute_emol();
-  void compute_elong();
-  void compute_etail();
 
   void compute_enthalpy();
   void compute_ecouple();
@@ -176,11 +171,6 @@ class Thermo : protected Pointers {
   void compute_xlat();
   void compute_ylat();
   void compute_zlat();
-
-  void compute_bonds();
-  void compute_angles();
-  void compute_dihedrals();
-  void compute_impropers();
 
   void compute_pxx();
   void compute_pyy();

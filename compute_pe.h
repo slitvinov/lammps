@@ -31,7 +31,7 @@ class ComputePE : public Compute {
   double compute_scalar() override;
 
  private:
-  int pairflag, bondflag, angleflag, kspaceflag, fixflag;
+  int pairflag, bondflag, kspaceflag, fixflag;
 };
 
 }    // namespace LAMMPS_NS

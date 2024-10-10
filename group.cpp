@@ -204,9 +204,6 @@ void Group::assign(int narg, char **arg)
       else if (strcmp(arg[1],"molecule") == 0) category = MOLECULE;
       else if (strcmp(arg[1],"id") == 0) category = ID;
 
-      if ((category == MOLECULE) && (!atom->molecule_flag))
-        error->all(FLERR,"Group molecule command requires atom attribute molecule");
-
       if ((category == ID) && (!atom->tag_enable))
         error->all(FLERR,"Group id command requires atom IDs");
 
@@ -240,7 +237,6 @@ void Group::assign(int narg, char **arg)
         int *attribute = nullptr;
         tagint *tattribute = nullptr;
         if (category == TYPE) attribute = atom->type;
-        else if (category == MOLECULE) tattribute = atom->molecule;
         else if (category == ID) tattribute = atom->tag;
 
         // add to group if meets condition
@@ -301,7 +297,6 @@ void Group::assign(int narg, char **arg)
         int *attribute = nullptr;
         tagint *tattribute = nullptr;
         if (category == TYPE) attribute = atom->type;
-        else if (category == MOLECULE) tattribute = atom->molecule;
         else if (category == ID) tattribute = atom->tag;
 
         tagint start,stop,delta;
@@ -614,30 +609,6 @@ int Group::find_unused()
   for (int igroup = 0; igroup < MAX_GROUP; igroup++)
     if (names[igroup] == nullptr) return igroup;
   return -1;
-}
-
-/* ----------------------------------------------------------------------
-   callback from comm->ring()
-   cbuf = list of N molecule IDs, put them in hash
-   loop over my atoms, if matches molecule ID in hash,
-     add atom to group flagged by molbit
-------------------------------------------------------------------------- */
-
-void Group::molring(int n, char *cbuf, void *ptr)
-{
-  auto gptr = (Group *) ptr;
-  auto list = (tagint *) cbuf;
-  std::map<tagint,int> *hash = gptr->hash;
-  int nlocal = gptr->atom->nlocal;
-  tagint *molecule = gptr->atom->molecule;
-  int *mask = gptr->atom->mask;
-  int molbit = gptr->molbit;
-
-  hash->clear();
-  for (int i = 0; i < n; i++) (*hash)[list[i]] = 1;
-
-  for (int i = 0; i < nlocal; i++)
-    if (hash->find(molecule[i]) != hash->end()) mask[i] |= molbit;
 }
 
 /* ----------------------------------------------------------------------

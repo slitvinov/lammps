@@ -543,24 +543,6 @@ void Modify::post_run()
 }
 
 /* ----------------------------------------------------------------------
-   create_attribute call
-   invoked when an atom is added to system during a run
-   necessary so that fixes and computes that store per-atom
-     state can initialize that state for the new atom N
-   computes can store per-atom state via a fix like fix STORE
-     compute has the create_attribute flag, not fix STORE
-------------------------------------------------------------------------- */
-
-void Modify::create_attribute(int n)
-{
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->create_attribute) fix[i]->set_arrays(n);
-  for (int i = 0; i < ncompute; i++)
-    if (compute[i]->create_attribute) compute[i]->set_arrays(n);
-  input->variable->set_arrays(n);
-}
-
-/* ----------------------------------------------------------------------
    setup rRESPA pre_force call, only for relevant fixes
 ------------------------------------------------------------------------- */
 

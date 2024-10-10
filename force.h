@@ -20,8 +20,6 @@
 
 namespace LAMMPS_NS {
 class Angle;
-class Bond;
-class KSpace;
 class Pair;
 
 enum { ENERGY_NONE = 0x00, ENERGY_GLOBAL = 0x01, ENERGY_ATOM = 0x02 };
@@ -63,46 +61,17 @@ class Force : protected Pointers {
   double qqr2e_lammps_real;    // different versions of this constant
   double qqr2e_charmm_real;    // used by new CHARMM pair styles
 
-  int newton, newton_pair, newton_bond;    // Newton's 3rd law settings
+  int newton, newton_pair;    // Newton's 3rd law settings
 
   Pair *pair;
   char *pair_style;
   char *pair_restart;
 
-  Bond *bond;
-  char *bond_style;
-
-  Angle *angle;
-  char *angle_style;
-
-  KSpace *kspace;
-  char *kspace_style;
-
   typedef Pair *(*PairCreator)(LAMMPS *);
-  typedef Bond *(*BondCreator)(LAMMPS *);
-  typedef Angle *(*AngleCreator)(LAMMPS *);
-  typedef KSpace *(*KSpaceCreator)(LAMMPS *);
 
   typedef std::map<std::string, PairCreator> PairCreatorMap;
-  typedef std::map<std::string, BondCreator> BondCreatorMap;
-  typedef std::map<std::string, AngleCreator> AngleCreatorMap;
-  typedef std::map<std::string, KSpaceCreator> KSpaceCreatorMap;
 
   PairCreatorMap *pair_map;
-  BondCreatorMap *bond_map;
-  AngleCreatorMap *angle_map;
-  KSpaceCreatorMap *kspace_map;
-
-  // index [0] is not used in these arrays
-  double special_lj[4];      // 1-2, 1-3, 1-4 prefactors for LJ
-  double special_coul[4];    // 1-2, 1-3, 1-4 prefactors for Coulombics
-  int special_angle;         // 0 if defined angles are ignored
-                             // 1 if only weight 1,3 atoms if in an angle
-  int special_dihedral;      // 0 if defined dihedrals are ignored
-                             // 1 if only weight 1,4 atoms if in a dihedral
-  int special_extra;         // extra space for added bonds
-  int special_onefive;       // 0 if 1-5 neighbors are not stored, 1 if yes
-
   Force(class LAMMPS *);
   ~Force() override;
   void init();
@@ -112,22 +81,7 @@ class Force : protected Pointers {
   Pair *new_pair(const std::string &, int, int &);
   Pair *pair_match(const std::string &, int, int nsub = 0);
   char *pair_match_ptr(Pair *);
-
-  void create_bond(const std::string &, int);
-  Bond *new_bond(const std::string &, int, int &);
-  Bond *bond_match(const std::string &);
-
-  void create_angle(const std::string &, int);
-  Angle *new_angle(const std::string &, int, int &);
-  Angle *angle_match(const std::string &);
-
-  void create_kspace(const std::string &, int);
-  KSpace *new_kspace(const std::string &, int, int &);
-  KSpace *kspace_match(const std::string &, int);
-
   char *store_style(const std::string &, int);
-  void set_special(int, char **);
-
   double memory_usage();
 
  private:

@@ -186,11 +186,6 @@ class Pair : protected Pointers {
   virtual void init_list(int, class NeighList *);
   virtual double init_one(int, int) { return 0.0; }
 
-  virtual void init_tables(double, double *);
-  virtual void init_tables_disp(double);
-  virtual void free_tables();
-  virtual void free_disp_tables();
-
   virtual void write_restart(FILE *);
   virtual void read_restart(FILE *);
   virtual void write_restart_settings(FILE *) {}
@@ -239,7 +234,6 @@ class Pair : protected Pointers {
 
  protected:
   int instance_me;      // which Pair class instantiation I am
-  int special_lj[4];    // copied from force->special_lj for Kokkos
   int suffix_flag;      // suffix compatibility flag
 
   // pair_modify settings

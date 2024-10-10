@@ -38,10 +38,10 @@ NPairHalfMultiNewtoff::NPairHalfMultiNewtoff(LAMMPS *lmp) : NPair(lmp) {}
 
 void NPairHalfMultiNewtoff::build(NeighList *list)
 {
-  int i,j,k,n,itype,jtype,icollection,jcollection,ibin,jbin,which,ns,imol,iatom,moltemplate;
+  int i,j,k,n,itype,jtype,icollection,jcollection,ibin,jbin,which;
   tagint tagprev;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*s;
+  int *neighptr;
   int js;
 
   int *collection = neighbor->collection;
@@ -49,17 +49,8 @@ void NPairHalfMultiNewtoff::build(NeighList *list)
   int *type = atom->type;
   int *mask = atom->mask;
   tagint *tag = atom->tag;
-  tagint *molecule = atom->molecule;
-  tagint **special = atom->special;
-  int **nspecial = atom->nspecial;
   int nlocal = atom->nlocal;
   if (includegroup) nlocal = atom->nfirst;
-
-  int *molindex = atom->molindex;
-  int *molatom = atom->molatom;
-  Molecule **onemols = atom->avec->onemols;
-  if (molecular == Atom::TEMPLATE) moltemplate = 1;
-  else moltemplate = 0;
 
   int *ilist = list->ilist;
   int *numneigh = list->numneigh;
@@ -77,12 +68,6 @@ void NPairHalfMultiNewtoff::build(NeighList *list)
     xtmp = x[i][0];
     ytmp = x[i][1];
     ztmp = x[i][2];
-    if (moltemplate) {
-      imol = molindex[i];
-      iatom = molatom[i];
-      tagprev = tag[i] - iatom - 1;
-    }
-
     ibin = atom2bin[i];
 
     // loop through stencils for all collections
@@ -91,34 +76,6 @@ void NPairHalfMultiNewtoff::build(NeighList *list)
       // if same collection use own bin
       if (icollection == jcollection) jbin = ibin;
           else jbin = coord2bin(x[i], jcollection);
-
-      // loop over all atoms in other bins in stencil including self
-      // only store pair if i < j
-      // stores own/own pairs only once
-      // stores own/ghost pairs on both procs
-      // use full stencil for all collection combinations
-
-      s = stencil_multi[icollection][jcollection];
-      ns = nstencil_multi[icollection][jcollection];
-
-      for (k = 0; k < ns; k++) {
-            js = binhead_multi[jcollection][jbin + s[k]];
-            for (j = js; j >= 0; j = bins[j]) {
-              if (j <= i) continue;
-
-          jtype = type[j];
-          if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
-
-              delx = xtmp - x[j][0];
-              dely = ytmp - x[j][1];
-              delz = ztmp - x[j][2];
-          rsq = delx*delx + dely*dely + delz*delz;
-
-          if (rsq <= cutneighsq[itype][jtype]) {
-	    neighptr[n++] = j;
-          }
-        }
-      }
     }
 
     ilist[inum++] = i;

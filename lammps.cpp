@@ -14,14 +14,10 @@
 
 #include "lammps.h"
 
-#include "style_angle.h"     // IWYU pragma: keep
 #include "style_atom.h"      // IWYU pragma: keep
-#include "style_bond.h"      // IWYU pragma: keep
 #include "style_command.h"   // IWYU pragma: keep
-#include "style_compute.h"   // IWYU pragma: keep
 #include "style_dump.h"      // IWYU pragma: keep
 #include "style_integrate.h" // IWYU pragma: keep
-#include "style_kspace.h"    // IWYU pragma: keep
 #include "style_minimize.h"  // IWYU pragma: keep
 #include "style_pair.h"      // IWYU pragma: keep
 #include "style_region.h"    // IWYU pragma: keep
@@ -38,7 +34,6 @@
 #include "group.h"
 #include "info.h"
 #include "input.h"
-#include "lmppython.h"
 #include "memory.h"
 #include "modify.h"
 #include "neighbor.h"
@@ -119,7 +114,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   memory(nullptr), error(nullptr), universe(nullptr), input(nullptr), atom(nullptr),
   update(nullptr), neighbor(nullptr), comm(nullptr), domain(nullptr), force(nullptr),
   modify(nullptr), group(nullptr), output(nullptr), timer(nullptr), kokkos(nullptr),
-  atomKK(nullptr), memoryKK(nullptr), python(nullptr), citeme(nullptr)
+  atomKK(nullptr), memoryKK(nullptr), citeme(nullptr)
 {
   memory = new Memory(this);
   error = new Error(this);
@@ -774,7 +769,6 @@ LAMMPS::~LAMMPS()
 
   if (world != universe->uworld) MPI_Comm_free(&world);
 
-  delete python;
   delete kokkos;
   delete[] suffix;
   delete[] suffix2;
@@ -839,8 +833,6 @@ void LAMMPS::create()
                               // must be after modify so can create Computes
   update = new Update(this);  // must be after output, force, neighbor
   timer = new Timer(this);
-
-  python = new Python(this);
 
   // auto-load plugins
 #if defined(LMP_PLUGIN)
@@ -970,9 +962,6 @@ void LAMMPS::destroy()
   delete output;
   output = nullptr;
 
-  // undefine atomfile variables because they use a fix for backing storage
-  input->variable->purge_atomfile();
-
   delete modify;          // modify must come after output, force, update
                           //   since they delete fixes
   modify = nullptr;
@@ -992,9 +981,6 @@ void LAMMPS::destroy()
   delete timer;
   timer = nullptr;
 
-  delete python;
-  python = nullptr;
-
   restart_ver = -1;       // reset last restart version id
 }
 
@@ -1006,12 +992,6 @@ void _noopt LAMMPS::init_pkg_lists()
 {
   pkg_lists = new package_styles_lists;
 #define PACKAGE "UNKNOWN"
-#define ANGLE_CLASS
-#define AngleStyle(key,Class)                   \
-  pkg_lists->angle_styles[#key] = PACKAGE;
-#include "packages_angle.h"
-#undef AngleStyle
-#undef ANGLE_CLASS
 #define ATOM_CLASS
 #define AtomStyle(key,Class)                    \
   pkg_lists->atom_styles[#key] = PACKAGE;
@@ -1267,30 +1247,6 @@ void _noopt LAMMPS::help()
 #define PairStyle(key,Class) print_style(fp,#key,pos);
 #include "style_pair.h"  // IWYU pragma: keep
 #undef PAIR_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Bond styles:\n");
-#define BOND_CLASS
-#define BondStyle(key,Class) print_style(fp,#key,pos);
-#include "style_bond.h"  // IWYU pragma: keep
-#undef BOND_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Angle styles:\n");
-#define ANGLE_CLASS
-#define AngleStyle(key,Class) print_style(fp,#key,pos);
-#include "style_angle.h"  // IWYU pragma: keep
-#undef ANGLE_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* KSpace styles:\n");
-#define KSPACE_CLASS
-#define KSpaceStyle(key,Class) print_style(fp,#key,pos);
-#include "style_kspace.h"  // IWYU pragma: keep
-#undef KSPACE_CLASS
   fprintf(fp,"\n\n");
 
   pos = 80;

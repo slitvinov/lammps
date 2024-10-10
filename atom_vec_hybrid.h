@@ -62,7 +62,6 @@ class AtomVecHybrid : virtual public AtomVec {
   void pack_data_post(int) override;
 
   int pack_data_bonus(double *, int) override;
-  void write_data_bonus(FILE *, int, double *, int) override;
 
   int property_atom(const std::string &) override;
   void pack_property_atom(int, double *, int, int) override;

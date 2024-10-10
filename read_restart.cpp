@@ -14,7 +14,6 @@
 
 #include "read_restart.h"
 
-#include "angle.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "bond.h"
@@ -30,7 +29,6 @@
 #include "modify.h"
 #include "mpiio.h"
 #include "pair.h"
-#include "special.h"
 #include "update.h"
 
 #include <cstring>
@@ -134,7 +132,6 @@ void ReadRestart::command(int narg, char **arg)
   else n = static_cast<int> (LB_FACTOR * atom->natoms / nprocs);
 
   atom->allocate_type_arrays();
-  atom->deallocate_topology();
 
   // allocate atom arrays to size N, rounded up by AtomVec->DELTA
 
@@ -155,7 +152,6 @@ void ReadRestart::command(int narg, char **arg)
 
   group->read_restart(fp);
   type_arrays();
-  force_fields();
 
   int nextra = modify->read_restart(fp);
   atom->nextra_store = nextra;
@@ -473,35 +469,6 @@ void ReadRestart::command(int narg, char **arg)
   if (natoms != atom->natoms)
     error->all(FLERR,"Did not assign all restart atoms correctly");
 
-  if ((atom->molecular == Atom::TEMPLATE) && (me == 0)) {
-    std::string mesg;
-
-    if (atom->nbonds)
-      mesg += fmt::format("  {} template bonds\n",atom->nbonds);
-    if (atom->nangles)
-      mesg += fmt::format("  {} template angles\n",atom->nangles);
-    if (atom->ndihedrals)
-      mesg += fmt::format("  {} template dihedrals\n",atom->ndihedrals);
-    if (atom->nimpropers)
-      mesg += fmt::format("  {} template impropers\n",atom->nimpropers);
-
-    utils::logmesg(lmp,mesg);
-  }
-
-  if ((atom->molecular == Atom::MOLECULAR) && (me == 0)) {
-    std::string mesg;
-    if (atom->nbonds)
-      mesg += fmt::format("  {} bonds\n",atom->nbonds);
-    if (atom->nangles)
-      mesg += fmt::format("  {} angles\n",atom->nangles);
-    if (atom->ndihedrals)
-      mesg += fmt::format("  {} dihedrals\n",atom->ndihedrals);
-    if (atom->nimpropers)
-      mesg += fmt::format("  {} impropers\n",atom->nimpropers);
-
-    utils::logmesg(lmp,mesg);
-  }
-
   // check that atom IDs are valid
 
   atom->tag_check();
@@ -514,11 +481,6 @@ void ReadRestart::command(int narg, char **arg)
   }
 
   // create special bond lists for molecular systems
-
-  if (atom->molecular == Atom::MOLECULAR) {
-    Special special(lmp);
-    special.build();
-  }
 
   // total time
 
@@ -686,20 +648,6 @@ void ReadRestart::header()
           error->warning(FLERR, "Restart file used different newton pair setting, "
                          "using input script value");
       }
-    } else if (flag == NEWTON_BOND) {
-      int newton_bond_file = read_int();
-      if (force->newton_bond != 1) {
-        if (newton_bond_file != force->newton_bond && me == 0)
-          error->warning(FLERR, "Restart file used different newton bond setting, "
-                         "using restart file value");
-      }
-      force->newton_bond = newton_bond_file;
-      if (force->newton_pair || force->newton_bond) force->newton = 1;
-      else force->newton = 0;
-
-    // set boundary settings from restart file
-    // warn if different and input script settings are not default
-
     } else if (flag == XPERIODIC) {
       xperiodic = read_int();
     } else if (flag == YPERIODIC) {
@@ -776,31 +724,6 @@ void ReadRestart::header()
       atom->natoms = read_bigint();
     } else if (flag == NTYPES) {
       atom->ntypes = read_int();
-    } else if (flag == NBONDS) {
-      atom->nbonds = read_bigint();
-    } else if (flag == NBONDTYPES) {
-      atom->nbondtypes = read_int();
-    } else if (flag == BOND_PER_ATOM) {
-      atom->bond_per_atom = read_int();
-    } else if (flag == NANGLES) {
-      atom->nangles = read_bigint();
-    } else if (flag == NANGLETYPES) {
-      atom->nangletypes = read_int();
-    } else if (flag == ANGLE_PER_ATOM) {
-      atom->angle_per_atom = read_int();
-    } else if (flag == NDIHEDRALS) {
-      atom->ndihedrals = read_bigint();
-    } else if (flag == NDIHEDRALTYPES) {
-      atom->ndihedraltypes = read_int();
-    } else if (flag == DIHEDRAL_PER_ATOM) {
-      atom->dihedral_per_atom = read_int();
-    } else if (flag == NIMPROPERS) {
-      atom->nimpropers = read_bigint();
-    } else if (flag == NIMPROPERTYPES) {
-      atom->nimpropertypes = read_int();
-    } else if (flag == IMPROPER_PER_ATOM) {
-      atom->improper_per_atom = read_int();
-
     } else if (flag == TRICLINIC) {
       domain->triclinic = read_int();
     } else if (flag == BOXLO) {
@@ -815,13 +738,6 @@ void ReadRestart::header()
       domain->xz = read_double();
     } else if (flag == YZ) {
       domain->yz = read_double();
-
-    } else if (flag == SPECIAL_LJ) {
-      read_int();
-      read_double_vec(3,&force->special_lj[1]);
-    } else if (flag == SPECIAL_COUL) {
-      read_int();
-      read_double_vec(3,&force->special_coul[1]);
 
     } else if (flag == TIMESTEP) {
       update->dt = read_double();
@@ -843,37 +759,10 @@ void ReadRestart::header()
       comm->cutghostuser = read_double();
     } else if (flag == COMM_VEL) {
       comm->ghost_velocity = read_int();
-
-    } else if (flag == EXTRA_BOND_PER_ATOM) {
-      atom->extra_bond_per_atom = read_int();
-    } else if (flag == EXTRA_ANGLE_PER_ATOM) {
-      atom->extra_angle_per_atom = read_int();
-    } else if (flag == EXTRA_DIHEDRAL_PER_ATOM) {
-      atom->extra_dihedral_per_atom = read_int();
-    } else if (flag == EXTRA_IMPROPER_PER_ATOM) {
-      atom->extra_improper_per_atom = read_int();
-    } else if (flag == ATOM_MAXSPECIAL) {
-      atom->maxspecial = read_int();
-    } else if (flag == NELLIPSOIDS) {
-      atom->nellipsoids = read_bigint();
-    } else if (flag == NLINES) {
-      atom->nlines = read_bigint();
-    } else if (flag == NTRIS) {
-      atom->ntris = read_bigint();
-    } else if (flag == NBODIES) {
-      atom->nbodies = read_bigint();
-
     } else if (flag == ATIMESTEP) {
       update->atimestep = read_bigint();
     } else if (flag == ATIME) {
       update->atime = read_double();
-
-    // set dimension from restart file
-
-      // for backward compatibility
-    } else if (flag == EXTRA_SPECIAL_PER_ATOM) {
-      force->special_extra = read_int();
-
     } else error->all(FLERR,"Invalid flag in header section of restart file");
 
     flag = read_int();
@@ -893,64 +782,8 @@ void ReadRestart::type_arrays()
       read_double_vec(atom->ntypes,&mass[1]);
       atom->set_mass(mass);
       delete[] mass;
-
-    } else if (flag == LABELMAP) {
-      read_int();
-      atom->add_label_map();
-      atom->lmap->read_restart(fp);
-
     } else error->all(FLERR,
                       "Invalid flag in type arrays section of restart file");
-
-    flag = read_int();
-  }
-}
-
-/* ---------------------------------------------------------------------- */
-
-void ReadRestart::force_fields()
-{
-  char *style;
-
-  int flag = read_int();
-  while (flag >= 0) {
-
-    if (flag == PAIR) {
-      style = read_string();
-      force->create_pair(style,1);
-      delete[] style;
-      if (comm->me ==0)
-        utils::logmesg(lmp,"  restoring pair style {} from restart\n",
-                       force->pair_style);
-      force->pair->read_restart(fp);
-
-    } else if (flag == NO_PAIR) {
-      style = read_string();
-      if (comm->me ==0)
-        utils::logmesg(lmp,"  pair style {} stores no restart info\n", style);
-      force->create_pair("none",0);
-      force->pair_restart = style;
-
-    } else if (flag == BOND) {
-      style = read_string();
-      force->create_bond(style,1);
-      delete[] style;
-      if (comm->me ==0)
-        utils::logmesg(lmp,"  restoring bond style {} from restart\n",
-                       force->bond_style);
-      force->bond->read_restart(fp);
-
-    } else if (flag == ANGLE) {
-      style = read_string();
-      force->create_angle(style,1);
-      delete[] style;
-      if (comm->me ==0)
-        utils::logmesg(lmp,"  restoring angle style {} from restart\n",
-                       force->angle_style);
-      force->angle->read_restart(fp);
-
-    } else error->all(FLERR,
-                      "Invalid flag in force field section of restart file");
 
     flag = read_int();
   }

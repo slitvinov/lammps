@@ -13,15 +13,12 @@
 ------------------------------------------------------------------------- */
 
 #include "compute_pressure.h"
-
-#include "angle.h"
 #include "atom.h"
 #include "bond.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
 #include "force.h"
-#include "kspace.h"
 #include "modify.h"
 #include "pair.h"
 #include "update.h"
@@ -65,12 +62,12 @@ ComputePressure::ComputePressure(LAMMPS *lmp, int narg, char **arg) :
   if (narg == 4) {
     keflag = 1;
     pairflag = 1;
-    bondflag = angleflag = 1;
+    bondflag = 1;
     kspaceflag = fixflag = 1;
   } else {
     keflag = 0;
     pairflag = 0;
-    bondflag = angleflag = 0;
+    bondflag = 0;
     kspaceflag = fixflag = 0;
     int iarg = 4;
     while (iarg < narg) {
@@ -94,12 +91,11 @@ ComputePressure::ComputePressure(LAMMPS *lmp, int narg, char **arg) :
       }
       else if (strcmp(arg[iarg],"pair") == 0) pairflag = 1;
       else if (strcmp(arg[iarg],"bond") == 0) bondflag = 1;
-      else if (strcmp(arg[iarg],"angle") == 0) angleflag = 1;
       else if (strcmp(arg[iarg],"kspace") == 0) kspaceflag = 1;
       else if (strcmp(arg[iarg],"fix") == 0) fixflag = 1;
       else if (strcmp(arg[iarg],"virial") == 0) {
         pairflag = 1;
-        bondflag = angleflag = 1;
+        bondflag = 1;
         kspaceflag = fixflag = 1;
       } else error->all(FLERR,"Illegal compute pressure command");
       iarg++;
@@ -154,10 +150,6 @@ void ComputePressure::init()
   vptr = nullptr;
 
   if (pairflag && force->pair) nvirial++;
-  if (atom->molecular != Atom::ATOMIC) {
-    if (bondflag && force->bond) nvirial++;
-    if (angleflag && force->angle) nvirial++;
-  }
   if (fixflag)
     for (auto &ifix : modify->get_fix_list())
       if (ifix->thermo_virial) nvirial++;
@@ -166,18 +158,11 @@ void ComputePressure::init()
     vptr = new double*[nvirial];
     nvirial = 0;
     if (pairflag && force->pair) vptr[nvirial++] = force->pair->virial;
-    if (bondflag && force->bond) vptr[nvirial++] = force->bond->virial;
-    if (angleflag && force->angle) vptr[nvirial++] = force->angle->virial;
     if (fixflag)
       for (auto &ifix : modify->get_fix_list())
 	if (ifix->virial_global_flag && ifix->thermo_virial)
           vptr[nvirial++] = ifix->virial;
   }
-
-  // flag Kspace contribution separately, since not summed across procs
-
-  if (kspaceflag && force->kspace) kspace_virial = force->kspace->virial;
-  else kspace_virial = nullptr;
 }
 
 /* ----------------------------------------------------------------------
@@ -228,10 +213,6 @@ void ComputePressure::compute_vector()
   invoked_vector = update->ntimestep;
   if (update->vflag_global != invoked_vector)
     error->all(FLERR,"Virial was not tallied on needed timestep");
-
-  if (force->kspace && kspace_virial && force->kspace->scalar_pressure_flag)
-    error->all(FLERR,"Must use 'kspace_modify pressure/scalar no' for "
-               "tensor components with kspace_style msm");
 
   // invoke temperature if it hasn't been already
 

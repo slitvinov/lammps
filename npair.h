@@ -22,7 +22,6 @@ class NPair : protected Pointers {
  public:
   int istyle;            // 1-N index into pairnames
   class NBin *nb;        // ptr to NBin instance I depend on
-  class NStencil *ns;    // ptr to NStencil instance I depend on
   bigint last_build;     // last timestep build performed
 
   double cutoff_custom;    // cutoff set by requestor
@@ -89,27 +88,13 @@ class NPair : protected Pointers {
   int **binhead_multi;
 
   // data from NStencil class
-
-  int nstencil;
-  int *stencil;
-  int **stencilxyz;
-  int *nstencil_multi_old;
-  int **stencil_multi_old;
   double **distsq_multi_old;
-
-  int **nstencil_multi;
-  int ***stencil_multi;
-
-  // data common to all NPair variants
-
-  int molecular;
 
   // methods for all NPair variants
 
   virtual void copy_bin_info();
-  virtual void copy_stencil_info();
 
-  int exclusion(int, int, int, int, int *, tagint *) const;    // test for pair exclusion
+  int exclusion(int, int, int, int, int *) const;    // test for pair exclusion
   int coord2bin(double *);                                     // mapping atom coord to a bin
   int coord2bin(double *, int &, int &, int &);                // ditto
 

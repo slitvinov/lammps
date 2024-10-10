@@ -20,13 +20,11 @@
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
-#include "fix_store_atom.h"
 #include "group.h"
 #include "info.h"
 #include "input.h"
 #include "label_map.h"
 #include "library.h"
-#include "lmppython.h"
 #include "math_const.h"
 #include "memory.h"
 #include "modify.h"
@@ -367,25 +365,7 @@ void Variable::set(int narg, char **arg)
     reader[nvar] = new VarReader(lmp,arg[0],arg[2],SCALARFILE);
     int flag = reader[nvar]->read_scalar(data[nvar][0]);
     if (flag) error->all(FLERR,"File variable could not read value");
-
-  // ATOMFILE for numbers
-  // which = 1st value
-  // data = nullptr
-
-  } else if (strcmp(arg[1],"atomfile") == 0) {
-    if (narg != 3) error->all(FLERR,"Illegal variable command: expected 3 arguments but found {}", narg);
-    if (find(arg[0]) >= 0) return;
-    if (nvar == maxvar) grow();
-    style[nvar] = ATOMFILE;
-    num[nvar] = 1;
-    which[nvar] = 0;
-    pad[nvar] = 0;
-    data[nvar] = new char*[num[nvar]];
-    data[nvar][0] = nullptr;
-    reader[nvar] = new VarReader(lmp,arg[0],arg[2],ATOMFILE);
-    int flag = reader[nvar]->read_peratom();
-    if (flag) error->all(FLERR,"Atomfile variable could not read values");
-
+    
   // FORMAT
   // num = 3, which = 1st value
   // data = 3 values
@@ -497,34 +477,6 @@ void Variable::set(int narg, char **arg)
       pad[nvar] = 0;
       data[nvar] = new char*[num[nvar]];
       data[nvar][0] = utils::strdup(arg[2]);
-    }
-
-  // PYTHON
-  // replace pre-existing var if also style PYTHON (allows it to be reset)
-  // num = 2, which = 1st value
-  // data = 2 values, 1st is Python func to invoke, 2nd is filled by invoke
-
-  } else if (strcmp(arg[1],"python") == 0) {
-    if (narg != 3) error->all(FLERR,"Illegal variable command: expected 3 arguments but found {}", narg);
-    if (!python->is_enabled())
-      error->all(FLERR,"LAMMPS is not built with Python embedded");
-    int ivar = find(arg[0]);
-    if (ivar >= 0) {
-      if (style[ivar] != PYTHON)
-        error->all(FLERR,"Cannot redefine variable as a different style");
-      delete[] data[ivar][0];
-      data[ivar][0] = utils::strdup(arg[2]);
-      replaceflag = 1;
-    } else {
-      if (nvar == maxvar) grow();
-      style[nvar] = PYTHON;
-      num[nvar] = 2;
-      which[nvar] = 1;
-      pad[nvar] = 0;
-      data[nvar] = new char*[num[nvar]];
-      data[nvar][0] = utils::strdup(arg[2]);
-      data[nvar][1] = new char[VALUELENGTH];
-      strcpy(data[nvar][1],"(undefined)");
     }
 
   // TIMER
@@ -711,18 +663,6 @@ int Variable::next(int narg, char **arg)
         remove(ivar);
       }
     }
-
-  } else if (istyle == ATOMFILE) {
-
-    for (int iarg = 0; iarg < narg; iarg++) {
-      ivar = find(arg[iarg]);
-      int done = reader[ivar]->read_peratom();
-      if (done) {
-        flag = 1;
-        remove(ivar);
-      }
-    }
-
   } else if (istyle == UNIVERSE || istyle == ULOOP) {
 
     RanMars *random = nullptr;
@@ -823,42 +763,6 @@ int Variable::find(const char *name)
 }
 
 /* ----------------------------------------------------------------------
-   initialize one atom's storage values in all VarReaders via fix STORE
-   called when atom is created
-------------------------------------------------------------------------- */
-
-void Variable::set_arrays(int /*i*/)
-{
-  for (int i = 0; i < nvar; i++)
-    if (reader[i] && style[i] == ATOMFILE)
-      reader[i]->fixstore->vstore[i] = 0.0;
-}
-
-/* ----------------------------------------------------------------------
-   delete all atomfile style variables.
-   must scan list in reverse since remove() will compact list.
-   called from LAMMPS::destroy()
-------------------------------------------------------------------------- */
-
-void Variable::purge_atomfile()
-{
-  for (int i = nvar-1; i >= 0; --i)
-    if (style[i] == ATOMFILE) remove(i);
-}
-
-/* ----------------------------------------------------------------------
-   called by python command in input script
-   simply pass input script line args to Python class
-------------------------------------------------------------------------- */
-
-void Variable::python_command(int narg, char **arg)
-{
-  if (!python->is_enabled())
-    error->all(FLERR,"LAMMPS is not built with Python embedded");
-  python->command(narg,arg);
-}
-
-/* ----------------------------------------------------------------------
    return 1 if variable is EQUAL style, 0 if not
    TIMER, INTERNAL, PYTHON qualify as EQUAL style
    this is checked before call to compute_equal() to return a double
@@ -868,11 +772,6 @@ int Variable::equalstyle(int ivar)
 {
   if (style[ivar] == EQUAL || style[ivar] == TIMER ||
       style[ivar] == INTERNAL) return 1;
-  if (style[ivar] == PYTHON) {
-    int ifunc = python->variable_match(data[ivar][0],names[ivar],1);
-    if (ifunc < 0) return 0;
-    else return 1;
-  }
   return 0;
 }
 
@@ -883,7 +782,7 @@ int Variable::equalstyle(int ivar)
 
 int Variable::atomstyle(int ivar)
 {
-  if (style[ivar] == ATOM || style[ivar] == ATOMFILE) return 1;
+  if (style[ivar] == ATOM ) return 1;
   return 0;
 }
 
@@ -982,34 +881,11 @@ char *Variable::retrieve(const char *name)
     if (result == nullptr) result = (const char *) "";
     delete[] data[ivar][1];
     str = data[ivar][1] = utils::strdup(result);
-  } else if (style[ivar] == PYTHON) {
-    int ifunc = python->variable_match(data[ivar][0],name,0);
-    if (ifunc < 0) {
-      if (ifunc == -1) {
-        error->all(FLERR, "Could not find Python function {} linked to variable {}",
-                   data[ivar][0], name);
-      } else if (ifunc == -2) {
-        error->all(FLERR, "Python function {} for variable {} does not have a return value",
-                   data[ivar][0], name);
-      } else if (ifunc == -3) {
-        error->all(FLERR,"Python variable {} does not match variable name registered with "
-                   "Python function {}", name, data[ivar][0]);
-      } else {
-        error->all(FLERR, "Unknown error verifying function {} linked to python style variable {}",
-                   data[ivar][0],name);
-      }
-    }
-    python->invoke_function(ifunc,data[ivar][1]);
-    str = data[ivar][1];
-    // if Python func returns a string longer than VALUELENGTH
-    // then the Python class stores the result, query it via long_string()
-    char *strlong = python->long_string(ifunc);
-    if (strlong) str = strlong;
   } else if (style[ivar] == TIMER || style[ivar] == INTERNAL) {
     delete[] data[ivar][0];
     data[ivar][0] = utils::strdup(fmt::format("{:.15g}",dvalue[ivar]));
     str = data[ivar][0];
-  } else if (style[ivar] == ATOM || style[ivar] == ATOMFILE ||
+  } else if (style[ivar] == ATOM ||
              style[ivar] == VECTOR) return nullptr;
 
   eval_in_progress[ivar] = 0;
@@ -1035,14 +911,6 @@ double Variable::compute_equal(int ivar)
   if (style[ivar] == EQUAL) value = evaluate(data[ivar][0],nullptr,ivar);
   else if (style[ivar] == TIMER) value = dvalue[ivar];
   else if (style[ivar] == INTERNAL) value = dvalue[ivar];
-  else if (style[ivar] == PYTHON) {
-    int ifunc = python->find(data[ivar][0]);
-    if (ifunc < 0)
-      print_var_error(FLERR,fmt::format("cannot find python function {}",data[ivar][0]),ivar);
-    python->invoke_function(ifunc,data[ivar][1]);
-    value = atof(data[ivar][1]);
-  }
-
   eval_in_progress[ivar] = 0;
   return value;
 }
@@ -1078,11 +946,9 @@ void Variable::compute_atom(int ivar, int igroup, double *result, int stride, in
 
   eval_in_progress[ivar] = 1;
 
-  if (style[ivar] == ATOM) {
     treetype = ATOM;
     evaluate(data[ivar][0],&tree,ivar);
     collapse_tree(tree);
-  } else vstore = reader[ivar]->fixstore->vstore;
 
   if (result == nullptr) {
     if (style[ivar] == ATOM) free_tree(tree);
@@ -1910,7 +1776,7 @@ double Variable::evaluate(char *str, Tree **tree, int ivar)
         // access value via retrieve()
 
         } else if (nbracket == 0 && style[ivar] != ATOM &&
-                   style[ivar] != ATOMFILE && style[ivar] != VECTOR) {
+                   style[ivar] != VECTOR) {
 
           char *var = retrieve(word+2);
           if (var == nullptr)
@@ -1939,22 +1805,6 @@ double Variable::evaluate(char *str, Tree **tree, int ivar)
           treestack[ntreestack++] = newtree;
 
         // v_name = per-atom vector from atomfile-style variable
-
-        } else if (nbracket == 0 && style[ivar] == ATOMFILE) {
-
-          if (tree == nullptr)
-            print_var_error(FLERR,"Atomfile-style variable in equal-style variable formula",ivar);
-          if (treetype == VECTOR)
-            print_var_error(FLERR,"Atomfile-style variable in vector-style variable formula",ivar);
-
-          auto newtree = new Tree();
-          newtree->type = ATOMARRAY;
-          newtree->array = reader[ivar]->fixstore->vstore;
-          newtree->nstride = 1;
-          treestack[ntreestack++] = newtree;
-
-        // v_name = vector from vector-style variable
-        // evaluate the vector-style variable, put result in newtree
 
         } else if (nbracket == 0 && style[ivar] == VECTOR) {
 
@@ -1986,15 +1836,6 @@ double Variable::evaluate(char *str, Tree **tree, int ivar)
           memory->destroy(result);
 
         // v_name[N] = scalar from atomfile-style variable
-
-        } else if (nbracket && style[ivar] == ATOMFILE) {
-
-          peratom2global(1,nullptr,reader[ivar]->fixstore->vstore,1,index,
-                         tree,treestack,ntreestack,argstack,nargstack);
-
-        // v_name[N] = scalar from vector-style variable
-        // compute the vector-style variable, extract single value
-
         } else if (nbracket && style[ivar] == VECTOR) {
 
           double *vec;
@@ -2030,7 +1871,6 @@ double Variable::evaluate(char *str, Tree **tree, int ivar)
 
           if (math_function(word,contents,tree,treestack,ntreestack,argstack,nargstack,ivar));
           else if (group_function(word,contents,tree,treestack,ntreestack,argstack,nargstack,ivar));
-          else if (special_function(word,contents,tree,treestack,ntreestack,argstack,nargstack,ivar));
           else print_var_error(FLERR,fmt::format("Invalid math/group/special function '{}()' "
                                                  "in variable formula", word),ivar);
           delete[] contents;
@@ -3976,509 +3816,6 @@ Region *Variable::region_function(char *id, int ivar)
 }
 
 /* ----------------------------------------------------------------------
-   process a special function in formula
-   push result onto tree or arg stack
-   word = special function
-   contents = str between parentheses with one,two,three args
-   return 0 if not a match, 1 if successfully processed
-   customize by adding a special function:
-     sum(x),min(x),max(x),ave(x),trap(x),slope(x),
-     gmask(x),rmask(x),grmask(x,y),next(x)
-------------------------------------------------------------------------- */
-
-int Variable::special_function(char *word, char *contents, Tree **tree, Tree **treestack,
-                               int &ntreestack, double *argstack, int &nargstack, int ivar)
-{
-  double sx,sxx;
-  double value,sy,sxy;
-
-  // word not a match to any special function
-
-  if (strcmp(word,"sum") != 0 && strcmp(word,"min") && strcmp(word,"max") != 0 && strcmp(word,"ave") != 0 &&
-      strcmp(word,"trap") != 0 && strcmp(word,"slope") != 0 && strcmp(word,"gmask") != 0 && strcmp(word,"rmask") != 0 &&
-      strcmp(word,"grmask") != 0 && strcmp(word,"next") != 0 && strcmp(word,"is_active") != 0 &&
-      strcmp(word,"is_defined") != 0 && strcmp(word,"is_available") != 0 && strcmp(word,"is_file") != 0 &&
-      strcmp(word,"is_os") != 0 && strcmp(word,"extract_setting") != 0 && strcmp(word,"label2type") != 0)
-    return 0;
-
-  // parse contents for comma-separated args
-  // narg = number of args, args = strings between commas
-
-  std::string contents_copy(contents); // for label2type
-
-  char *args[MAXFUNCARG];
-  int narg = parse_args(contents,args);
-
-  // special functions that operate on global vectors
-
-  if (strcmp(word,"sum") == 0 || strcmp(word,"min") == 0 ||
-      strcmp(word,"max") == 0 || strcmp(word,"ave") == 0 ||
-      strcmp(word,"trap") == 0 || strcmp(word,"slope") == 0) {
-
-    int method = 0;
-    if (strcmp(word,"sum") == 0) method = SUM;
-    else if (strcmp(word,"min") == 0) method = XMIN;
-    else if (strcmp(word,"max") == 0) method = XMAX;
-    else if (strcmp(word,"ave") == 0) method = AVE;
-    else if (strcmp(word,"trap") == 0) method = TRAP;
-    else if (strcmp(word,"slope") == 0) method = SLOPE;
-
-    if (narg != 1)
-      print_var_error(FLERR,"Invalid special function in variable formula",ivar);
-
-    Compute *compute = nullptr;
-    Fix *fix = nullptr;
-    int index,nvec,nstride;
-    char *ptr1,*ptr2;
-    int ivar = -1;
-
-    // argument is compute
-
-    if (utils::strmatch(args[0],"^c_")) {
-      ptr1 = strchr(args[0],'[');
-      if (ptr1) {
-        ptr2 = ptr1;
-        index = (int) int_between_brackets(ptr2,0);
-        *ptr1 = '\0';
-      } else index = 0;
-
-      compute = modify->get_compute_by_id(&args[0][2]);
-      if (!compute) {
-        std::string mesg = "Invalid compute ID '";
-        mesg += (args[0]+2);
-        mesg += "' in variable formula";
-        print_var_error(FLERR,mesg,ivar);
-      }
-      if (index == 0 && compute->vector_flag) {
-        if (update->whichflag == 0) {
-          if (compute->invoked_vector != update->ntimestep)
-            print_var_error(FLERR,"Compute used in variable between runs is not current",ivar);
-        } else if (!(compute->invoked_flag & Compute::INVOKED_VECTOR)) {
-          compute->compute_vector();
-          compute->invoked_flag |= Compute::INVOKED_VECTOR;
-        }
-        nvec = compute->size_vector;
-        nstride = 1;
-      } else if (index && compute->array_flag) {
-        if (index > compute->size_array_cols)
-          print_var_error(FLERR,"Variable formula compute array is accessed out-of-range",ivar,0);
-        if (update->whichflag == 0) {
-          if (compute->invoked_array != update->ntimestep)
-            print_var_error(FLERR,"Compute used in variable between runs is not current",ivar);
-        } else if (!(compute->invoked_flag & Compute::INVOKED_ARRAY)) {
-          compute->compute_array();
-          compute->invoked_flag |= Compute::INVOKED_ARRAY;
-        }
-        nvec = compute->size_array_rows;
-        nstride = compute->size_array_cols;
-      } else print_var_error(FLERR,"Mismatched compute in variable formula",ivar);
-
-    // argument is fix
-
-    } else if (utils::strmatch(args[0],"^f_")) {
-      ptr1 = strchr(args[0],'[');
-      if (ptr1) {
-        ptr2 = ptr1;
-        index = (int) int_between_brackets(ptr2,0);
-        *ptr1 = '\0';
-      } else index = 0;
-
-      fix = modify->get_fix_by_id(&args[0][2]);
-      if (!fix) {
-        std::string mesg = "Invalid fix ID '";
-        mesg += (args[0]+2);
-        mesg += "' in variable formula";
-        print_var_error(FLERR,mesg,ivar);
-      }
-      if (index == 0 && fix->vector_flag) {
-        if (update->whichflag > 0 && update->ntimestep % fix->global_freq) {
-          std::string mesg = "Fix with ID '";
-          mesg += (args[0]+2);
-          mesg += "' in variable formula not computed at compatible time";
-          print_var_error(FLERR,mesg,ivar);
-        }
-        nvec = fix->size_vector;
-        nstride = 1;
-      } else if (index && fix->array_flag) {
-        if (index > fix->size_array_cols)
-          print_var_error(FLERR,"Variable formula fix array is accessed out-of-range",ivar);
-        if (update->whichflag > 0 && update->ntimestep % fix->global_freq)
-          print_var_error(FLERR,"Fix in variable not computed at compatible time",ivar);
-        nvec = fix->size_array_rows;
-        nstride = fix->size_array_cols;
-      } else print_var_error(FLERR,"Mismatched fix in variable formula",ivar);
-
-    // argument is vector-style variable
-
-    } else if (utils::strmatch(args[0],"^v_")) {
-      ptr1 = strchr(args[0],'[');
-      if (ptr1) {
-        ptr2 = ptr1;
-        index = (int) int_between_brackets(ptr2,0);
-        *ptr1 = '\0';
-      } else index = 0;
-
-      if (index)
-        print_var_error(FLERR,"Invalid special function in variable formula",ivar);
-      ivar = find(&args[0][2]);
-      if (ivar < 0)
-        print_var_error(FLERR,"Invalid special function in variable formula",ivar);
-      if (style[ivar] != VECTOR)
-        print_var_error(FLERR,"Mis-matched special function variable in variable formula",ivar);
-      if (eval_in_progress[ivar])
-        print_var_error(FLERR,"has a circular dependency",ivar);
-
-      double *vec;
-      nvec = compute_vector(ivar,&vec);
-      nstride = 1;
-
-      if ((method == AVE) && (nvec == 0))
-        print_var_error(FLERR,"Cannot compute average of empty vector",ivar);
-
-
-    } else print_var_error(FLERR,"Invalid special function in variable formula",ivar);
-
-    value = 0.0;
-    if (method == SLOPE) sx = sxx = sy = sxy = 0.0;
-    else if (method == XMIN) value = BIG;
-    else if (method == XMAX) value = -BIG;
-
-    if (compute) {
-      double *vec;
-      if (index) {
-        if (compute->array) vec = &compute->array[0][index-1];
-        else vec = nullptr;
-      } else vec = compute->vector;
-
-      int j = 0;
-      for (int i = 0; i < nvec; i++) {
-        if (method == SUM) value += vec[j];
-        else if (method == XMIN) value = MIN(value,vec[j]);
-        else if (method == XMAX) value = MAX(value,vec[j]);
-        else if (method == AVE) value += vec[j];
-        else if (method == TRAP) value += vec[j];
-        else if (method == SLOPE) {
-          sx += (double)i;
-          sy += vec[j];
-          sxx += (double)i * (double)i;
-          sxy += (double)i * vec[j];
-        }
-        j += nstride;
-      }
-      if (method == TRAP) value -= 0.5*vec[0] + 0.5*vec[nvec-1];
-    }
-
-    if (fix) {
-      double one;
-      for (int i = 0; i < nvec; i++) {
-        if (index) one = fix->compute_array(i,index-1);
-        else one = fix->compute_vector(i);
-        if (method == SUM) value += one;
-        else if (method == XMIN) value = MIN(value,one);
-        else if (method == XMAX) value = MAX(value,one);
-        else if (method == AVE) value += one;
-        else if (method == TRAP) value += one;
-        else if (method == SLOPE) {
-          sx += (double)i;
-          sy += one;
-          sxx += (double)i * (double)i;
-          sxy += (double)i * one;
-        }
-      }
-      if (method == TRAP) {
-        if (index) value -= 0.5*fix->compute_array(0,index-1) +
-                     0.5*fix->compute_array(nvec-1,index-1);
-        else value -= 0.5*fix->compute_vector(0) +
-               0.5*fix->compute_vector(nvec-1);
-      }
-    }
-
-    if (ivar >= 0) {
-      double one;
-      double *vec = vecs[ivar].values;
-      for (int i = 0; i < nvec; i++) {
-        one = vec[i];
-        if (method == SUM) value += one;
-        else if (method == XMIN) value = MIN(value,one);
-        else if (method == XMAX) value = MAX(value,one);
-        else if (method == AVE) value += one;
-        else if (method == TRAP) value += one;
-        else if (method == SLOPE) {
-          sx += (double) i;
-          sy += one;
-          sxx += (double)i * (double)i;
-          sxy += (double)i * one;
-        }
-      }
-      if (method == TRAP) value -= 0.5*vec[0] + 0.5*vec[nvec-1];
-    }
-
-    if (method == AVE) value /= nvec;
-
-    if (method == SLOPE) {
-      double numerator = nvec*sxy - sx*sy;
-      double denominator = nvec*sxx - sx*sx;
-      if (denominator != 0.0) value = numerator/denominator;
-      else value = BIG;
-    }
-
-    // save value in tree or on argstack
-
-    if (tree) {
-      auto newtree = new Tree();
-      newtree->type = VALUE;
-      newtree->value = value;
-      treestack[ntreestack++] = newtree;
-    } else argstack[nargstack++] = value;
-
-  // mask special functions
-
-  } else if (strcmp(word,"gmask") == 0) {
-    if (tree == nullptr)
-      print_var_error(FLERR,"Gmask function in equal-style variable formula",ivar);
-    if (narg != 1)
-      print_var_error(FLERR,"Invalid special function in variable formula",ivar);
-
-    int igroup = group->find(args[0]);
-    if (igroup == -1)
-      print_var_error(FLERR,"Group ID in variable formula does not exist",ivar);
-
-    auto newtree = new Tree();
-    newtree->type = GMASK;
-    newtree->ivalue = group->bitmask[igroup];
-    treestack[ntreestack++] = newtree;
-
-  } else if (strcmp(word,"rmask") == 0) {
-    if (tree == nullptr)
-      print_var_error(FLERR,"Rmask function in equal-style variable formula",ivar);
-    if (narg != 1)
-      print_var_error(FLERR,"Invalid special function in variable formula",ivar);
-
-    auto region = region_function(args[0],ivar);
-    region->prematch();
-
-    auto newtree = new Tree();
-    newtree->type = RMASK;
-    newtree->region = region;
-    treestack[ntreestack++] = newtree;
-
-  } else if (strcmp(word,"grmask") == 0) {
-    if (tree == nullptr)
-      print_var_error(FLERR,"Grmask function in equal-style variable formula",ivar);
-    if (narg != 2)
-      print_var_error(FLERR,"Invalid special function in variable formula",ivar);
-
-    int igroup = group->find(args[0]);
-    if (igroup == -1)
-      print_var_error(FLERR,"Group ID in variable formula does not exist",ivar);
-    auto region = region_function(args[1],ivar);
-    region->prematch();
-
-    auto newtree = new Tree();
-    newtree->type = GRMASK;
-    newtree->ivalue = group->bitmask[igroup];
-    newtree->region = region;
-    treestack[ntreestack++] = newtree;
-
-  // special function for file-style or atomfile-style variables
-
-  } else if (strcmp(word,"next") == 0) {
-    if (narg != 1)
-      print_var_error(FLERR,"Invalid special function in variable formula",ivar);
-
-    int ivar = find(args[0]);
-    if (ivar < 0) {
-      std::string mesg = "Variable ID '";
-      mesg += args[0];
-      mesg += "' in variable formula does not exist";
-      print_var_error(FLERR,mesg,ivar);
-    }
-
-    // SCALARFILE has single current value, read next one
-    // save value in tree or on argstack
-
-    if (style[ivar] == SCALARFILE) {
-      double value = atof(data[ivar][0]);
-      int done = reader[ivar]->read_scalar(data[ivar][0]);
-      if (done) remove(ivar);
-
-      if (tree) {
-        auto newtree = new Tree();
-        newtree->type = VALUE;
-        newtree->value = value;
-        treestack[ntreestack++] = newtree;
-      } else argstack[nargstack++] = value;
-
-    // ATOMFILE has per-atom values, save values in tree
-    // copy current per-atom values into result so can read next ones
-    // set selfalloc = 1 so result will be deleted by free_tree() after eval
-
-    } else if (style[ivar] == ATOMFILE) {
-      if (tree == nullptr)
-        print_var_error(FLERR,"Atomfile variable in equal-style variable formula",ivar);
-
-      double *result;
-      memory->create(result,atom->nlocal,"variable:result");
-      memcpy(result,reader[ivar]->fixstore->vstore,atom->nlocal*sizeof(double));
-
-      int done = reader[ivar]->read_peratom();
-      if (done) remove(ivar);
-
-      auto newtree = new Tree();
-      newtree->type = ATOMARRAY;
-      newtree->array = result;
-      newtree->nstride = 1;
-      newtree->selfalloc = 1;
-      treestack[ntreestack++] = newtree;
-
-    } else print_var_error(FLERR,"Invalid variable style in special function next",ivar);
-
-  } else if (strcmp(word,"is_active") == 0) {
-    if (narg != 2)
-      print_var_error(FLERR,"Invalid is_active() function in variable formula",ivar);
-
-    Info info(lmp);
-    value = (info.is_active(args[0],args[1])) ? 1.0 : 0.0;
-
-    // save value in tree or on argstack
-
-    if (tree) {
-      auto newtree = new Tree();
-      newtree->type = VALUE;
-      newtree->value = value;
-      treestack[ntreestack++] = newtree;
-    } else argstack[nargstack++] = value;
-
-  } else if (strcmp(word,"is_available") == 0) {
-    if (narg != 2)
-      print_var_error(FLERR,"Invalid is_available() function in variable formula",ivar);
-
-    Info info(lmp);
-    value = (info.is_available(args[0],args[1])) ? 1.0 : 0.0;
-
-    // save value in tree or on argstack
-
-    if (tree) {
-      auto newtree = new Tree();
-      newtree->type = VALUE;
-      newtree->value = value;
-      treestack[ntreestack++] = newtree;
-    } else argstack[nargstack++] = value;
-
-  } else if (strcmp(word,"is_defined") == 0) {
-    if (narg != 2)
-      print_var_error(FLERR,"Invalid is_defined() function in variable formula",ivar);
-
-    Info info(lmp);
-    value = (info.is_defined(args[0],args[1])) ? 1.0 : 0.0;
-
-    // save value in tree or on argstack
-
-    if (tree) {
-      auto newtree = new Tree();
-      newtree->type = VALUE;
-      newtree->value = value;
-      treestack[ntreestack++] = newtree;
-    } else argstack[nargstack++] = value;
-
-  } else if (strcmp(word,"is_file") == 0) {
-    if (narg != 1)
-      print_var_error(FLERR,"Invalid is_file() function in variable formula",ivar);
-
-    FILE *fp = fopen(args[0],"r");
-    value = (fp == nullptr) ? 0.0 : 1.0;
-    if (fp) fclose(fp);
-
-    // save value in tree or on argstack
-
-    if (tree) {
-      auto newtree = new Tree();
-      newtree->type = VALUE;
-      newtree->value = value;
-      treestack[ntreestack++] = newtree;
-    } else argstack[nargstack++] = value;
-
-  } else if (strcmp(word,"is_os") == 0) {
-    if (narg != 1) print_var_error(FLERR,"Invalid is_os() function in variable formula",ivar);
-    value = utils::strmatch(platform::os_info(), args[0]) ? 1.0 : 0.0;
-
-    // save value in tree or on argstack
-
-    if (tree) {
-      auto newtree = new Tree();
-      newtree->type = VALUE;
-      newtree->value = value;
-      treestack[ntreestack++] = newtree;
-    } else argstack[nargstack++] = value;
-
-  } else if (strcmp(word,"extract_setting") == 0) {
-    if (narg != 1) print_var_error(FLERR,"Invalid extract_setting() function syntax in variable formula",ivar);
-
-    value = lammps_extract_setting(lmp, args[0]);
-    if (value < 0) {
-      auto mesg = fmt::format("Unknown setting {} for extract_setting() function in variable formula",args[0]);
-      print_var_error(FLERR,mesg,ivar);
-    }
-
-    // save value in tree or on argstack
-
-    if (tree) {
-      auto newtree = new Tree();
-      newtree->type = VALUE;
-      newtree->value = value;
-      treestack[ntreestack++] = newtree;
-    } else argstack[nargstack++] = value;
-
-  } else if (strcmp(word,"label2type") == 0) {
-    if (!atom->labelmapflag)
-      print_var_error(FLERR,"Cannot use label2type() function without a labelmap",ivar);
-
-    auto pos = contents_copy.find_first_of(',');
-    if (pos == std::string::npos)
-      print_var_error(FLERR, fmt::format("Invalid label2type({}) function in variable formula",
-                                       contents_copy), ivar);
-    std::string typestr = contents_copy.substr(pos+1);
-    std::string kind = contents_copy.substr(0, pos);
-
-    int value = -1;
-    if (kind == "atom") {
-      value = atom->lmap->find(typestr,Atom::ATOM);
-    } else if (kind == "bond") {
-      value = atom->lmap->find(typestr,Atom::BOND);
-    } else if (kind == "angle") {
-      value = atom->lmap->find(typestr,Atom::ANGLE);
-    } else if (kind == "dihedral") {
-      value = atom->lmap->find(typestr,Atom::DIHEDRAL);
-    } else if (kind == "improper") {
-      value = atom->lmap->find(typestr,Atom::IMPROPER);
-    } else {
-      print_var_error(FLERR, fmt::format("Invalid type kind {} in variable formula",kind), ivar);
-    }
-
-    if (value == -1)
-      print_var_error(FLERR, fmt::format("Invalid {} type label {} in variable formula",
-                                         kind, typestr), ivar);
-
-    // save value in tree or on argstack
-
-    if (tree) {
-      Tree *newtree = new Tree();
-      newtree->type = VALUE;
-      newtree->value = value;
-      newtree->first = newtree->second = nullptr;
-      newtree->nextra = 0;
-      treestack[ntreestack++] = newtree;
-    } else argstack[nargstack++] = value;
-  }
-
-  // delete stored args
-
-  for (int i = 0; i < narg; i++) delete[] args[i];
-
-  return 1;
-}
-
-/* ----------------------------------------------------------------------
    extract a global value from a per-atom quantity in a formula
    flag = 0 -> word is an atom vector
    flag = 1 -> vector is a per-atom compute or fix quantity with nstride
@@ -4515,11 +3852,6 @@ void Variable::peratom2global(int flag, char *word, double *vector, int nstride,
         else mine = atom->mass[atom->type[index]];
       }
       else if (strcmp(word,"type") == 0) mine = atom->type[index];
-      else if (strcmp(word,"mol") == 0) {
-        if (!atom->molecule_flag)
-          error->one(FLERR,"Variable uses atom property that isn't allocated");
-        mine = atom->molecule[index];
-      }
       else if (strcmp(word,"x") == 0) mine = atom->x[index][0];
       else if (strcmp(word,"y") == 0) mine = atom->x[index][1];
       else if (strcmp(word,"z") == 0) mine = atom->x[index][2];
@@ -4618,18 +3950,6 @@ void Variable::atom_vector(char *word, Tree **tree, Tree **treestack, int &ntree
     newtree->type = INTARRAY;
     newtree->nstride = 1;
     newtree->iarray = atom->type;
-
-  } else if (strcmp(word,"mol") == 0) {
-    if (!atom->molecule_flag)
-      error->one(FLERR,"Variable uses atom property that isn't allocated");
-    if (sizeof(tagint) == sizeof(smallint)) {
-      newtree->type = INTARRAY;
-      newtree->iarray = (int *) atom->molecule;
-    } else {
-      newtree->type = BIGINTARRAY;
-      newtree->barray = (bigint *) atom->molecule;
-    }
-    newtree->nstride = 1;
   }
 
   else if (strcmp(word,"x") == 0) newtree->array = &atom->x[0][0];
@@ -5021,16 +4341,6 @@ VarReader::VarReader(LAMMPS *lmp, char *name, char *file, int flag) :
   fixstore = nullptr;
   id_fix = nullptr;
   buffer = nullptr;
-
-  if (style == Variable::ATOMFILE) {
-    if (atom->map_style == Atom::MAP_NONE)
-      error->all(FLERR,"Cannot use atomfile-style variable unless an atom map exists");
-
-    id_fix = utils::strdup(std::string(name) + "_VARIABLE_STORE");
-    fixstore = dynamic_cast<FixStoreAtom *>(
-      modify->add_fix(std::string(id_fix) + " all STORE/ATOM 1 0 0 0"));
-    buffer = new char[CHUNK*MAXLINE];
-  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -5081,78 +4391,5 @@ int VarReader::read_scalar(char *str)
   MPI_Bcast(&n,1,MPI_INT,0,world);
   if (n == 0) return 1;
   MPI_Bcast(str,n,MPI_CHAR,0,world);
-  return 0;
-}
-
-/* ----------------------------------------------------------------------
-   read snapshot of per-atom values from file
-   into str for atomfile-style variable
-   return 0 if successful, 1 if end-of-file
-------------------------------------------------------------------------- */
-
-int VarReader::read_peratom()
-{
-  int i,m,n,nchunk,eof;
-  tagint tag;
-  char *ptr,*next;
-  double value;
-
-  // set all per-atom values to 0.0
-  // values that appear in file will overwrite this
-
-  double *vstore = fixstore->vstore;
-
-  int nlocal = atom->nlocal;
-  for (i = 0; i < nlocal; i++) vstore[i] = 0.0;
-
-  // read one string from file, convert to Nlines
-
-  char str[MAXLINE];
-  if (me == 0) {
-    while (true) {
-      ptr = fgets(str,MAXLINE,fp);
-      if (!ptr) { n=0; break; }             // end of file
-      ptr[strcspn(ptr,"#")] = '\0';         // strip comment
-      ptr += strspn(ptr," \t\n\r\f");       // strip leading whitespace
-      ptr[strcspn(ptr," \t\n\r\f")] = '\0'; // strip trailing whitespace
-      n = strlen(ptr) + 1;
-      if (n == 1) continue;                 // skip if blank line
-      break;
-    }
-    memmove(str,ptr,n);                     // move trimmed string back
-  }
-
-  MPI_Bcast(&n,1,MPI_INT,0,world);
-  if (n == 0) return 1;
-  MPI_Bcast(str,n,MPI_CHAR,0,world);
-  bigint nlines = utils::bnumeric(FLERR,str,false,lmp);
-  tagint map_tag_max = atom->map_tag_max;
-
-  bigint nread = 0;
-  while (nread < nlines) {
-    nchunk = MIN(nlines-nread,CHUNK);
-    eof = utils::read_lines_from_file(fp,nchunk,MAXLINE,buffer,me,world);
-    if (eof) return 1;
-
-    char *buf = buffer;
-    for (i = 0; i < nchunk; i++) {
-      next = strchr(buf,'\n');
-      *next = '\0';
-      try {
-        ValueTokenizer words(buf);
-        tag = words.next_bigint();
-        value = words.next_double();
-      } catch (TokenizerException &e) {
-        error->all(FLERR,"Invalid atomfile line '{}': {}",buf,e.what());
-      }
-      if ((tag <= 0) || (tag > map_tag_max))
-        error->all(FLERR,"Invalid atom ID {} in variable file", tag);
-      if ((m = atom->map(tag)) >= 0) vstore[m] = value;
-      buf = next + 1;
-    }
-
-    nread += nchunk;
-  }
-
   return 0;
 }

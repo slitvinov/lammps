@@ -35,8 +35,7 @@ NPairHalfBinNewtoff::NPairHalfBinNewtoff(LAMMPS *lmp) : NPair(lmp) {}
 
 void NPairHalfBinNewtoff::build(NeighList *list)
 {
-  int i, j, k, n, itype, jtype, ibin, which, imol, iatom, moltemplate;
-  tagint tagprev;
+  int i, j, k, n, itype, jtype, ibin, which;
   double xtmp, ytmp, ztmp, delx, dely, delz, rsq;
   int *neighptr;
 
@@ -44,19 +43,8 @@ void NPairHalfBinNewtoff::build(NeighList *list)
   int *type = atom->type;
   int *mask = atom->mask;
   tagint *tag = atom->tag;
-  tagint *molecule = atom->molecule;
-  tagint **special = atom->special;
-  int **nspecial = atom->nspecial;
   int nlocal = atom->nlocal;
   if (includegroup) nlocal = atom->nfirst;
-
-  int *molindex = atom->molindex;
-  int *molatom = atom->molatom;
-  Molecule **onemols = atom->avec->onemols;
-  if (molecular == Atom::TEMPLATE)
-    moltemplate = 1;
-  else
-    moltemplate = 0;
 
   int *ilist = list->ilist;
   int *numneigh = list->numneigh;
@@ -74,37 +62,12 @@ void NPairHalfBinNewtoff::build(NeighList *list)
     xtmp = x[i][0];
     ytmp = x[i][1];
     ztmp = x[i][2];
-    if (moltemplate) {
-      imol = molindex[i];
-      iatom = molatom[i];
-      tagprev = tag[i] - iatom - 1;
-    }
 
     // loop over all atoms in other bins in stencil including self
     // only store pair if i < j
     // stores own/own pairs only once
     // stores own/ghost pairs on both procs
-
     ibin = atom2bin[i];
-
-    for (k = 0; k < nstencil; k++) {
-      for (j = binhead[ibin + stencil[k]]; j >= 0; j = bins[j]) {
-        if (j <= i) continue;
-
-        jtype = type[j];
-        if (exclude && exclusion(i, j, itype, jtype, mask, molecule)) continue;
-
-        delx = xtmp - x[j][0];
-        dely = ytmp - x[j][1];
-        delz = ztmp - x[j][2];
-        rsq = delx * delx + dely * dely + delz * delz;
-
-        if (rsq <= cutneighsq[itype][jtype]) {
-	  neighptr[n++] = j;
-        }
-      }
-    }
-
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;

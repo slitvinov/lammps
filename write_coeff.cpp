@@ -13,7 +13,6 @@
 
 #include "write_coeff.h"
 
-#include "angle.h"
 #include "bond.h"
 #include "comm.h"
 #include "domain.h"
@@ -56,16 +55,6 @@ void WriteCoeff::command(int narg, char **arg)
     if (force->pair && force->pair->writedata) {
       fprintf(one, "# pair_style %s\npair_coeff\n", force->pair_style);
       force->pair->write_data_all(one);
-      fprintf(one, "end\n");
-    }
-    if (force->bond && force->bond->writedata) {
-      fprintf(one, "# bond_style %s\nbond_coeff\n", force->bond_style);
-      force->bond->write_data(one);
-      fprintf(one, "end\n");
-    }
-    if (force->angle && force->angle->writedata) {
-      fprintf(one, "# angle_style %s\nangle_coeff\n", force->angle_style);
-      force->angle->write_data(one);
       fprintf(one, "end\n");
     }
     rewind(one);

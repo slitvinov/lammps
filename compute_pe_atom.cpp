@@ -12,14 +12,11 @@
 ------------------------------------------------------------------------- */
 
 #include "compute_pe_atom.h"
-
-#include "angle.h"
 #include "atom.h"
 #include "bond.h"
 #include "comm.h"
 #include "error.h"
 #include "force.h"
-#include "kspace.h"
 #include "memory.h"
 #include "modify.h"
 #include "pair.h"
@@ -44,24 +41,14 @@ ComputePEAtom::ComputePEAtom(LAMMPS *lmp, int narg, char **arg) :
 
   if (narg == 3) {
     pairflag = 1;
-    bondflag = angleflag = 1;
-    kspaceflag = 1;
     fixflag = 1;
   } else {
     pairflag = 0;
-    bondflag = angleflag = 0;
-    kspaceflag = 0;
     fixflag = 0;
     int iarg = 3;
     while (iarg < narg) {
       if (strcmp(arg[iarg], "pair") == 0)
         pairflag = 1;
-      else if (strcmp(arg[iarg], "bond") == 0)
-        bondflag = 1;
-      else if (strcmp(arg[iarg], "angle") == 0)
-        angleflag = 1;
-      else if (strcmp(arg[iarg], "kspace") == 0)
-        kspaceflag = 1;
       else if (strcmp(arg[iarg], "fix") == 0)
         fixflag = 1;
       else
@@ -112,9 +99,7 @@ void ComputePEAtom::compute_peratom()
   int ntotal = nlocal;
   int nkspace = nlocal;
   if (force->newton) npair += atom->nghost;
-  if (force->newton_bond) nbond += atom->nghost;
   if (force->newton) ntotal += atom->nghost;
-  if (force->kspace && force->kspace->tip4pflag) nkspace += atom->nghost;
 
   // clear local energy array
 
@@ -127,21 +112,6 @@ void ComputePEAtom::compute_peratom()
     for (i = 0; i < npair; i++) energy[i] += eatom[i];
   }
 
-  if (bondflag && force->bond) {
-    double *eatom = force->bond->eatom;
-    for (i = 0; i < nbond; i++) energy[i] += eatom[i];
-  }
-
-  if (angleflag && force->angle) {
-    double *eatom = force->angle->eatom;
-    for (i = 0; i < nbond; i++) energy[i] += eatom[i];
-  }
-
-  if (kspaceflag && force->kspace && force->kspace->compute_flag) {
-    double *eatom = force->kspace->eatom;
-    for (i = 0; i < nkspace; i++) energy[i] += eatom[i];
-  }
-
   // add in per-atom contributions from relevant fixes
   // always only for owned atoms, not ghost
 
@@ -149,7 +119,7 @@ void ComputePEAtom::compute_peratom()
 
   // communicate ghost energy between neighbor procs
 
-  if (force->newton || (force->kspace && force->kspace->tip4pflag)) comm->reverse_comm(this);
+  if (force->newton) comm->reverse_comm(this);
 
   // zero energy of atoms not in group
   // only do this after comm since ghost contributions must be included

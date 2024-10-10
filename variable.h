@@ -32,9 +32,6 @@ class Variable : protected Pointers {
   int next(int, char **);
 
   int find(const char *);
-  void set_arrays(int);
-  void python_command(int, char **);
-  void purge_atomfile();
 
   int equalstyle(int);
   int atomstyle(int);
@@ -66,7 +63,6 @@ class Variable : protected Pointers {
     STRING,
     GETENV,
     SCALARFILE,
-    ATOMFILE,
     FORMAT,
     EQUAL,
     ATOM,
@@ -158,7 +154,6 @@ class VarReader : protected Pointers {
   VarReader(class LAMMPS *, char *, char *, int);
   ~VarReader() override;
   int read_scalar(char *);
-  int read_peratom();
 
  private:
   int me, style;

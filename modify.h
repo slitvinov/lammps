@@ -74,7 +74,6 @@ class Modify : protected Pointers {
   virtual double energy_global();
   virtual void energy_atom(int, double *);
   virtual void post_run();
-  virtual void create_attribute(int);
 
   virtual void setup_pre_force_respa(int, int);
   virtual void initial_integrate_respa(int, int, int);

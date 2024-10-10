@@ -52,7 +52,6 @@ class WriteRestart : public Command {
 
   void header();
   void type_arrays();
-  void force_fields();
   void file_layout(int);
 
   void magic_string();

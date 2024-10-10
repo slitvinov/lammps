@@ -79,7 +79,6 @@ void PairDPD::compute(int eflag, int vflag)
   double **f = atom->f;
   int *type = atom->type;
   int nlocal = atom->nlocal;
-  double *special_lj = force->special_lj;
   int newton_pair = force->newton_pair;
   double dtinvsqrt = 1.0/sqrt(update->dt);
 
@@ -104,7 +103,7 @@ void PairDPD::compute(int eflag, int vflag)
 
     for (jj = 0; jj < jnum; jj++) {
       j = jlist[jj];
-      factor_dpd = special_lj[sbmask(j)];
+      factor_dpd = 0.0;
       factor_sqrt = special_sqrt[sbmask(j)];
       j &= NEIGHMASK;
 
@@ -266,10 +265,6 @@ void PairDPD::init_style()
     error->warning(FLERR, "Pair dpd needs newton pair on for momentum conservation");
 
   neighbor->add_request(this);
-
-  // precompute random force scaling factors
-
-  for (int i = 0; i < 4; ++i) special_sqrt[i] = sqrt(force->special_lj[i]);
 }
 
 /* ----------------------------------------------------------------------

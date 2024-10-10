@@ -101,21 +101,13 @@ void AtomVecHybrid::process_args(int narg, char **arg)
   maxexchange = 0;
 
   for (int k = 0; k < nstyles; k++) {
-    if ((styles[k]->molecular == Atom::MOLECULAR && molecular == Atom::TEMPLATE) ||
-        (styles[k]->molecular == Atom::TEMPLATE && molecular == Atom::MOLECULAR))
-      error->all(FLERR, "Cannot mix molecular and molecule template atom styles");
     molecular = MAX(molecular, styles[k]->molecular);
 
     bonds_allow = MAX(bonds_allow, styles[k]->bonds_allow);
-    angles_allow = MAX(angles_allow, styles[k]->angles_allow);
-    dihedrals_allow = MAX(dihedrals_allow, styles[k]->dihedrals_allow);
-    impropers_allow = MAX(impropers_allow, styles[k]->impropers_allow);
     mass_type = MAX(mass_type, styles[k]->mass_type);
     dipole_type = MAX(dipole_type, styles[k]->dipole_type);
     forceclearflag = MAX(forceclearflag, styles[k]->forceclearflag);
     maxexchange += styles[k]->maxexchange;
-
-    if (styles[k]->molecular == Atom::TEMPLATE) onemols = styles[k]->onemols;
   }
 
   // issue a warning if both per-type mass and per-atom rmass are defined
@@ -411,22 +403,6 @@ int AtomVecHybrid::pack_data_bonus(double *buf, int flag)
     return styles[k]->pack_data_bonus(buf, flag);
   }
   return 0;
-}
-
-/* ----------------------------------------------------------------------
-   write bonus info to data file, match flag to sub-style
-------------------------------------------------------------------------- */
-
-void AtomVecHybrid::write_data_bonus(FILE *fp, int n, double *buf, int flag)
-{
-  for (int k = 0; k < nstyles; k++) {
-    if (flag == ELLIPSOID && strcmp(keywords[k], "ellipsoid") != 0) continue;
-    if (flag == LINE && strcmp(keywords[k], "line") != 0) continue;
-    if (flag == TRIANGLE && strcmp(keywords[k], "tri") != 0) continue;
-    if (flag == BODY && strcmp(keywords[k], "body") != 0) continue;
-
-    styles[k]->write_data_bonus(fp, n, buf, flag);
-  }
 }
 
 /* ----------------------------------------------------------------------
