@@ -35,7 +35,6 @@ class LAMMPS {
   class Force *force;              // inter-particle forces
   class Modify *modify;            // fixes and computes
   class Group *group;              // groups of atoms
-  class Timer *timer;              // CPU timing info
                                    //
   class KokkosLMP *kokkos;         // KOKKOS accelerator class
   class AtomKokkos *atomKK;        // KOKKOS version of Atom class

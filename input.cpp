@@ -34,8 +34,6 @@
 #include "neighbor.h"
 #include "pair.h"
 #include "style_command.h"      // IWYU pragma: keep
-#include "thermo.h"
-#include "timer.h"
 #include "universe.h"
 #include "update.h"
 #include "variable.h"
@@ -782,11 +780,9 @@ int Input::execute_command()
   else if (mycmd == "processors") processors();
   else if (mycmd == "region") region();
   else if (mycmd == "reset_timestep") reset_timestep();
-  else if (mycmd == "restart") restart();
   else if (mycmd == "run_style") run_style();
   else if (mycmd == "suffix") suffix();
   else if (mycmd == "timestep") timestep();
-  else if (mycmd == "timer") timer_command();
   else if (mycmd == "uncompute") uncompute();
   else if (mycmd == "unfix") unfix();
   else if (mycmd == "units") units();

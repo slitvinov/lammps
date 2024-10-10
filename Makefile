@@ -22,7 +22,6 @@ comm_brick.o \
 comm.o \
 comm_tiled.o \
 compute.o \
-compute_pair.o \
 compute_pe_atom.o \
 compute_pe.o \
 compute_pressure.o \
@@ -50,7 +49,6 @@ imbalance_group.o \
 imbalance_neigh.o \
 imbalance.o \
 imbalance_store.o \
-imbalance_time.o \
 imbalance_var.o \
 info.o \
 input.o \
@@ -111,8 +109,6 @@ region_prism.o \
 run.o \
 set.o \
 text_file_reader.o \
-thermo.o \
-timer.o \
 tokenizer.o \
 universe.o \
 update.o \

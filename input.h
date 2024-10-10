@@ -112,11 +112,9 @@ class Input : protected Pointers {
   void processors();
   void region();
   void reset_timestep();
-  void restart();
   void run_style();
   void suffix();
   void timestep();
-  void timer_command();
   void uncompute();
   void unfix();
   void units();

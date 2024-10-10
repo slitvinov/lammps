@@ -36,7 +36,6 @@
 #include "modify.h"
 #include "neighbor.h"
 #include "suffix.h"
-#include "timer.h"
 #include "universe.h"
 #include "update.h"
 #include "variable.h"
@@ -108,7 +107,7 @@ using namespace LAMMPS_NS;
 LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   memory(nullptr), error(nullptr), universe(nullptr), input(nullptr), atom(nullptr),
   update(nullptr), neighbor(nullptr), comm(nullptr), domain(nullptr), force(nullptr),
-  modify(nullptr), group(nullptr), timer(nullptr), kokkos(nullptr),
+  modify(nullptr), group(nullptr), kokkos(nullptr),
   atomKK(nullptr), memoryKK(nullptr), citeme(nullptr)
 {
   memory = new Memory(this);
@@ -825,7 +824,6 @@ void LAMMPS::create()
   else modify = new Modify(this);
 
   update = new Update(this);  // must be after output, force, neighbor
-  timer = new Timer(this);
 
   // auto-load plugins
 #if defined(LMP_PLUGIN)
@@ -966,10 +964,6 @@ void LAMMPS::destroy()
   delete atom;            // atom must come after modify, neighbor
                           //   since fixes delete callbacks in atom
   atom = nullptr;
-
-  delete timer;
-  timer = nullptr;
-
   restart_ver = -1;       // reset last restart version id
 }
 

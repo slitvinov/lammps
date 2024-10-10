@@ -24,7 +24,6 @@
 #include "modify.h"
 #include "neighbor.h"
 #include "pair.h"
-#include "timer.h"
 #include "update.h"
 
 #include <cstring>
@@ -88,13 +87,6 @@ void Verlet::setup(int flag)
 {
   if (comm->me == 0 && screen) {
     fputs("Setting up Verlet run ...\n",screen);
-    if (flag) {
-      fmt::print(screen,"  Unit style    : {}\n"
-                        "  Current step  : {}\n"
-                        "  Time step     : {}\n",
-                 update->unit_style,update->ntimestep,update->dt);
-      timer->print_timeout(screen);
-    }
   }
 
   if (lmp->kokkos)
@@ -207,34 +199,21 @@ void Verlet::run(int n)
   else sortflag = 0;
 
   for (int i = 0; i < n; i++) {
-    if (timer->check_timeout(i)) {
-      update->nsteps = i;
-      break;
-    }
-
     ntimestep = ++update->ntimestep;
     ev_set(ntimestep);
 
     // initial time integration
-
-    timer->stamp();
     modify->initial_integrate(vflag);
     if (n_post_integrate) modify->post_integrate();
-    timer->stamp(Timer::MODIFY);
-
     // regular communication vs neighbor list rebuild
 
     nflag = neighbor->decide();
 
     if (nflag == 0) {
-      timer->stamp();
       comm->forward_comm();
-      timer->stamp(Timer::COMM);
     } else {
       if (n_pre_exchange) {
-        timer->stamp();
         modify->pre_exchange();
-        timer->stamp(Timer::MODIFY);
       }
       if (triclinic) domain->x2lamda(atom->nlocal);
       domain->pbc();
@@ -243,21 +222,16 @@ void Verlet::run(int n)
         comm->setup();
         if (neighbor->style) neighbor->setup_bins();
       }
-      timer->stamp();
       comm->exchange();
       if (sortflag && ntimestep >= atom->nextsort) atom->sort();
       comm->borders();
       if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
-      timer->stamp(Timer::COMM);
       if (n_pre_neighbor) {
         modify->pre_neighbor();
-        timer->stamp(Timer::MODIFY);
       }
       neighbor->build(1);
-      timer->stamp(Timer::NEIGH);
       if (n_post_neighbor) {
         modify->post_neighbor();
-        timer->stamp(Timer::MODIFY);
       }
     }
 
@@ -267,29 +241,22 @@ void Verlet::run(int n)
     // and Pair:ev_tally() needs to be called before any tallying
 
     force_clear();
-
-    timer->stamp();
-
     if (n_pre_force) {
       modify->pre_force(vflag);
-      timer->stamp(Timer::MODIFY);
     }
 
     if (pair_compute_flag) {
       force->pair->compute(eflag,vflag);
-      timer->stamp(Timer::PAIR);
     }
 
     if (n_pre_reverse) {
       modify->pre_reverse(eflag,vflag);
-      timer->stamp(Timer::MODIFY);
     }
 
     // reverse communication of forces
 
     if (force->newton) {
       comm->reverse_comm();
-      timer->stamp(Timer::COMM);
     }
 
     // force modifications, final time integration, diagnostics
@@ -297,7 +264,6 @@ void Verlet::run(int n)
     if (n_post_force_any) modify->post_force(vflag);
     modify->final_integrate();
     if (n_end_of_step) modify->end_of_step();
-    timer->stamp(Timer::MODIFY);
   }
 }
 

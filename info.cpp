@@ -64,7 +64,6 @@
 namespace LAMMPS_NS {
 
 enum {COMPUTES=1<<0,
-      DUMPS=1<<1,
       FIXES=1<<2,
       GROUPS=1<<3,
       REGIONS=1<<4,
@@ -162,9 +161,6 @@ void Info::command(int narg, char **arg)
       ++idx;
     } else if (strncmp(arg[idx],"computes",5) == 0) {
       flags |= COMPUTES;
-      ++idx;
-    } else if (strncmp(arg[idx],"dumps",5) == 0) {
-      flags |= DUMPS;
       ++idx;
     } else if (strncmp(arg[idx],"fixes",5) == 0) {
       flags |= FIXES;

@@ -19,7 +19,6 @@
 #include "input.h"
 #include "integrate.h"
 #include "modify.h"
-#include "timer.h"
 #include "update.h"
 
 #include <cstring>
@@ -38,10 +37,6 @@ void Run::command(int narg, char **arg)
 
   if (domain->box_exist == 0)
     error->all(FLERR,"Run command before simulation box is defined");
-
-  // ignore run command, if walltime limit was already reached
-
-  if (timer->is_timeout()) return;
 
   bigint nsteps_input = utils::bnumeric(FLERR,arg[0],false,lmp);
 
@@ -150,7 +145,6 @@ void Run::command(int narg, char **arg)
   // if post, do full Finish, else just print time
 
   update->whichflag = 1;
-  timer->init_timeout();
 
   if (nevery == 0) {
     update->nsteps = nsteps;
@@ -169,11 +163,7 @@ void Run::command(int narg, char **arg)
       update->integrate->setup(1);
     }
 
-    timer->init();
-    timer->barrier_start();
     update->integrate->run(nsteps);
-    timer->barrier_stop();
-
     update->integrate->cleanup();
 
   // perform multiple runs optionally interleaved with invocation command(s)
@@ -186,9 +176,6 @@ void Run::command(int narg, char **arg)
     int iter = 0;
     int nleft = nsteps;
     while (nleft > 0 || iter == 0) {
-      if (timer->is_timeout()) break;
-      timer->init_timeout();
-
       nsteps = MIN(nleft,nevery);
 
       update->nsteps = nsteps;
@@ -206,14 +193,8 @@ void Run::command(int narg, char **arg)
         lmp->init();
         update->integrate->setup(1);
       }
-
-      timer->init();
-      timer->barrier_start();
       update->integrate->run(nsteps);
-      timer->barrier_stop();
-
       update->integrate->cleanup();
-
       // wrap command invocation with clearstep/addstep
       // since a command may invoke computes via variables
 
