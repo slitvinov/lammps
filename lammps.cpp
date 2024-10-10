@@ -59,24 +59,6 @@
 #endif
 
 static void print_style(FILE *fp, const char *str, int &pos);
-
-struct LAMMPS_NS::package_styles_lists {
-  std::map<std::string,std::string> angle_styles;
-  std::map<std::string,std::string> atom_styles;
-  std::map<std::string,std::string> body_styles;
-  std::map<std::string,std::string> bond_styles;
-  std::map<std::string,std::string> command_styles;
-  std::map<std::string,std::string> compute_styles;
-  std::map<std::string,std::string> dihedral_styles;
-  std::map<std::string,std::string> fix_styles;
-  std::map<std::string,std::string> improper_styles;
-  std::map<std::string,std::string> integrate_styles;
-  std::map<std::string,std::string> kspace_styles;
-  std::map<std::string,std::string> pair_styles;
-  std::map<std::string,std::string> reader_styles;
-  std::map<std::string,std::string> region_styles;
-};
-
 using namespace LAMMPS_NS;
 
 /** \class LAMMPS_NS::LAMMPS
@@ -127,8 +109,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   infile = nullptr;
 
   initclock = platform::walltime();
-
-  init_pkg_lists();
 
 #if defined(LMP_PYTHON) && defined(_WIN32)
   // If the LAMMPSHOME environment variable is set, it should point
@@ -723,8 +703,6 @@ LAMMPS::~LAMMPS()
   delete universe;
   delete error;
   delete memory;
-
-  delete pkg_lists;
 }
 
 /* ----------------------------------------------------------------------
@@ -909,112 +887,6 @@ void LAMMPS::destroy()
                           //   since fixes delete callbacks in atom
   atom = nullptr;
   restart_ver = -1;       // reset last restart version id
-}
-
-/* ----------------------------------------------------------------------
-   initialize lists of styles in packages
-------------------------------------------------------------------------- */
-
-void _noopt LAMMPS::init_pkg_lists()
-{
-  pkg_lists = new package_styles_lists;
-#define PACKAGE "UNKNOWN"
-#define ATOM_CLASS
-#define AtomStyle(key,Class)                    \
-  pkg_lists->atom_styles[#key] = PACKAGE;
-#include "packages_atom.h"
-#undef AtomStyle
-#undef ATOM_CLASS
-#define COMMAND_CLASS
-#define CommandStyle(key,Class)                 \
-  pkg_lists->command_styles[#key] = PACKAGE;
-#include "packages_command.h"
-#undef CommandStyle
-#undef COMMAND_CLASS
-#define COMPUTE_CLASS
-#define ComputeStyle(key,Class)                 \
-  pkg_lists->compute_styles[#key] = PACKAGE;
-#include "packages_compute.h"
-#undef ComputeStyle
-#undef COMPUTE_CLASS
-#define FIX_CLASS
-#define FixStyle(key,Class)                     \
-  pkg_lists->fix_styles[#key] = PACKAGE;
-#include "packages_fix.h"
-#undef FixStyle
-#undef FIX_CLASS
-#define INTEGRATE_CLASS
-#define IntegrateStyle(key,Class)               \
-  pkg_lists->integrate_styles[#key] = PACKAGE;
-#include "packages_integrate.h"
-#undef IntegrateStyle
-#undef INTEGRATE_CLASS
-#define PAIR_CLASS
-#define PairStyle(key,Class)                    \
-  pkg_lists->pair_styles[#key] = PACKAGE;
-#include "packages_pair.h"
-#undef PairStyle
-#undef PAIR_CLASS
-#define READER_CLASS
-#define ReaderStyle(key,Class)                  \
-  pkg_lists->reader_styles[#key] = PACKAGE;
-#include "packages_reader.h"
-#undef ReaderStyle
-#undef READER_CLASS
-#define REGION_CLASS
-#define RegionStyle(key,Class)                  \
-  pkg_lists->region_styles[#key] = PACKAGE;
-#include "packages_region.h"
-#undef RegionStyle
-#undef REGION_CLASS
-}
-
-/** Return true if a LAMMPS package is enabled in this binary
- *
- * \param pkg name of package
- * \return true if yes, else false
- */
-bool LAMMPS::is_installed_pkg(const char *pkg)
-{
-  for (int i=0; installed_packages[i] != nullptr; ++i)
-    if (strcmp(installed_packages[i],pkg) == 0) return true;
-
-  return false;
-}
-
-#define check_for_match(style,list,name)                                \
-  if (strcmp(list,#style) == 0) {                                       \
-    std::map<std::string,std::string> &styles(pkg_lists-> style ## _styles); \
-    if (styles.find(name) != styles.end()) {                            \
-      return styles[name].c_str();                                      \
-    }                                                                   \
-  }
-
-/** \brief Return name of package that a specific style belongs to
- *
- * This function checks the given name against all list of styles
- * for all type of styles and if the name and the style match, it
- * returns which package this style belongs to.
- *
- * \param style Type of style (e.g. atom, pair, fix, etc.)
- * \param name Name of style
- * \return Name of the package this style is part of
- */
-const char *LAMMPS::match_style(const char *style, const char *name)
-{
-  check_for_match(angle,style,name);
-  check_for_match(atom,style,name);
-  check_for_match(body,style,name);
-  check_for_match(bond,style,name);
-  check_for_match(command,style,name);
-  check_for_match(compute,style,name);
-  check_for_match(fix,style,name);
-  check_for_match(compute,style,name);
-  check_for_match(integrate,style,name);
-  check_for_match(pair,style,name);
-  check_for_match(reader,style,name);
-  check_for_match(region,style,name);
-  return nullptr;
 }
 
 /** \brief  Return suffix for non-pair styles depending on pair_only_flag

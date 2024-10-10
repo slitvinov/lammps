@@ -88,8 +88,6 @@ class LAMMPS {
   void print_config(FILE *);    // print compile time settings
 
  private:
-  struct package_styles_lists *pkg_lists;
-  void init_pkg_lists();
   void help();
   /// Default constructor. Declared private to prohibit its use
   LAMMPS(){};
