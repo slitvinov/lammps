@@ -51,8 +51,6 @@ NBin::NBin(LAMMPS *lmp) : Pointers(lmp)
 
   dimension = domain->dimension;
   triclinic = domain->triclinic;
-
-  kokkos = 0;
 }
 
 /* ---------------------------------------------------------------------- */

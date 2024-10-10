@@ -79,14 +79,7 @@ NeighList::NeighList(LAMMPS *lmp) : Pointers(lmp)
   ipage_inner = nullptr;
   ipage_middle = nullptr;
 
-  // Kokkos package
-
-  kokkos = 0;
-  kk2cpu = 0;
-  execution_space = Host;
-
   // DPD-REACT package
-
   np = nullptr;
 
   requestor = nullptr;
@@ -99,7 +92,7 @@ NeighList::~NeighList()
 {
   if (copymode) return;
 
-  if (!copy || trim || kk2cpu) {
+  if (!copy || trim) {
     memory->destroy(ilist);
     memory->destroy(numneigh);
     memory->sfree(firstneigh);
@@ -151,8 +144,6 @@ void NeighList::post_constructor(NeighRequest *nq)
 
   if (nq->copy) {
     listcopy = neighbor->lists[nq->copylist];
-    if (listcopy->kokkos && !this->kokkos)
-      kk2cpu = 1;
   }
 
   if (nq->skip) {
@@ -281,16 +272,12 @@ void NeighList::print_attributes()
   printf("  %d = respainner\n",rq->respainner);
   printf("  %d = bond\n",rq->bond);
   printf("  %d = omp\n",rq->omp);
-  printf("  %d = intel\n",rq->intel);
-  printf("  %d = kokkos host\n",rq->kokkos_host);
-  printf("  %d = kokkos device\n",rq->kokkos_device);
   printf("  %d = ssa flag\n",ssa);
   printf("\n");
   printf("  %d = skip flag\n",rq->skip);
   printf("  %d = off2on\n",rq->off2on);
   printf("  %d = copy flag\n",rq->copy);
   printf("  %d = trim flag\n",rq->trim);
-  printf("  %d = kk2cpu flag\n",kk2cpu);
   printf("  %d = half/full\n",rq->halffull);
   printf("\n");
 }

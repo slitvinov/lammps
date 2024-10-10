@@ -42,7 +42,6 @@ class NeighList : protected Pointers {
   int respainner;     // 1 if there is also a rRespa inner list
   int copy;           // 1 if this list is copied from another list
   int trim;           // 1 if this list is trimmed from another list
-  int kk2cpu;         // 1 if this list is copied from Kokkos to CPU
   int copymode;       // 1 if this is a Kokkos on-device copy
   int id;             // copied from neighbor list request
 
@@ -87,16 +86,9 @@ class NeighList : protected Pointers {
   NeighList *listcopy;    // me = copy list, point to list I copy from
   NeighList *listskip;    // me = skip list, point to list I skip from
   NeighList *listfull;    // me = half list, point to full I derive from
-
   class Fix *fix_bond;    // fix that stores bond info
 
-  // Kokkos package
-
-  int kokkos;    // 1 if list stores Kokkos data
-  ExecutionSpace execution_space;
-
   // DPD-REACT package and Shardlow Splitting Algorithm (SSA) support
-
   class NPair *np;    // ptr to NPair instance I depend on
 
   // methods

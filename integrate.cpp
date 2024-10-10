@@ -52,14 +52,6 @@ void Integrate::init()
 
   if (force->pair && force->pair->compute_flag) pair_compute_flag = 1;
   else pair_compute_flag = 0;
-
-  // should add checks:
-  // for any acceleration package that has its own integrate/minimize
-  // in case input script has reset the run or minimize style explicitly
-  // e.g. invalid to have kokkos pair style with non-kokkos verlet
-  // but OK to have kokkos verlet with non kokkos pair style (just warn)
-  // making these checks would require all the pair, fix, etc styles have
-  //   kokkos, intel flags
 }
 
 /* ----------------------------------------------------------------------

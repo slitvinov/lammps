@@ -74,9 +74,6 @@ class NeighRequest : protected Pointers {
   int respaouter;      // 1 if need a rRESPA outer list
   int bond;            // 1 if store bond neighbors instead of atom neighs
   int omp;             // set by OPENMP package
-  int intel;           // set by INTEL package
-  int kokkos_host;     // set by KOKKOS package
-  int kokkos_device;
   int ssa;          // set by DPD-REACT package, for Shardlow lists
   int cut;          // 1 if use a non-standard cutoff length
   double cutoff;    // special cutoff distance for this list
