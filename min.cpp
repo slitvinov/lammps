@@ -24,7 +24,6 @@
 
 #include "atom.h"
 #include "atom_vec.h"
-#include "bond.h"
 #include "comm.h"
 #include "compute.h"
 #include "domain.h"

@@ -17,7 +17,6 @@
 #include "accelerator_kokkos.h"
 #include "atom.h"
 #include "atom_vec.h"
-#include "bond.h"
 #include "comm.h"
 #include "comm_brick.h"
 #include "comm_tiled.h"

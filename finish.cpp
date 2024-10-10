@@ -344,46 +344,6 @@ void Finish::end(int flag)
                        "     |{:6.2f}\n",time,time/time_loop*100.0);
     }
   }
-
-#ifdef LMP_OPENMP
-FixOMP *fixomp = dynamic_cast<FixOMP *>(modify->get_fix_by_id("package_omp"));
-if (fixomp && timer->has_full()) {
-  MPI_Barrier(world);
-  for (int iproc = 0; iproc < comm->nprocs; iproc++) {
-    if (comm->me == iproc) {
-      double thr_total = 0.0;
-      ThrData *td;
-      for (i = 0; i < nthreads; ++i) {
-        td = fixomp->get_thr(i);
-        thr_total += td->get_time(Timer::ALL);
-      }
-      thr_total /= (double) nthreads;
-
-      if (thr_total > 0.0) {
-        const std::string thr_fmt =
-            "\nThread timing breakdown:\nTotal threaded time {:.4g} / {:.1f}%\n"
-            "rank: {}, host: {}, myloc: {} {} {}, procgrid: {} {} {}, nthread: {}, layout: {}\n"
-            "Section |  min time  |  avg time  |  max time  |%varavg| %total\n"
-            "---------------------------------------------------------------\n";
-        utils::logmesg(lmp, thr_fmt, thr_total, thr_total / time_loop * 100.0, comm->me,
-		       getenv("SLURMD_NODENAME") ? getenv("SLURMD_NODENAME") : "unkown",
-                       comm->myloc[0], comm->myloc[1], comm->myloc[2], comm->procgrid[0],
-                       comm->procgrid[1], comm->procgrid[2], comm->nthreads, comm->layout);
-
-        omp_times(fixomp, "Pair", Timer::PAIR, nthreads, screen, logfile);
-        if (atom->molecular != Atom::ATOMIC)
-          omp_times(fixomp, "Bond", Timer::BOND, nthreads, screen, logfile);
-        if (force->kspace) omp_times(fixomp, "Kspace", Timer::KSPACE, nthreads, screen, logfile);
-        omp_times(fixomp, "Neigh", Timer::NEIGH, nthreads, screen, logfile);
-        omp_times(fixomp, "Reduce", Timer::COMM, nthreads, screen, logfile);
-      }
-      utils::flush_buffers(lmp);
-    }
-    MPI_Barrier(world);
-  }
-}
-#endif
-
   if ((comm->me == 0) && lmp->kokkos && (lmp->kokkos->ngpus > 0))
     if (const char* env_clb = getenv("CUDA_LAUNCH_BLOCKING"))
       if (!(strcmp(env_clb,"1") == 0)) {

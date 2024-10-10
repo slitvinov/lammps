@@ -14,7 +14,6 @@
 
 #include "compute_pressure.h"
 #include "atom.h"
-#include "bond.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"

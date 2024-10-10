@@ -998,18 +998,6 @@ void _noopt LAMMPS::init_pkg_lists()
 #include "packages_atom.h"
 #undef AtomStyle
 #undef ATOM_CLASS
-#define BODY_CLASS
-#define BodyStyle(key,Class)                    \
-  pkg_lists->body_styles[#key] = PACKAGE;
-#include "packages_body.h"
-#undef BodyStyle
-#undef BODY_CLASS
-#define BOND_CLASS
-#define BondStyle(key,Class)                    \
-  pkg_lists->bond_styles[#key] = PACKAGE;
-#include "packages_bond.h"
-#undef BondStyle
-#undef BOND_CLASS
 #define COMMAND_CLASS
 #define CommandStyle(key,Class)                 \
   pkg_lists->command_styles[#key] = PACKAGE;

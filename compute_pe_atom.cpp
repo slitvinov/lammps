@@ -13,7 +13,6 @@
 
 #include "compute_pe_atom.h"
 #include "atom.h"
-#include "bond.h"
 #include "comm.h"
 #include "error.h"
 #include "force.h"

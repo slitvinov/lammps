@@ -16,7 +16,6 @@
 
 #include "atom.h"
 #include "atom_vec.h"
-#include "bond.h"
 #include "comm.h"
 #include "domain.h"
 #include "error.h"

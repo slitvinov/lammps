@@ -142,7 +142,6 @@ utils.o \
 variable.o \
 velocity.o \
 verlet.o \
-write_coeff.o \
 write_dump.o \
 write_restart.o \
 

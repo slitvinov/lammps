@@ -17,7 +17,6 @@
 #include "accelerator_kokkos.h"
 #include "atom.h"               // IWYU pragma: keep
 #include "atom_vec.h"
-#include "bond.h"
 #include "compute.h"
 #include "domain.h"             // IWYU pragma: keep
 #include "dump.h"

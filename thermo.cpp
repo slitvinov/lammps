@@ -19,7 +19,6 @@
 
 #include "arg_info.h"
 #include "atom.h"
-#include "bond.h"
 #include "comm.h"
 #include "compute.h"
 #include "domain.h"

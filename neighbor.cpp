@@ -22,7 +22,6 @@
 #include "accelerator_kokkos.h"
 #include "atom.h"
 #include "atom_vec.h"
-#include "bond.h"
 #include "citeme.h"
 #include "comm.h"
 #include "compute.h"

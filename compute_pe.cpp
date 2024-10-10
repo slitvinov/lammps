@@ -14,7 +14,6 @@
 #include "compute_pe.h"
 #include "atom.h"
 #include "atom_masks.h"
-#include "bond.h"
 #include "domain.h"
 #include "error.h"
 #include "force.h"
