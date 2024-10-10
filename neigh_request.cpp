@@ -65,8 +65,6 @@ NeighRequest::NeighRequest(LAMMPS *_lmp) : Pointers(_lmp)
   respainner = respamiddle = respaouter = 0;
   bond = 0;
   omp = 0;
-  intel = 0;
-  kokkos_host = kokkos_device = 0;
   ssa = 0;
   cut = 0;
   cutoff = 0.0;
@@ -163,9 +161,6 @@ int NeighRequest::identical(NeighRequest *other)
   if (respaouter != other->respaouter) same = 0;
   if (bond != other->bond) same = 0;
   if (omp != other->omp) same = 0;
-  if (intel != other->intel) same = 0;
-  if (kokkos_host != other->kokkos_host) same = 0;
-  if (kokkos_device != other->kokkos_device) same = 0;
   if (ssa != other->ssa) same = 0;
   if (copy != other->copy) same = 0;
   if (cutoff != other->cutoff) same = 0;
@@ -227,9 +222,6 @@ void NeighRequest::copy_request(NeighRequest *other, int skipflag)
   respaouter = other->respaouter;
   bond = other->bond;
   omp = other->omp;
-  intel = other->intel;
-  kokkos_host = other->kokkos_host;
-  kokkos_device = other->kokkos_device;
   ssa = other->ssa;
   cut = other->cut;
   cutoff = other->cutoff;
@@ -290,16 +282,6 @@ void NeighRequest::set_id(int _id)
   id = _id;
 }
 
-void NeighRequest::set_kokkos_device(int flag)
-{
-  kokkos_device = flag;
-}
-
-void NeighRequest::set_kokkos_host(int flag)
-{
-  kokkos_host = flag;
-}
-
 void NeighRequest::set_skip(int *_iskip, int **_ijskip)
 {
   skip = 1;
@@ -318,8 +300,3 @@ void NeighRequest::enable_ghost()
   ghost = 1;
 }
 
-void NeighRequest::enable_intel()
-{
-  intel = 1;
-  omp = 0;
-}

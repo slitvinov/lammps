@@ -128,12 +128,9 @@ class NeighRequest : protected Pointers {
   void apply_flags(int);
   void set_cutoff(double);
   void set_id(int);
-  void set_kokkos_device(int);
-  void set_kokkos_host(int);
   void set_skip(int *, int **);
   void enable_full();
   void enable_ghost();
-  void enable_intel();
 
   int get_size() const { return size; }
   void *get_requestor() const { return requestor; }

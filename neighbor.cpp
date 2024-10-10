@@ -805,8 +805,6 @@ int Neighbor::init_pair()
   // allocate initial pages for each list, except if copy flag set
 
   for (i = 0; i < nlist; i++) {
-    if (lists[i]->copy && !lists[i]->trim && !lists[i]->kk2cpu)
-      continue;
     lists[i]->setup_pages(pgsize,oneatom);
   }
 
@@ -818,7 +816,7 @@ int Neighbor::init_pair()
 
   int maxatom = atom->nmax;
   for (i = 0; i < nlist; i++) {
-    if (neigh_pair[i] && (!lists[i]->copy || lists[i]->trim || lists[i]->kk2cpu))
+    if (neigh_pair[i] && (!lists[i]->copy || lists[i]->trim))
       lists[i]->grow(maxatom,maxatom);
   }
 
@@ -944,14 +942,6 @@ void Neighbor::morph_unique()
         irq->cutoff = 0.0;
       }
     }
-
-    // avoid flagging a neighbor list as both INTEL and OPENMP
-
-    if (irq->intel) irq->omp = 0;
-
-    // avoid flagging a neighbor list as both KOKKOS and INTEL or OPENMP
-
-    if (irq->kokkos_host || irq->kokkos_device) irq->omp = irq->intel = 0;
   }
 }
 
@@ -1017,9 +1007,6 @@ void Neighbor::morph_skip()
       if (irq->history != jrq->history) continue;
       if (irq->bond != jrq->bond) continue;
       if (irq->omp != jrq->omp) continue;
-      if (irq->intel != jrq->intel) continue;
-      if (irq->kokkos_host != jrq->kokkos_host) continue;
-      if (irq->kokkos_device != jrq->kokkos_device) continue;
       if (irq->ssa != jrq->ssa) continue;
       if (irq->cut != jrq->cut) continue;
       if (irq->cutoff != jrq->cutoff) continue;
@@ -1179,9 +1166,6 @@ void Neighbor::morph_halffull()
       if (irq->history != jrq->history) continue;
       if (irq->bond != jrq->bond) continue;
       if (irq->omp != jrq->omp) continue;
-      if (irq->intel != jrq->intel) continue;
-      if (irq->kokkos_host != jrq->kokkos_host) continue;
-      if (irq->kokkos_device != jrq->kokkos_device) continue;
       if (irq->ssa != jrq->ssa) continue;
 
       // skip flag must be same
@@ -1289,9 +1273,6 @@ void Neighbor::morph_copy_trim()
       if (irq->size != jrq->size) continue;
       if (irq->history != jrq->history) continue;
       if (irq->bond != jrq->bond) continue;
-      if (irq->intel != jrq->intel) continue;
-      if (irq->kokkos_host && !jrq->kokkos_host) continue;
-      if (irq->kokkos_device && !jrq->kokkos_device) continue;
       if (irq->ssa != jrq->ssa) continue;
 
       // skip flag must be same
@@ -1420,9 +1401,6 @@ void Neighbor::print_pairwise_info()
     else if (rq->respainner) out += ", respa outer/inner";
     if (rq->bond) out += ", bond";
     if (rq->omp) out += ", omp";
-    if (rq->intel) out += ", intel";
-    if (rq->kokkos_device) out += ", kokkos_device";
-    if (rq->kokkos_host) out += ", kokkos_host";
     if (rq->ssa) out += ", ssa";
     if (rq->cut) out += fmt::format(", cut {}",rq->cutoff);
     if (rq->off2on) out += ", off2on";
@@ -1532,12 +1510,7 @@ int Neighbor::choose_bin(NeighRequest *rq)
 
     // require match of these request flags and mask bits
     // (!A != !B) is effectively a logical xor
-
-    if (!rq->intel != !(mask & NB_INTEL)) continue;
     if (!rq->ssa != !(mask & NB_SSA)) continue;
-    if (!rq->kokkos_device != !(mask & NB_KOKKOS_DEVICE)) continue;
-    if (!rq->kokkos_host != !(mask & NB_KOKKOS_HOST)) continue;
-
     // multi neighbor style require multi bin style
     if (style == Neighbor::MULTI) {
       if (!(mask & NB_MULTI)) continue;
@@ -1594,14 +1567,7 @@ int Neighbor::choose_pair(NeighRequest *rq)
       if (rq->trim) {
         if (!rq->trim != !(mask & NP_TRIM)) continue;
         if (!rq->omp != !(mask & NP_OMP)) continue;
-        if (!rq->intel != !(mask & NP_INTEL)) continue;
       }
-      if (rq->kokkos_device || rq->kokkos_host) {
-        if (!rq->kokkos_device != !(mask & NP_KOKKOS_DEVICE)) continue;
-        if (!rq->kokkos_host != !(mask & NP_KOKKOS_HOST)) continue;
-      }
-      if (!requests[rq->copylist]->kokkos_device != !(mask & NP_KOKKOS_DEVICE)) continue;
-      if (!requests[rq->copylist]->kokkos_host != !(mask & NP_KOKKOS_HOST)) continue;
       return i+1;
     }
 
@@ -1635,9 +1601,6 @@ int Neighbor::choose_pair(NeighRequest *rq)
     if (!rq->respaouter != !(mask & NP_RESPA)) continue;
     if (!rq->bond != !(mask & NP_BOND)) continue;
     if (!rq->omp != !(mask & NP_OMP)) continue;
-    if (!rq->intel != !(mask & NP_INTEL)) continue;
-    if (!rq->kokkos_device != !(mask & NP_KOKKOS_DEVICE)) continue;
-    if (!rq->kokkos_host != !(mask & NP_KOKKOS_HOST)) continue;
     if (!rq->ssa != !(mask & NP_SSA)) continue;
 
     if (!rq->skip != !(mask & NP_SKIP)) continue;
@@ -1703,7 +1666,6 @@ NeighRequest *Neighbor::add_request(Pair *requestor, int flags)
   req->apply_flags(flags);
   // apply intel flag. omp flag is set globally via set_omp_neighbor()
   if (requestor->suffix_flag & Suffix::INTEL) {
-    req->intel = 1;
     req->omp = 0;
   }
   return req;
@@ -1740,25 +1702,6 @@ NeighRequest *Neighbor::add_request(Command *requestor, const char *style, int f
   req->apply_flags(flags);
   return req;
 }
-
-// set neighbor list request OpenMP flag
-
-void Neighbor::set_omp_neighbor(int flag)
-{
-  // flag *all* neighbor list requests as OPENMP threaded,
-  // but skip lists already flagged as INTEL threaded
-  for (int i = 0; i < nrequest; ++i)
-    if (!requests[i]->intel) requests[i]->omp = flag;
-}
-
-/* report if there is a neighbor list with the intel flag set */
-
-bool Neighbor::has_intel_request() const
-{
-  return (((nrequest > 0) && (requests[0]->intel > 0))
-          ||  ((old_nrequest > 0) && (old_requests[0]->intel > 0)));
-}
-
 /* ----------------------------------------------------------------------
    setup neighbor binning and neighbor stencils
    called before run and every reneighbor if box size/shape changes
@@ -1936,7 +1879,7 @@ void Neighbor::build(int topoflag)
 
   for (i = 0; i < npair_perpetual; i++) {
     m = plist[i];
-    if (!lists[m]->copy || lists[m]->trim || lists[m]->kk2cpu)
+    if (!lists[m]->copy || lists[m]->trim)
       lists[m]->grow(nlocal,nall);
     neigh_pair[m]->build_setup();
     neigh_pair[m]->build(lists[m]);
@@ -1988,7 +1931,7 @@ void Neighbor::build_one(class NeighList *mylist, int preflag)
 
   // build the list
 
-  if (!mylist->copy || mylist->trim || mylist->kk2cpu)
+  if (!mylist->copy || mylist->trim)
     mylist->grow(atom->nlocal,atom->nlocal+atom->nghost);
   np->build_setup();
   np->build(mylist);
@@ -2356,7 +2299,7 @@ bigint Neighbor::get_nneigh_full()
   bigint nneighfull = -1;
   if (m < old_nrequest) {
     nneighfull = 0;
-    if (!lists[m]->kokkos && lists[m]->numneigh) {
+    if (lists[m]->numneigh) {
       int inum = neighbor->lists[m]->inum;
       int *ilist = neighbor->lists[m]->ilist;
       int *numneigh = neighbor->lists[m]->numneigh;
@@ -2380,13 +2323,6 @@ bigint Neighbor::get_nneigh_half()
   bigint nneighhalf = -1;
   if (m < old_nrequest) {
     nneighhalf = 0;
-    if (!lists[m]->kokkos) {
-      int inum = neighbor->lists[m]->inum;
-      int *ilist = neighbor->lists[m]->ilist;
-      int *numneigh = neighbor->lists[m]->numneigh;
-      for (int i = 0; i < inum; i++)
-        nneighhalf += numneigh[ilist[i]];
-    };
   }
   return nneighhalf;
 }
