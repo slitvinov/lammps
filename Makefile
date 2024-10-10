@@ -14,7 +14,6 @@ arg_info.o \
 atom_map.o \
 atom.o \
 atom_vec_atomic.o \
-atom_vec_hybrid.o \
 atom_vec.o \
 balance.o \
 comm_brick.o \
@@ -27,7 +26,6 @@ compute_pressure.o \
 compute_temp.o \
 create_atoms.o \
 create_box.o \
-deprecated.o \
 domain.o \
 error.o \
 fix_abf.o \
@@ -111,7 +109,6 @@ universe.o \
 update.o \
 utils.o \
 variable.o \
-velocity.o \
 verlet.o \
 
 main: $(S:.cpp=.o)
