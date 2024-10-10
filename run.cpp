@@ -16,7 +16,6 @@
 
 #include "domain.h"
 #include "error.h"
-#include "finish.h"
 #include "input.h"
 #include "integrate.h"
 #include "modify.h"
@@ -178,9 +177,6 @@ void Run::command(int narg, char **arg)
 
     update->integrate->cleanup();
 
-    Finish finish(lmp);
-    finish.end(postflag);
-
   // perform multiple runs optionally interleaved with invocation command(s)
   // use start/stop to set begin/end step
   // if pre or 1st iteration of multiple runs, do System init/setup,
@@ -218,10 +214,6 @@ void Run::command(int narg, char **arg)
       timer->barrier_stop();
 
       update->integrate->cleanup();
-
-      Finish finish(lmp);
-      if (postflag || nleft <= nsteps) finish.end(1);
-      else finish.end(0);
 
       // wrap command invocation with clearstep/addstep
       // since a command may invoke computes via variables

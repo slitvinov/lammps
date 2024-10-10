@@ -103,8 +103,6 @@ class Input : protected Pointers {
   void group_command();
   void lattice();
   void mass();
-  void min_modify();
-  void min_style();
   void neigh_modify();
   void neighbor_command();
   void newton();

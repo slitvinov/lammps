@@ -46,24 +46,17 @@ class Update : protected Pointers {
   class Integrate *integrate;
   char *integrate_style;
 
-  class Min *minimize;
-  char *minimize_style;
-
   typedef Integrate *(*IntegrateCreator)(LAMMPS *, int, char **);
-  typedef Min *(*MinimizeCreator)(LAMMPS *);
 
   typedef std::map<std::string, IntegrateCreator> IntegrateCreatorMap;
-  typedef std::map<std::string, MinimizeCreator> MinimizeCreatorMap;
 
   IntegrateCreatorMap *integrate_map;
-  MinimizeCreatorMap *minimize_map;
 
   Update(class LAMMPS *);
   ~Update() override;
   void init();
   void set_units(const char *);
   void create_integrate(int, char **, int);
-  void create_minimize(int, char **, int);
   void reset_timestep(int, char **);
   void reset_timestep(bigint, bool);
   void update_time();
@@ -71,7 +64,6 @@ class Update : protected Pointers {
 
  private:
   void new_integrate(char *, int, char **, int, int &);
-  void new_minimize(char *, int, char **, int, int &);
 };
 
 }    // namespace LAMMPS_NS

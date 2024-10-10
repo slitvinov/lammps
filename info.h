@@ -59,7 +59,6 @@ class Info : public Command {
 
   void atom_styles(FILE *out);
   void integrate_styles(FILE *out);
-  void minimize_styles(FILE *out);
   void pair_styles(FILE *out);
   void fix_styles(FILE *out);
   void compute_styles(FILE *out);

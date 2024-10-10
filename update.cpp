@@ -14,7 +14,6 @@
 #include "update.h"
 
 #include "style_integrate.h"    // IWYU pragma: keep
-#include "style_minimize.h"     // IWYU pragma: keep
 
 #include "comm.h"
 #include "compute.h"
@@ -22,7 +21,6 @@
 #include "fix.h"
 #include "force.h"
 #include "integrate.h"
-#include "min.h"
 #include "modify.h"
 #include "neighbor.h"
 #include "output.h"
@@ -37,11 +35,6 @@ using namespace LAMMPS_NS;
 template <typename T> static Integrate *integrate_creator(LAMMPS *lmp, int narg, char **arg)
 {
   return new T(lmp, narg, arg);
-}
-
-template <typename T> static Min *minimize_creator(LAMMPS *lmp)
-{
-  return new T(lmp);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -72,9 +65,6 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp)
 
   integrate_style = nullptr;
   integrate = nullptr;
-  minimize_style = nullptr;
-  minimize = nullptr;
-
   integrate_map = new IntegrateCreatorMap();
 
 #define INTEGRATE_CLASS
@@ -83,19 +73,8 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp)
 #undef IntegrateStyle
 #undef INTEGRATE_CLASS
 
-  minimize_map = new MinimizeCreatorMap();
-
-#define MINIMIZE_CLASS
-#define MinimizeStyle(key, Class) (*minimize_map)[#key] = &minimize_creator<Class>;
-#include "style_minimize.h"    // IWYU pragma: keep
-#undef MinimizeStyle
-#undef MINIMIZE_CLASS
-
   str = (char *) "verlet";
   create_integrate(1, &str, 1);
-
-  str = (char *) "cg";
-  create_minimize(1, &str, 1);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -107,11 +86,7 @@ Update::~Update()
   delete[] integrate_style;
   delete integrate;
 
-  delete[] minimize_style;
-  delete minimize;
-
   delete integrate_map;
-  delete minimize_map;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -124,9 +99,6 @@ void Update::init()
   if (whichflag == 0) return;
   if (whichflag == 1)
     integrate->init();
-  else if (whichflag == 2)
-    minimize->init();
-
   // only set first_update if a run or minimize is being performed
 
   first_update = 1;
@@ -392,72 +364,6 @@ void Update::new_integrate(char *style, int narg, char **arg, int trysuffix, int
   error->all(FLERR, "Illegal integrate style");
 }
 
-/* ---------------------------------------------------------------------- */
-
-void Update::create_minimize(int narg, char **arg, int trysuffix)
-{
-  if (narg < 1) error->all(FLERR, "Illegal run_style command");
-
-  delete[] minimize_style;
-  delete minimize;
-
-  // temporarily assign the style name without suffix (for error messages during creation)
-  minimize_style = arg[0];
-
-  int sflag;
-  new_minimize(arg[0], narg - 1, &arg[1], trysuffix, sflag);
-
-  std::string estyle = arg[0];
-  if (sflag) {
-    estyle += "/";
-    if (sflag == 1)
-      estyle += lmp->suffix;
-    else if (sflag == 2)
-      estyle += lmp->suffix2;
-    else if ((sflag == 3) && lmp->non_pair_suffix())
-      estyle += lmp->non_pair_suffix();
-  }
-  minimize_style = utils::strdup(estyle);
-}
-
-/* ----------------------------------------------------------------------
-   create the Minimize style, first with suffix appended
-------------------------------------------------------------------------- */
-
-void Update::new_minimize(char *style, int /* narg */, char ** /* arg */, int trysuffix, int &sflag)
-{
-  if (trysuffix && lmp->suffix_enable) {
-    if (lmp->non_pair_suffix()) {
-      sflag = 1 + 2*lmp->pair_only_flag;
-      std::string estyle = style + std::string("/") + lmp->non_pair_suffix();
-      if (minimize_map->find(estyle) != minimize_map->end()) {
-        MinimizeCreator &minimize_creator = (*minimize_map)[estyle];
-        minimize = minimize_creator(lmp);
-        return;
-      }
-    }
-
-    if (lmp->suffix2) {
-      sflag = 2;
-      std::string estyle = style + std::string("/") + lmp->suffix2;
-      if (minimize_map->find(estyle) != minimize_map->end()) {
-        MinimizeCreator &minimize_creator = (*minimize_map)[estyle];
-        minimize = minimize_creator(lmp);
-        return;
-      }
-    }
-  }
-
-  sflag = 0;
-  if (minimize_map->find(style) != minimize_map->end()) {
-    MinimizeCreator &minimize_creator = (*minimize_map)[style];
-    minimize = minimize_creator(lmp);
-    return;
-  }
-
-  error->all(FLERR, "Illegal minimize style");
-}
-
 /* ----------------------------------------------------------------------
    reset timestep called from input script
 ------------------------------------------------------------------------- */
@@ -555,7 +461,5 @@ double Update::memory_usage()
   double bytes = 0;
   if (whichflag == 1)
     bytes += integrate->memory_usage();
-  else if (whichflag == 2)
-    bytes += minimize->memory_usage();
   return bytes;
 }

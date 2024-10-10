@@ -552,7 +552,6 @@ void Info::available_styles(FILE * out, int flags)
 
   if (flags & ATOM_STYLES)      atom_styles(out);
   if (flags & INTEGRATE_STYLES) integrate_styles(out);
-  if (flags & MINIMIZE_STYLES)  minimize_styles(out);
   if (flags & PAIR_STYLES)      pair_styles(out);
   if (flags & FIX_STYLES)       fix_styles(out);
   if (flags & COMPUTE_STYLES)   compute_styles(out);
@@ -572,13 +571,6 @@ void Info::integrate_styles(FILE *out)
 {
   fputs("\nIntegrate styles:\n",out);
   print_columns(out, update->integrate_map);
-  fputs("\n\n\n",out);
-}
-
-void Info::minimize_styles(FILE *out)
-{
-  fputs("\nMinimize styles:\n",out);
-  print_columns(out, update->minimize_map);
   fputs("\n\n\n",out);
 }
 
@@ -662,8 +654,6 @@ bool Info::is_active(const char *category, const char *name)
 
   } else if (strcmp(category,"comm_style") == 0) {
     style = commstyles[comm->style];
-  } else if (strcmp(category,"min_style") == 0) {
-    style = update->minimize_style;
   } else if (strcmp(category,"run_style") == 0) {
     style = update->integrate_style;
   } else if (strcmp(category,"atom_style") == 0) {
@@ -753,8 +743,6 @@ bool Info::has_style(const std::string &category, const std::string &name)
     return find_style(lmp, atom->avec_map, name, false);
   } else if (category == "integrate") {
     return find_style(lmp, update->integrate_map, name, true);
-  } else if (category == "minimize") {
-    return find_style(lmp, update->minimize_map, name, true);
   } else if (category == "pair") {
     return find_style(lmp, force->pair_map, name, true);
   } else if (category == "fix") {
@@ -777,8 +765,6 @@ std::vector<std::string> Info::get_available_styles(const std::string &category)
     return get_style_names(atom->avec_map);
   } else if (category == "integrate") {
     return get_style_names(update->integrate_map);
-  } else if (category == "minimize") {
-    return get_style_names(update->minimize_map);
   } else if (category == "pair") {
     return get_style_names(force->pair_map);
   } else if (category == "fix") {

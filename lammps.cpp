@@ -18,7 +18,6 @@
 #include "style_command.h"   // IWYU pragma: keep
 #include "style_dump.h"      // IWYU pragma: keep
 #include "style_integrate.h" // IWYU pragma: keep
-#include "style_minimize.h"  // IWYU pragma: keep
 #include "style_pair.h"      // IWYU pragma: keep
 #include "style_region.h"    // IWYU pragma: keep
 
@@ -78,7 +77,6 @@ struct LAMMPS_NS::package_styles_lists {
   std::map<std::string,std::string> improper_styles;
   std::map<std::string,std::string> integrate_styles;
   std::map<std::string,std::string> kspace_styles;
-  std::map<std::string,std::string> minimize_styles;
   std::map<std::string,std::string> pair_styles;
   std::map<std::string,std::string> reader_styles;
   std::map<std::string,std::string> region_styles;
@@ -1028,18 +1026,6 @@ void _noopt LAMMPS::init_pkg_lists()
 #include "packages_integrate.h"
 #undef IntegrateStyle
 #undef INTEGRATE_CLASS
-#define KSPACE_CLASS
-#define KSpaceStyle(key,Class)                  \
-  pkg_lists->kspace_styles[#key] = PACKAGE;
-#include "packages_kspace.h"
-#undef KSpaceStyle
-#undef KSPACE_CLASS
-#define MINIMIZE_CLASS
-#define MinimizeStyle(key,Class)                \
-  pkg_lists->minimize_styles[#key] = PACKAGE;
-#include "packages_minimize.h"
-#undef MinimizeStyle
-#undef MINIMIZE_CLASS
 #define PAIR_CLASS
 #define PairStyle(key,Class)                    \
   pkg_lists->pair_styles[#key] = PACKAGE;
@@ -1102,10 +1088,7 @@ const char *LAMMPS::match_style(const char *style, const char *name)
   check_for_match(dump,style,name);
   check_for_match(fix,style,name);
   check_for_match(compute,style,name);
-  check_for_match(improper,style,name);
   check_for_match(integrate,style,name);
-  check_for_match(kspace,style,name);
-  check_for_match(minimize,style,name);
   check_for_match(pair,style,name);
   check_for_match(reader,style,name);
   check_for_match(region,style,name);
@@ -1219,14 +1202,6 @@ void _noopt LAMMPS::help()
 #define IntegrateStyle(key,Class) print_style(fp,#key,pos);
 #include "style_integrate.h"  // IWYU pragma: keep
 #undef INTEGRATE_CLASS
-  fprintf(fp,"\n\n");
-
-  pos = 80;
-  fprintf(fp,"* Minimize styles:\n");
-#define MINIMIZE_CLASS
-#define MinimizeStyle(key,Class) print_style(fp,#key,pos);
-#include "style_minimize.h"  // IWYU pragma: keep
-#undef MINIMIZE_CLASS
   fprintf(fp,"\n\n");
 
   pos = 80;

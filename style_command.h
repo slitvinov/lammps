@@ -4,7 +4,6 @@
 #include "create_box.h"
 #include "deprecated.h"
 #include "info.h"
-#include "minimize.h"
 #include "read_restart.h"
 #include "run.h"
 #include "set.h"

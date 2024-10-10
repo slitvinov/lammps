@@ -30,7 +30,6 @@
 #include "integrate.h"
 #include "label_map.h"
 #include "memory.h"
-#include "min.h"
 #include "modify.h"
 #include "neighbor.h"
 #include "output.h"
@@ -775,8 +774,6 @@ int Input::execute_command()
   else if (mycmd == "group") group_command();
   else if (mycmd == "lattice") lattice();
   else if (mycmd == "mass") mass();
-  else if (mycmd == "min_modify") min_modify();
-  else if (mycmd == "min_style") min_style();
   else if (mycmd == "neigh_modify") neigh_modify();
   else if (mycmd == "neighbor") neighbor_command();
   else if (mycmd == "newton") newton();
@@ -1438,22 +1435,6 @@ void Input::mass()
   if (domain->box_exist == 0)
     error->all(FLERR,"Mass command before simulation box is defined");
   atom->set_mass(FLERR,narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::min_modify()
-{
-  update->minimize->modify_params(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Input::min_style()
-{
-  if (domain->box_exist == 0)
-    error->all(FLERR,"Min_style command before simulation box is defined");
-  update->create_minimize(narg,arg,1);
 }
 
 /* ---------------------------------------------------------------------- */
