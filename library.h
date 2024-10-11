@@ -110,8 +110,4 @@ enum _LMP_VAR_CONST {
 
 /* Ifdefs to allow this file to be included in C and C++ programs */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #endif /* LAMMPS_LIBRARY_H */
