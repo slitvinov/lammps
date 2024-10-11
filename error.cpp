@@ -17,9 +17,6 @@
 #include "input.h"
 #include "universe.h"
 
-#if defined(LAMMPS_EXCEPTIONS)
-#include "update.h"
-#endif
 
 using namespace LAMMPS_NS;
 
@@ -38,10 +35,6 @@ static std::string truncpath(const std::string &path)
 Error::Error(LAMMPS *lmp)
   : Pointers(lmp), numwarn(0), maxwarn(100), allwarn(0)
 {
-#ifdef LAMMPS_EXCEPTIONS
-  last_error_message.clear();
-  last_error_type = ERROR_NONE;
-#endif
 }
 
 /* ----------------------------------------------------------------------
@@ -70,18 +63,8 @@ void Error::universe_all(const std::string &file, int line, const std::string &s
   }
   if (universe->ulogfile) fclose(universe->ulogfile);
 
-#ifdef LAMMPS_EXCEPTIONS
-
-  // allow commands if an exception was caught in a run
-  // update may be a null pointer when catching command line errors
-
-  if (update) update->whichflag = 0;
-
-  throw LAMMPSException(mesg);
-#else
   MPI_Finalize();
   exit(1);
-#endif
 }
 
 /* ----------------------------------------------------------------------
@@ -95,18 +78,8 @@ void Error::universe_one(const std::string &file, int line, const std::string &s
                                  universe->me,str,truncpath(file),line);
   if (universe->uscreen) fputs(mesg.c_str(),universe->uscreen);
 
-#ifdef LAMMPS_EXCEPTIONS
-
-  // allow commands if an exception was caught in a run
-  // update may be a null pointer when catching command line errors
-
-  if (update) update->whichflag = 0;
-
-  throw LAMMPSAbortException(mesg, universe->uworld);
-#else
   MPI_Abort(universe->uworld,1);
   exit(1); // to trick "smart" compilers into believing this does not return
-#endif
 }
 
 /* ----------------------------------------------------------------------
@@ -150,28 +123,11 @@ void Error::all(const std::string &file, int line, const std::string &str)
     utils::logmesg(lmp,mesg);
   }
 
-#ifdef LAMMPS_EXCEPTIONS
-
-  // allow commands if an exception was caught in a run
-  // update may be a null pointer when catching command line errors
-
-  if (update) update->whichflag = 0;
-
-  std::string msg = fmt::format("ERROR: {} ({}:{})\n",
-                                str, truncpath(file), line);
-
-  if (universe->nworlds > 1) {
-    throw LAMMPSAbortException(msg, universe->uworld);
-  }
-
-  throw LAMMPSException(msg);
-#else
   if (screen && screen != stdout) fclose(screen);
   if (logfile) fclose(logfile);
   if (universe->nworlds > 1) MPI_Abort(universe->uworld,1);
   MPI_Finalize();
   exit(1);
-#endif
 }
 
 /* ----------------------------------------------------------------------
@@ -196,19 +152,9 @@ void Error::one(const std::string &file, int line, const std::string &str)
     if (universe->uscreen)
       fputs(mesg.c_str(),universe->uscreen);
 
-#ifdef LAMMPS_EXCEPTIONS
-
-  // allow commands if an exception was caught in a run
-  // update may be a null pointer when catching command line errors
-
-  if (update) update->whichflag = 0;
-
-  throw LAMMPSAbortException(mesg, world);
-#else
   utils::flush_buffers(lmp);
   MPI_Abort(world,1);
   exit(1); // to trick "smart" compilers into believing this does not return
-#endif
 }
 
 /* ----------------------------------------------------------------------
@@ -311,35 +257,3 @@ void Error::done(int status)
   exit(status);
 }
 
-#ifdef LAMMPS_EXCEPTIONS
-/* ----------------------------------------------------------------------
-   return the last error message reported by LAMMPS (only used if
-   compiled with -DLAMMPS_EXCEPTIONS)
-------------------------------------------------------------------------- */
-
-std::string Error::get_last_error() const
-{
-  return last_error_message;
-}
-
-/* ----------------------------------------------------------------------
-   return the type of the last error reported by LAMMPS (only used if
-   compiled with -DLAMMPS_EXCEPTIONS)
-------------------------------------------------------------------------- */
-
-ErrorType Error::get_last_error_type() const
-{
-  return last_error_type;
-}
-
-/* ----------------------------------------------------------------------
-   set the last error message and error type
-   (only used if compiled with -DLAMMPS_EXCEPTIONS)
-------------------------------------------------------------------------- */
-
-void Error::set_last_error(const std::string &msg, ErrorType type)
-{
-  last_error_message = msg;
-  last_error_type = type;
-}
-#endif

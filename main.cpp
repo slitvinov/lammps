@@ -16,9 +16,6 @@
 #include "input.h"
 #include "library.h"
 
-#if defined(LAMMPS_EXCEPTIONS)
-#include "exceptions.h"
-#endif
 
 #include <cstdlib>
 #include <mpi.h>
