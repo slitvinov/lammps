@@ -50,7 +50,6 @@ nbin_standard.o \
 neighbor.o \
 neigh_list.o \
 neigh_request.o \
-npair_copy.o \
 npair_half_bin_atomonly_newton.o \
 npair.o \
 pair_dpd.o \
