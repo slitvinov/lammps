@@ -1,238 +1,149 @@
-/* -*- c++ -*- ----------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
 #ifndef LMP_NEIGHBOR_H
-#define LMP_NEIGHBOR_H
-
+#define LMP_NEIGHBOR_H 
 #include "pointers.h"
-
 namespace LAMMPS_NS {
-
-// forward declarations
 class NeighRequest;
 class NeighList;
-
 class Neighbor : protected Pointers {
  public:
   enum { NSQ, BIN, MULTI_OLD, MULTI };
-  int style;           // 0,1,2,3 = nsq, bin, multi/old, multi
-  int every;           // build every this many steps
-  int delay;           // delay build for this many steps
-  int dist_check;      // 0 = always build, 1 = only if 1/2 dist
-  int ago;             // how many steps ago neighboring occurred
-  int pgsize;          // size of neighbor page
-  int oneatom;         // max # of neighbors for one atom
-  int includegroup;    // only build pairwise lists for this group
-  int build_once;      // 1 if only build lists once per run
-
-  double skin;                    // skin distance
-  double cutneighmin;             // min neighbor cutoff for all type pairs
-  double cutneighmax;             // max neighbor cutoff for all type pairs
-  double cutneighmaxsq;           // cutneighmax squared
-  double **cutneighsq;            // neighbor cutneigh sq for each type pair
-  double **cutneighghostsq;       // cutneigh sq for each ghost type pair
-  double *cuttype;                // for each type, max neigh cut w/ others
-  double *cuttypesq;              // cuttype squared
-  double cut_inner_sq;            // outer cutoff for inner neighbor list
-  double cut_middle_sq;           // outer cutoff for middle neighbor list
-  double cut_middle_inside_sq;    // inner cutoff for middle neighbor list
-
-  int binsizeflag;        // user-chosen bin size
-  double binsize_user;    // set externally by some accelerator pkgs
-
-  bigint ncalls;      // # of times build has been called
-  bigint ndanger;     // # of dangerous builds
-  bigint lastcall;    // timestep of last neighbor::build() call
-
-  // geometry and static info, used by other Neigh classes
-
-  double *bboxlo, *bboxhi;    // ptrs to full domain bounding box
-                              // different for orthog vs triclinic
-
-  // exclusion info, used by NeighPair
-
-  int exclude;    // 0 if no type/group exclusions, 1 if yes
-
-  int nex_type;                // # of entries in type exclusion list
-  int *ex1_type, *ex2_type;    // pairs of types to exclude
-  int **ex_type;               // 2d array of excluded type pairs
-
-  int nex_group;                 // # of entries in group exclusion list
-  int *ex1_group, *ex2_group;    // pairs of group #'s to exclude
-  int *ex1_bit, *ex2_bit;        // pairs of group bits to exclude
-
-  int nex_mol;          // # of entries in molecule exclusion list
-  int *ex_mol_group;    // molecule group #'s to exclude
-  int *ex_mol_bit;      // molecule group bits to exclude
-  int *ex_mol_intra;    // 0 = exclude if in 2 molecules (inter)
-                        // 1 = exclude if in same molecule (intra)
-
-  // special info, used by NeighPair
-
-  int special_flag[4];    // flags for 1-2, 1-3, 1-4 neighbors
-
-  // cluster setting, used by NeighTopo
-
-  int cluster_check;    // 1 if check bond/angle/etc satisfies minimg
-
-  // pairwise neighbor lists and corresponding requests
-
-  int nlist;           // # of pairwise neighbor lists
-  int nrequest;        // # of requests, same as nlist
-  int old_nrequest;    // # of requests for previous run
-
+  int style;
+  int every;
+  int delay;
+  int dist_check;
+  int ago;
+  int pgsize;
+  int oneatom;
+  int includegroup;
+  int build_once;
+  double skin;
+  double cutneighmin;
+  double cutneighmax;
+  double cutneighmaxsq;
+  double **cutneighsq;
+  double **cutneighghostsq;
+  double *cuttype;
+  double *cuttypesq;
+  double cut_inner_sq;
+  double cut_middle_sq;
+  double cut_middle_inside_sq;
+  int binsizeflag;
+  double binsize_user;
+  bigint ncalls;
+  bigint ndanger;
+  bigint lastcall;
+  double *bboxlo, *bboxhi;
+  int exclude;
+  int nex_type;
+  int *ex1_type, *ex2_type;
+  int **ex_type;
+  int nex_group;
+  int *ex1_group, *ex2_group;
+  int *ex1_bit, *ex2_bit;
+  int nex_mol;
+  int *ex_mol_group;
+  int *ex_mol_bit;
+  int *ex_mol_intra;
+  int special_flag[4];
+  int cluster_check;
+  int nlist;
+  int nrequest;
+  int old_nrequest;
   NeighList **lists;
-  NeighRequest **requests;        // from Pair,Fix,Compute,Command classes
-  NeighRequest **old_requests;    // copy of requests to compare to
-  int *j_sorted;                  // index of requests sorted by cutoff distance
-
-  // optional type grouping for multi
-
-  int custom_collection_flag;      // 1 if custom collections are defined for multi
-  int interval_collection_flag;    // 1 if custom collections use intervals
-  int finite_cut_flag;             // 1 if multi considers finite atom size
-  int ncollections;                // # of custom collections
-  int nmax_collection;             // maximum atoms stored in collection array
-  int *type2collection;            // ntype array mapping types to custom collections
-  double *collection2cut;          // ncollection array with upper bounds on cutoff intervals
-  double **cutcollectionsq;        // cutoffs for each combination of collections
-  int *collection;                 // local per-atom array to store collection id
-
-  // public methods
-
+  NeighRequest **requests;
+  NeighRequest **old_requests;
+  int *j_sorted;
+  int custom_collection_flag;
+  int interval_collection_flag;
+  int finite_cut_flag;
+  int ncollections;
+  int nmax_collection;
+  int *type2collection;
+  double *collection2cut;
+  double **cutcollectionsq;
+  int *collection;
   Neighbor(class LAMMPS *);
   ~Neighbor() override;
   virtual void init();
-
-  // old API for creating neighbor list requests
   int request(void *, int instance = 0);
-
-  // new API for creating neighbor list requests
   NeighRequest *add_request(class Pair *, int flags = 0);
   NeighRequest *add_request(class Fix *, int flags = 0);
   NeighRequest *add_request(class Compute *, int flags = 0);
   NeighRequest *add_request(class Command *, const char *, int flags = 0);
-  int decide();                     // decide whether to build or not
-  virtual int check_distance();     // check max distance moved since last build
-  void setup_bins();                // setup bins based on box and cutoff
-  virtual void build(int);          // build all perpetual neighbor lists
-  // create a one-time pairwise neigh list
+  int decide();
+  virtual int check_distance();
+  void setup_bins();
+  virtual void build(int);
   void build_one(class NeighList *list, int preflag = 0);
-  void set(int, char **);                     // set neighbor style and skin distance
-  void reset_timestep(bigint);                // reset of timestep counter
-  void modify_params(int, char **);           // modify params that control builds
-  void modify_params(const std::string &);    // convenience overload
-
-  void exclusion_group_group_delete(int, int);    // rm a group-group exclusion
-  int exclude_setting();                          // return exclude value to accelerator pkg
-
-  // Option to call build_topology (e.g. from gpu styles instead for overlapped computation)
-
-  int overlap_topo;    // 0 for default/old non-overlap mode
+  void set(int, char **);
+  void reset_timestep(bigint);
+  void modify_params(int, char **);
+  void modify_params(const std::string &);
+  void exclusion_group_group_delete(int, int);
+  int exclude_setting();
+  int overlap_topo;
   void set_overlap_topo(int);
-
-  // find a neighbor list based on requestor
   NeighList *find_list(void *, const int id = 0) const;
-  // find a neighbor request based on requestor
   NeighRequest *find_request(void *, const int id = 0) const;
-
   const std::vector<NeighRequest *> get_pair_requests() const;
-  int any_full();                // Check if any old requests had full neighbor lists
-  void build_collection(int);    // build peratom collection array starting at the given index
-
-  bigint get_nneigh_full();    // return number of neighbors in a regular full neighbor list
-  bigint get_nneigh_half();    // return number of neighbors in a regular half neighbor list
+  int any_full();
+  void build_collection(int);
+  bigint get_nneigh_full();
+  bigint get_nneigh_half();
   double memory_usage();
-
-  bigint last_setup_bins;    // step of last neighbor::setup_bins() call
-
+  bigint last_setup_bins;
  protected:
   int me, nprocs;
-  int firsttime;    // flag for calling init_styles() only once
-
-  int dimension;      // 2/3 for 2d/3d
-  int triclinic;      // 0 if domain is orthog, 1 if triclinic
-  int newton_pair;    // 0 if newton off for pairwise, 1 if on
-
-  int fix_check;        // # of fixes that induce reneigh
-  int *fixchecklist;    // which fixes to check
-
-  double triggersq;    // trigger = build when atom moves this dist
-
-  double **xhold;    // atom coords at last neighbor build
-  int maxhold;       // size of xhold array
-
-  int boxcheck;                           // 1 if need to store box size
-  double boxlo_hold[3], boxhi_hold[3];    // box size at last neighbor build
-  double corners_hold[8][3];              // box corners at last neighbor build
-  double (*corners)[3];                   // ptr to 8 corners of triclinic box
-
-  double inner[2], middle[2];    // rRESPA cutoffs for extra lists
-
-  int old_style, old_triclinic;    // previous run info
-  int old_pgsize, old_oneatom;     // used to avoid re-creating neigh lists
-
-  int npair_perpetual;       // #x of perpetual NeighPair classes
-  int *plist;                // indices of them in neigh_pair
-
-  int maxex_type;     // max # in exclusion type list
-  int maxex_group;    // max # in exclusion group list
-  int maxex_mol;      // max # in exclusion molecule list
-
-  int maxatom;       // max size of atom-based NeighList arrays
-  int maxrequest;    // max size of NeighRequest list
-
-  // info for other Neigh classes: NBin,NStencil,NPair,NTopo
-
+  int firsttime;
+  int dimension;
+  int triclinic;
+  int newton_pair;
+  int fix_check;
+  int *fixchecklist;
+  double triggersq;
+  double **xhold;
+  int maxhold;
+  int boxcheck;
+  double boxlo_hold[3], boxhi_hold[3];
+  double corners_hold[8][3];
+  double (*corners)[3];
+  double inner[2], middle[2];
+  int old_style, old_triclinic;
+  int old_pgsize, old_oneatom;
+  int npair_perpetual;
+  int *plist;
+  int maxex_type;
+  int maxex_group;
+  int maxex_mol;
+  int maxatom;
+  int maxrequest;
   int nbin;
   int nbclass, npclass;
-
   typedef class NBin *(*BinCreator)(class LAMMPS *);
   BinCreator *binclass;
   char **binnames;
   int *binmasks;
   class NBin **neigh_bin;
-
   typedef class NPair *(*PairCreator)(class LAMMPS *);
   PairCreator *pairclass;
   char **pairnames;
   int *pairmasks;
   class NPair **neigh_pair;
-
-  // internal methods
-  // including creator methods for Nbin,Nstencil,Npair instances
-
   void init_styles();
   int init_pair();
-
   void sort_requests();
-
   void morph_unique();
   void morph_skip();
   void morph_granular();
   void morph_halffull();
   void morph_copy_trim();
-
   void print_pairwise_info();
   void requests_new2old();
-
   int choose_bin(class NeighRequest *);
   int choose_pair(class NeighRequest *);
   int copymode;
 };
-
 namespace NeighConst {
-
   enum {
     NB_INTEL = 1 << 0,
     NB_KOKKOS_DEVICE = 1 << 1,
@@ -241,7 +152,6 @@ namespace NeighConst {
     NB_STANDARD = 1 << 4,
     NB_MULTI = 1 << 5
   };
-
   enum {
     NS_BIN = 1 << 0,
     NS_MULTI = 1 << 1,
@@ -255,7 +165,6 @@ namespace NeighConst {
     NS_SSA = 1 << 9,
     NS_MULTI_OLD = 1 << 10
   };
-
   enum {
     NP_NSQ = 1 << 0,
     NP_BIN = 1 << 1,
@@ -285,7 +194,6 @@ namespace NeighConst {
     NP_MULTI_OLD = 1 << 25,
     NP_TRIM = 1 << 26
   };
-
   enum {
     REQ_DEFAULT = 0,
     REQ_FULL = 1 << 0,
@@ -299,8 +207,6 @@ namespace NeighConst {
     REQ_NEWTON_OFF = 1 << 9,
     REQ_SSA = 1 << 10,
   };
-}    // namespace NeighConst
-
-}    // namespace LAMMPS_NS
-
+}
+}
 #endif

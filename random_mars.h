@@ -1,23 +1,7 @@
-/* -*- c++ -*- ----------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
 #ifndef LMP_RANMARS_H
-#define LMP_RANMARS_H
-
+#define LMP_RANMARS_H 
 #include "pointers.h"
-
 namespace LAMMPS_NS {
-
 class RanMars : protected Pointers {
  public:
   RanMars(class LAMMPS *, int);
@@ -30,7 +14,6 @@ class RanMars : protected Pointers {
   void select_subset(bigint, int, int *, int *);
   void get_state(double *);
   void set_state(double *);
-
  private:
   char padding[1024];
   int save;
@@ -39,7 +22,5 @@ class RanMars : protected Pointers {
   int i97, j97;
   double c, cd, cm;
 };
-
-}    // namespace LAMMPS_NS
-
+}
 #endif

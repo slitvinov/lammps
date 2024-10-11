@@ -1,19 +1,4 @@
-// clang-format off
-/* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
 #include "input.h"
-
 #include "atom.h"
 #include "atom_vec.h"
 #include "comm.h"
@@ -32,103 +17,47 @@
 #include "modify.h"
 #include "neighbor.h"
 #include "pair.h"
-#include "style_command.h"      // IWYU pragma: keep
+#include "style_command.h"
 #include "universe.h"
 #include "update.h"
 #include "variable.h"
-
 #include <cstring>
 #include <cerrno>
 #include <cctype>
-
 using namespace LAMMPS_NS;
-
 #define DELTALINE 256
 #define DELTA 4
-
-/* ----------------------------------------------------------------------
-   one instance per command in style_command.h
-------------------------------------------------------------------------- */
-
 template <typename T> static Command *command_creator(LAMMPS *lmp)
 {
   return new T(lmp);
 }
-
-/* ---------------------------------------------------------------------- */
-
-/** \class LAMMPS_NS::Input
- *  \brief Class for processing commands and input files
- *
-\verbatim embed:rst
-
-The Input class contains methods for reading, pre-processing and
-parsing LAMMPS commands and input files and will dispatch commands
-to the respective class instances or contains the code to execute
-the commands directly.  It also contains the instance of the
-Variable class which performs computations and text substitutions.
-
-\endverbatim */
-
-/** Input class constructor
- *
-\verbatim embed:rst
-
-This sets up the input processing, processes the *-var* and *-echo*
-command line flags, holds the factory of commands and creates and
-initializes an instance of the Variable class.
-
-To execute a command, a specific class instance, derived from
-:cpp:class:`Command`, is created, then its ``command()`` member
-function executed, and finally the class instance is deleted.
-
-\endverbatim
- *
- * \param  lmp   pointer to the base LAMMPS class
- * \param  argc  number of entries in *argv*
- * \param  argv  argument vector  */
-
 Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp)
 {
   MPI_Comm_rank(world,&me);
-
   maxline = maxcopy = maxwork = 0;
   line = copy = work = nullptr;
   narg = maxarg = 0;
   arg = nullptr;
-
   echo_screen = 0;
   echo_log = 1;
-
   label_active = 0;
   labelstr = nullptr;
   jump_skip = 0;
   utf8_warn = true;
-
   if (me == 0) {
     nfile = 1;
     maxfile = 16;
     infiles = new FILE *[maxfile];
     infiles[0] = infile;
   } else infiles = nullptr;
-
   variable = new Variable(lmp);
-
-  // fill map with commands listed in style_command.h
-
   command_map = new CommandCreatorMap();
-
-#define COMMAND_CLASS
+#define COMMAND_CLASS 
 #define CommandStyle(key,Class) \
   (*command_map)[#key] = &command_creator<Class>;
-#include "style_command.h"      // IWYU pragma: keep
+#include "style_command.h"
 #undef CommandStyle
 #undef COMMAND_CLASS
-
-  // process command-line args
-  // check for args "-var" and "-echo"
-  // caller has already checked that sufficient arguments exist
-
   int iarg = 1;
   while (iarg < argc) {
     if (strcmp(argv[iarg],"-var") == 0 || strcmp(argv[iarg],"-v") == 0) {
@@ -139,7 +68,7 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp)
     } else if (strcmp(argv[iarg],"-echo") == 0 ||
                strcmp(argv[iarg],"-e") == 0) {
       narg = 1;
-      char **tmp = arg;        // trick echo() into using argv instead of arg
+      char **tmp = arg;
       arg = &argv[iarg+1];
       echo();
       arg = tmp;
@@ -147,14 +76,8 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp)
      } else iarg++;
   }
 }
-
-/* ---------------------------------------------------------------------- */
-
 Input::~Input()
 {
-  // don't free command and arg strings
-  // they just point to other allocated memory
-
   memory->sfree(line);
   memory->sfree(copy);
   memory->sfree(work);
@@ -162,162 +85,71 @@ Input::~Input()
   memory->sfree(arg);
   delete[] infiles;
   delete variable;
-
   delete command_map;
 }
-
-/** Process all input from the ``FILE *`` pointer *infile*
- *
-\verbatim embed:rst
-
-This will read lines from *infile*, parse and execute them until the end
-of the file is reached.  The *infile* pointer will usually point to
-``stdin`` or the input file given with the ``-in`` command line flag.
-
-\endverbatim */
-
 void Input::file()
 {
   int m,n,mstart,ntriple,endfile;
-
   while (true) {
-
-    // read a line from input script
-    // when done, n = length of line including str terminator, 0 if end of file
-    // if line ends in continuation char '&', concatenate next line
-    // if triple quotes are used, read until closing triple quotes
-
     if (me == 0) {
       ntriple = 0;
       endfile = 0;
       m = 0;
-
       while (true) {
-
         if (infile == nullptr) {
           n = 0;
           break;
         }
-
         mstart = m;
-
         while (true) {
           if (maxline-m < 2) reallocate(line,maxline,0);
-
-          // end of file reached, so break
-          // n == 0 if nothing read, else n = line with str terminator
-
           if (fgets(&line[m],maxline-m,infile) == nullptr) {
             endfile = 1;
             if (m) n = strlen(line) + 1;
             else n = 0;
             break;
           }
-
-          // continue if last char read was not a newline
-          // can happen if line is very long
-
           m += strlen(&line[m]);
           if (line[m-1] != '\n') continue;
           break;
         }
-
         if (endfile) break;
-
-        // add # of triple quotes in just-read line to ntriple
-
         ntriple += numtriple(&line[mstart]);
-
-        // trim whitespace from end of line
-        // line[m] = last printable char
-
         m--;
         while (m >= 0 && isspace(line[m])) m--;
-
-        // continue reading if final printable char is "&"
-
         if (m >= 0 && line[m] == '&') continue;
-
-        // continue reading if odd number of triple quotes
-
         if (ntriple % 2) {
           line[m+1] = '\n';
           m += 2;
           continue;
         }
-
-        // done, break with n = length of line with str terminator
-
         line[m+1] = '\0';
         n = m+2;
         break;
       }
     }
-
-    // bcast the line
-    // if n = 0, end-of-file
-    // error if label_active is set, since label wasn't encountered
-    // if original input file, code is done
-    // else go back to previous input file
-
     MPI_Bcast(&n,1,MPI_INT,0,world);
     if (n == 0) {
       if (label_active) error->all(FLERR,"Label wasn't found in input script");
       break;
     }
-
     if (n > maxline) reallocate(line,maxline,n);
     MPI_Bcast(line,n,MPI_CHAR,0,world);
-
-    // echo the command unless scanning for label
-
     if (me == 0 && label_active == 0) {
       if (echo_screen && screen) fprintf(screen,"%s\n",line);
       if (echo_log && logfile) fprintf(logfile,"%s\n",line);
     }
-
-    // parse the line
-    // if no command, skip to next line in input script
-
     parse();
     if (command == nullptr) continue;
-
-    // if scanning for label, skip command unless it's a label command
-
     if (label_active && strcmp(command,"label") != 0) continue;
-
-    // execute the command
-
     if (execute_command() && line)
       error->all(FLERR,"Unknown command: {}",line);
   }
 }
-
-/** Process all input from the file *filename*
- *
-\verbatim embed:rst
-
-This function opens the file at the path *filename*, put the current
-file pointer stored in *infile* on a stack and instead assign *infile*
-with the newly opened file pointer.  Then it will call the
-:cpp:func:`Input::file() <LAMMPS_NS::Input::file()>` function to read,
-parse and execute the contents of that file.  When the end of the file
-is reached, it is closed and the previous file pointer from the infile
-file pointer stack restored to *infile*.
-
-\endverbatim
- *
- * \param  filename  name of file with LAMMPS commands */
-
 void Input::file(const char *filename)
 {
-  // error if another nested file still open, should not be possible
-  // open new filename and set infile, infiles[0], nfile
-  // call to file() will close filename and decrement nfile
-
   if (me == 0) {
     if (nfile == maxfile) error->one(FLERR,"Too many nested levels of input scripts");
-
     if (filename) {
       infile = fopen(filename,"r");
       if (infile == nullptr)
@@ -325,11 +157,7 @@ void Input::file(const char *filename)
       infiles[nfile++] = infile;
     }
   }
-
-  // process contents of file
-
   file();
-
   if (me == 0) {
     if (filename) {
       fclose(infile);
@@ -338,56 +166,22 @@ void Input::file(const char *filename)
     }
   }
 }
-
-/** Process a single command from a string in *single*
- *
-\verbatim embed:rst
-
-This function takes the text in *single*, makes a copy, parses that,
-executes the command and returns the name of the command (without the
-arguments).  If there was no command in *single* it will return
-``nullptr``.
-
-\endverbatim
- *
- * \param  single  string with LAMMPS command
- * \return         string with name of the parsed command w/o arguments */
-
 char *Input::one(const std::string &single)
 {
   int n = single.size() + 1;
   if (n > maxline) reallocate(line,maxline,n);
   strcpy(line,single.c_str());
-
-  // echo the command unless scanning for label
-
   if (me == 0 && label_active == 0) {
     if (echo_screen && screen) fprintf(screen,"%s\n",line);
     if (echo_log && logfile) fprintf(logfile,"%s\n",line);
   }
-
-  // parse the line
-  // if no command, just return a null pointer
-
   parse();
   if (command == nullptr) return nullptr;
-
-  // if scanning for label, skip command unless it's a label command
-
   if (label_active && strcmp(command,"label") != 0) return nullptr;
-
-  // execute the command and return its name
-
   if (execute_command())
     error->all(FLERR,"Unknown command: {}",line);
-
   return command;
 }
-
-/* ----------------------------------------------------------------------
-   send text to active echo file pointers
-------------------------------------------------------------------------- */
-
 void Input::write_echo(const std::string &txt)
 {
   if (me == 0) {
@@ -395,31 +189,13 @@ void Input::write_echo(const std::string &txt)
     if (echo_log && logfile) fputs(txt.c_str(),logfile);
   }
 }
-
-/* ----------------------------------------------------------------------
-   parse copy of command line by inserting string terminators
-   strip comment = all chars from # on
-   replace all $ via variable substitution except within quotes
-   command = first word
-   narg = # of args
-   arg[] = individual args
-   treat text between single/double/triple quotes as one arg via nextword()
-------------------------------------------------------------------------- */
-
 void Input::parse()
 {
-  // duplicate line into copy string to break into words
-
   int n = strlen(line) + 1;
   if (n > maxcopy) reallocate(copy,maxcopy,n);
   strcpy(copy,line);
-
-  // strip a # comment by replacing it with 0
-  // do not treat a # inside single/double/triple quotes as a comment
-
   char *ptrmatch;
   char *ptr = copy;
-
   while (*ptr) {
     if (*ptr == '#') {
       *ptr = '\0';
@@ -444,7 +220,6 @@ void Input::parse()
       }
     } else ptr++;
   }
-
   if (utils::has_utf8(copy)) {
     std::string buf = utils::utf8_subst(copy);
     strcpy(copy,buf.c_str());
@@ -454,22 +229,10 @@ void Input::parse()
                      "equivalents where known.");
     utf8_warn = false;
   }
-
-  // perform $ variable substitution (print changes)
-  // except if searching for a label since earlier variable may not be defined
-
   if (!label_active) substitute(copy,work,maxcopy,maxwork,1);
-
-  // command = 1st arg in copy string
-
   char *next;
   command = nextword(copy,&next);
   if (command == nullptr) return;
-
-  // point arg[] at each subsequent arg in copy string
-  // nextword() inserts string terminators into copy string to delimit args
-  // nextword() treats text between single/double/triple quotes as one arg
-
   narg = 0;
   ptr = next;
   while (ptr) {
@@ -483,36 +246,11 @@ void Input::parse()
     ptr = next;
   }
 }
-
-/* ----------------------------------------------------------------------
-   find next word in str
-   insert 0 at end of word
-   ignore leading whitespace
-   treat text between single/double/triple quotes as one arg
-   matching quote must be followed by whitespace char if not end of string
-   strip quotes from returned word
-   return ptr to start of word or null pointer if no word in string
-   also return next = ptr after word
-------------------------------------------------------------------------- */
-
 char *Input::nextword(char *str, char **next)
 {
   char *start,*stop;
-
-  // start = first non-whitespace char
-
   start = &str[strspn(str," \t\n\v\f\r")];
   if (*start == '\0') return nullptr;
-
-  // if start is single/double/triple quote:
-  //   start = first char beyond quote
-  //   stop = first char of matching quote
-  //   next = first char beyond matching quote
-  //   next must be null char or whitespace
-  // if start is not single/double/triple quote:
-  //   stop = first whitespace char after start
-  //   next = char after stop, or stop itself if stop is null char
-
   if (strstr(start,"\"\"\"") == start) {
     stop = strstr(&start[3],"\"\"\"");
     if (!stop) error->all(FLERR,"Unbalanced quotes in input line");
@@ -532,70 +270,35 @@ char *Input::nextword(char *str, char **next)
     if (*stop == '\0') *next = stop;
     else *next = stop+1;
   }
-
-  // set stop to null char to terminate word
-
   *stop = '\0';
   return start;
 }
-
-/* ----------------------------------------------------------------------
-   substitute for $ variables in str using work str2 and return it
-   reallocate str/str2 to hold expanded version if necessary & reset max/max2
-   print updated string if flag is set and not searching for label
-   label_active will be 0 if called from external class
-------------------------------------------------------------------------- */
-
 void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
 {
-  // use str2 as scratch space to expand str, then copy back to str
-  // reallocate str and str2 as necessary
-  // do not replace variables inside single/double/triple quotes
-  // var = pts at variable name, ended by null char
-  //   if $ is followed by '{', trailing '}' becomes null char
-  //   else $x becomes x followed by null char
-  // beyond = points to text following variable
-
   int i,n,paren_count,nchars;;
   char immediate[256];
   char *var,*value,*beyond;
   int quoteflag = 0;
   char *ptrmatch;
-
   char *ptr = str;
-
   n = strlen(str) + 1;
   if (n > max2) reallocate(str2,max2,n);
   *str2 = '\0';
   char *ptr2 = str2;
-
   while (*ptr) {
-
-    // variable substitution
-
     if (*ptr == '$' && !quoteflag) {
-
-      // value = ptr to expanded variable
-      // variable name between curly braces, e.g. ${a}
-
       if (*(ptr+1) == '{') {
         var = ptr+2;
         i = 0;
-
         while (var[i] != '\0' && var[i] != '}') i++;
-
         if (var[i] == '\0') error->one(FLERR,"Invalid variable name");
         var[i] = '\0';
         beyond = ptr + strlen(var) + 3;
         value = variable->retrieve(var);
-
-      // immediate variable between parenthesis, e.g. $(1/3) or $(1/3:%.6g)
-
       } else if (*(ptr+1) == '(') {
         var = ptr+2;
         paren_count = 0;
         i = 0;
-
         while (var[i] != '\0' && (var[i] != ')' || paren_count != 0)) {
           switch (var[i]) {
           case '(': paren_count++; break;
@@ -604,30 +307,19 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
           }
           i++;
         }
-
         if (var[i] == '\0') error->one(FLERR,"Invalid immediate variable");
         var[i] = '\0';
         beyond = ptr + strlen(var) + 3;
-
-        // check if an inline format specifier was appended with a colon
-
         char fmtstr[64] = "%.20g";
         char *fmtflag;
         if ((fmtflag=strrchr(var, ':')) && (fmtflag[1]=='%')) {
           strncpy(fmtstr,&fmtflag[1],sizeof(fmtstr)-1);
           *fmtflag='\0';
         }
-
-        // quick check for proper format string
-
         if (!utils::strmatch(fmtstr,"%[0-9 ]*\\.[0-9]+[efgEFG]"))
           error->all(FLERR,"Incorrect conversion in format string");
-
         snprintf(immediate,256,fmtstr,variable->compute_equal(var));
         value = immediate;
-
-      // single character variable name, e.g. $a
-
       } else {
         var = ptr;
         var[0] = var[1];
@@ -635,28 +327,17 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
         beyond = ptr + 2;
         value = variable->retrieve(var);
       }
-
       if (value == nullptr)
         error->one(FLERR,"Substitution for illegal variable {}",var);
-
-      // check if storage in str2 needs to be expanded
-      // re-initialize ptr and ptr2 to the point beyond the variable.
-
       n = strlen(str2) + strlen(value) + strlen(beyond) + 1;
       if (n > max2) reallocate(str2,max2,n);
       strcat(str2,value);
       ptr2 = str2 + strlen(str2);
       ptr = beyond;
-
-      // output substitution progress if requested
-
       if (flag && me == 0 && label_active == 0) {
         if (echo_screen && screen) fprintf(screen,"%s%s\n",str2,beyond);
         if (echo_log && logfile) fprintf(logfile,"%s%s\n",str2,beyond);
       }
-
-    // check for single/double/triple quotes and skip past them
-
     } else if (*ptr == '\'') {
       ptrmatch = strchr(ptr+1,'\'');
       if (ptrmatch == nullptr)
@@ -683,27 +364,12 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
         ptr += nchars;
         ptr2 += nchars;
       }
-
-    // else copy current single character into str2
-
     } else *ptr2++ = *ptr++;
-
-    // terminate current str2 so variable sub can perform strlen()
-
     *ptr2 = '\0';
   }
-
-  // set length of input str to length of work str2
-  // copy work string back to input str
-
   if (max2 > max) reallocate(str,max,max2);
   strcpy(str,str2);
 }
-
-/* ----------------------------------------------------------------------
-   return number of triple quotes in line
-------------------------------------------------------------------------- */
-
 int Input::numtriple(char *line)
 {
   int count = 0;
@@ -714,31 +380,16 @@ int Input::numtriple(char *line)
   }
   return count;
 }
-
-/* ----------------------------------------------------------------------
-   rellocate a string
-   if n > 0: set max >= n in increments of DELTALINE
-   if n = 0: just increment max by DELTALINE
-------------------------------------------------------------------------- */
-
 void Input::reallocate(char *&str, int &max, int n)
 {
   if (n) {
     while (n > max) max += DELTALINE;
   } else max += DELTALINE;
-
   str = (char *) memory->srealloc(str,max*sizeof(char),"input:str");
 }
-
-/* ----------------------------------------------------------------------
-   process a single parsed command
-   return 0 if successful, -1 if did not recognize command
-------------------------------------------------------------------------- */
-
 int Input::execute_command()
 {
   int flag = 1;
-
   std::string mycmd = command;
   if (mycmd == "clear") clear();
   else if (mycmd == "echo") echo();
@@ -753,7 +404,6 @@ int Input::execute_command()
   else if (mycmd == "quit") quit();
   else if (mycmd == "shell") shell();
   else if (mycmd == "variable") variable_command();
-
   else if (mycmd == "atom_modify") atom_modify();
   else if (mycmd == "atom_style") atom_style();
   else if (mycmd == "boundary") boundary();
@@ -783,16 +433,8 @@ int Input::execute_command()
   else if (mycmd == "uncompute") uncompute();
   else if (mycmd == "unfix") unfix();
   else if (mycmd == "units") units();
-
   else flag = 0;
-
-  // return if command was listed above
-
   if (flag) return 0;
-
-  // process "meta-commands", i.e. commands that may have sub-commands
-  // they return 1 if there was a match and 0 if not
-
   if (mycmd == "reset_atoms") flag = meta(mycmd);
   if (flag) return 0;
   if (command_map->find(mycmd) != command_map->end()) {
@@ -802,18 +444,8 @@ int Input::execute_command()
     delete cmd;
     return 0;
   }
-
-  // unrecognized command
-
   return -1;
 }
-
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------------- */
-
 void Input::clear()
 {
   if (narg > 0) error->all(FLERR,"Illegal clear command: unexpected arguments but found {}", narg);
@@ -821,13 +453,9 @@ void Input::clear()
   lmp->create();
   lmp->post_create();
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::echo()
 {
   if (narg != 1) error->all(FLERR,"Illegal echo command: expected 1 argument but found {}", narg);
-
   if (strcmp(arg[0],"none") == 0) {
     echo_screen = 0;
     echo_log = 0;
@@ -842,45 +470,24 @@ void Input::echo()
     echo_log = 1;
   } else error->all(FLERR,"Unknown echo keyword: {}", arg[0]);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::ifthenelse()
 {
   if (narg < 3) utils::missing_cmd_args(FLERR, "if", error);
-
-  // substitute for variables in Boolean expression for "if"
-  // in case expression was enclosed in quotes
-  // must substitute on copy of arg else will step on subsequent args
-
   int n = strlen(arg[0]) + 1;
   if (n > maxline) reallocate(line,maxline,n);
   strcpy(line,arg[0]);
   substitute(line,work,maxline,maxwork,0);
-
-  // evaluate Boolean expression for "if"
-
   double btest = variable->evaluate_boolean(line);
-
-  // bound "then" commands
-
   if (strcmp(arg[1],"then") != 0) error->all(FLERR,"Illegal if command: expected \"then\" but found \"{}\"", arg[1]);
-
   int first = 2;
   int iarg = first;
   while (iarg < narg &&
          (strcmp(arg[iarg],"elif") != 0 && strcmp(arg[iarg],"else") != 0))
     iarg++;
   int last = iarg-1;
-
-  // execute "then" commands
-  // make copies of all arg string commands
-  // required because re-parsing a command via one() will wipe out args
-
   if (btest != 0.0) {
     int ncommands = last-first + 1;
     if (ncommands <= 0) utils::missing_cmd_args(FLERR, "if then", error);
-
     auto commands = new char*[ncommands];
     ncommands = 0;
     for (int i = first; i <= last; i++) {
@@ -890,25 +497,14 @@ void Input::ifthenelse()
       strcpy(commands[ncommands],arg[i]);
       ncommands++;
     }
-
     for (int i = 0; i < ncommands; i++) {
       one(commands[i]);
       delete[] commands[i];
     }
     delete[] commands;
-
     return;
   }
-
-  // done if no "elif" or "else"
-
   if (iarg == narg) return;
-
-  // check "elif" or "else" until find commands to execute
-  // substitute for variables and evaluate Boolean expression for "elif"
-  // must substitute on copy of arg else will step on subsequent args
-  // bound and execute "elif" or "else" commands
-
   while (iarg != narg) {
     if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "if then", error);
     if (strcmp(arg[iarg],"elif") == 0) {
@@ -922,18 +518,14 @@ void Input::ifthenelse()
       btest = 1.0;
       first = iarg+1;
     }
-
     iarg = first;
     while (iarg < narg &&
            (strcmp(arg[iarg],"elif") != 0 && strcmp(arg[iarg],"else") != 0))
       iarg++;
     last = iarg-1;
-
     if (btest == 0.0) continue;
-
     int ncommands = last-first + 1;
     if (ncommands <= 0) utils::missing_cmd_args(FLERR, "if elif/else", error);
-
     auto commands = new char*[ncommands];
     ncommands = 0;
     for (int i = first; i <= last; i++) {
@@ -943,64 +535,43 @@ void Input::ifthenelse()
       strcpy(commands[ncommands],arg[i]);
       ncommands++;
     }
-
-    // execute the list of commands
-
     for (int i = 0; i < ncommands; i++) {
       one(commands[i]);
       delete[] commands[i];
     }
     delete[] commands;
-
     return;
   }
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::include()
 {
   if (narg != 1) error->all(FLERR,"Illegal include command");
-
   if (me == 0) {
     if (nfile == maxfile)
       error->one(FLERR,"Too many nested levels of input scripts");
-
-    // expand variables
     int n = strlen(arg[0]) + 1;
     if (n > maxline) reallocate(line,maxline,n);
     strcpy(line,arg[0]);
     substitute(line,work,maxline,maxwork,0);
-
     infile = fopen(line,"r");
     if (infile == nullptr)
       error->one(FLERR,"Cannot open input script {}: {}", line, utils::getsyserror());
-
     infiles[nfile++] = infile;
   }
-
-  // process contents of file
-
   file();
-
   if (me == 0) {
     fclose(infile);
     nfile--;
     infile = infiles[nfile-1];
   }
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::jump()
 {
   if (narg < 1 || narg > 2) error->all(FLERR,"Illegal jump command: expected 1 or 2 argument(s) but found {}", narg);
-
   if (jump_skip) {
     jump_skip = 0;
     return;
   }
-
   if (me == 0) {
     if (strcmp(arg[0],"SELF") == 0) rewind(infile);
     else {
@@ -1009,108 +580,69 @@ void Input::jump()
       if (infile == nullptr)
         error->one(FLERR,"Cannot open input script {}: {}",
                                      arg[0], utils::getsyserror());
-
       infiles[nfile-1] = infile;
     }
   }
-
   if (narg == 2) {
     label_active = 1;
     delete[] labelstr;
     labelstr = utils::strdup(arg[1]);
   }
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::label()
 {
   if (narg != 1) error->all(FLERR,"Illegal label command: expected 1 argument but found {}", narg);
   if (label_active && strcmp(labelstr,arg[0]) == 0) label_active = 0;
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::log()
 {
   if ((narg < 1) || (narg > 2)) error->all(FLERR,"Illegal log command: expected 1 or 2 argument(s) but found {}", narg);
-
   int appendflag = 0;
   if (narg == 2) {
     if (strcmp(arg[1],"append") == 0) appendflag = 1;
     else error->all(FLERR,"Unknown log keyword: {}", arg[1]);
   }
-
   if (me == 0) {
     if (logfile) fclose(logfile);
     if (strcmp(arg[0],"none") == 0) logfile = nullptr;
     else {
       if (appendflag) logfile = fopen(arg[0],"a");
       else logfile = fopen(arg[0],"w");
-
       if (logfile == nullptr)
         error->one(FLERR,"Cannot open logfile {}: {}",
                                      arg[0], utils::getsyserror());
-
     }
     if (universe->nworlds == 1) universe->ulogfile = logfile;
   }
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::next_command()
 {
   if (variable->next(narg,arg)) jump_skip = 1;
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::partition()
 {
   if (narg < 3) utils::missing_cmd_args(FLERR, "partition", error);
-
   int ilo,ihi;
   int yesflag = utils::logical(FLERR,arg[0],false,lmp);
   utils::bounds(FLERR,arg[1],1,universe->nworlds,ilo,ihi,error);
-
-  // new command starts at the 3rd argument,
-  // which must not be another partition command
-
   if (strcmp(arg[2],"partition") == 0) error->all(FLERR,"Illegal partition command");
-
   char *cmd = strstr(line,arg[2]);
-
-  // execute the remaining command line on requested partitions
-
   if (yesflag) {
     if (universe->iworld+1 >= ilo && universe->iworld+1 <= ihi) one(cmd);
   } else {
     if (universe->iworld+1 < ilo || universe->iworld+1 > ihi) one(cmd);
   }
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::print()
 {
   if (narg < 1) utils::missing_cmd_args(FLERR, "print", error);
-
-  // copy 1st arg back into line (copy is being used)
-  // check maxline since arg[0] could have been expanded by variables
-  // substitute for $ variables (no printing) and print arg
-
   int n = strlen(arg[0]) + 1;
   if (n > maxline) reallocate(line,maxline,n);
   strcpy(line,arg[0]);
   substitute(line,work,maxline,maxwork,0);
-
-  // parse optional args
-
   FILE *fp = nullptr;
   int screenflag = 1;
   int universeflag = 0;
-
   int iarg = 1;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"file") == 0 || strcmp(arg[iarg],"append") == 0) {
@@ -1133,7 +665,6 @@ void Input::print()
       iarg += 2;
     } else error->all(FLERR,"Unknown print keyword: {}", arg[iarg]);
   }
-
   if (me == 0) {
     if (screenflag && screen) fprintf(screen,"%s\n",line);
     if (screenflag && logfile) fprintf(logfile,"%s\n",line);
@@ -1143,29 +674,20 @@ void Input::print()
     }
   }
   if (universeflag && (universe->me == 0)) {
-    if (universe->uscreen)  fprintf(universe->uscreen, "%s\n",line);
+    if (universe->uscreen) fprintf(universe->uscreen, "%s\n",line);
     if (universe->ulogfile) fprintf(universe->ulogfile,"%s\n",line);
   }
 }
-
-
-/* ---------------------------------------------------------------------- */
-
 void Input::quit()
 {
-  if (narg == 0) error->done(0); // 1 would be fully backwards compatible
+  if (narg == 0) error->done(0);
   if (narg == 1) error->done(utils::inumeric(FLERR,arg[0],false,lmp));
   error->all(FLERR,"Illegal quit command: expected 0 or 1 argument but found {}", narg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::shell()
 {
   int rv,err;
-
   if (narg < 1) utils::missing_cmd_args(FLERR, "shell", error);
-
   if (strcmp(arg[0],"cd") == 0) {
     if (narg != 2) error->all(FLERR,"Illegal shell command: expected 2 argument but found {}", narg);
     rv = (platform::chdir(arg[1]) < 0) ? errno : 0;
@@ -1234,9 +756,6 @@ void Input::shell()
         error->warning(FLERR, "Shell command 'putenv {}' failed with error '{}'",
                        arg[i], utils::getsyserror());
     }
-
-  // concat arguments and invoke string in shell via system()
-
   } else {
     if (me == 0) {
       std::string cmd = arg[0];
@@ -1244,37 +763,19 @@ void Input::shell()
         cmd += " ";
         cmd += arg[i];
       }
-
       if (system(cmd.c_str()) != 0)
         error->warning(FLERR,"Shell command {} returned with non-zero status", cmd);
     }
   }
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::variable_command()
 {
   variable->set(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-
-/* ----------------------------------------------------------------------
-   one function for each LAMMPS-specific input script command
-------------------------------------------------------------------------- */
-
-/* ---------------------------------------------------------------------- */
-
 void Input::atom_modify()
 {
   atom->modify_params(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::atom_style()
 {
   if (narg < 1) utils::missing_cmd_args(FLERR, "atom_style", error);
@@ -1282,25 +783,16 @@ void Input::atom_style()
     error->all(FLERR,"Atom_style command after simulation box is defined");
   atom->create_avec(arg[0],narg-1,&arg[1],1);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::boundary()
 {
   if (domain->box_exist)
     error->all(FLERR,"Boundary command after simulation box is defined");
   domain->set_boundary(narg,arg,0);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::comm_modify()
 {
   comm->modify_params(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::comm_style()
 {
   if (narg < 1) utils::missing_cmd_args(FLERR, "comm_style", error);
@@ -1316,31 +808,19 @@ void Input::comm_style()
     delete oldcomm;
   } else error->all(FLERR,"Unknown comm_style argument: {}", arg[0]);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::compute()
 {
   modify->add_compute(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::compute_modify()
 {
   modify->modify_compute(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::dielectric()
 {
   if (narg != 1) error->all(FLERR,"Illegal dielectric command");
   force->dielectric = utils::numeric(FLERR,arg[0],false,lmp);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::dimension()
 {
   if (narg != 1) error->all(FLERR, "Dimension command expects exactly 1 argument");
@@ -1349,43 +829,24 @@ void Input::dimension()
   domain->dimension = utils::inumeric(FLERR,arg[0],false,lmp);
   if (domain->dimension != 2 && domain->dimension != 3)
     error->all(FLERR, "Invalid dimension argument: {}", arg[0]);
-
-  // must reset default extra_dof of all computes
-  // since some were created before dimension command is encountered
-
   for (auto &c : modify->get_compute_list()) c->reset_extra_dof();
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::fix()
 {
   modify->add_fix(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::fix_modify()
 {
   modify->modify_fix(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::group_command()
 {
   group->assign(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::lattice()
 {
   domain->set_lattice(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::mass()
 {
   if (narg != 2) error->all(FLERR,"Illegal mass command: expected 2 arguments but found {}", narg);
@@ -1393,42 +854,27 @@ void Input::mass()
     error->all(FLERR,"Mass command before simulation box is defined");
   atom->set_mass(FLERR,narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::neigh_modify()
 {
   neighbor->modify_params(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::neighbor_command()
 {
   neighbor->set(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::newton()
 {
   int newton_pair=1,newton_bond=1;
-
   if (narg == 1) {
     newton_pair = newton_bond = utils::logical(FLERR,arg[0],false,lmp);
   } else if (narg == 2) {
     newton_pair = utils::logical(FLERR,arg[0],false,lmp);
     newton_bond = utils::logical(FLERR,arg[1],false,lmp);
   } else error->all(FLERR,"Illegal newton command");
-
   force->newton_pair = newton_pair;
-
   if (newton_pair || newton_bond) force->newton = 1;
   else force->newton = 0;
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::pair_coeff()
 {
   if (domain->box_exist == 0)
@@ -1437,9 +883,6 @@ void Input::pair_coeff()
   if (narg < 2) utils::missing_cmd_args(FLERR,"pair_coeff", error);
   if (force->pair->one_coeff && ((strcmp(arg[0],"*") != 0) || (strcmp(arg[1],"*") != 0)))
     error->all(FLERR,"Pair_coeff must start with * * for pair style {}", force->pair_style);
-
-  // if arg[1] < arg[0], and neither contain a wildcard, reorder
-
   int itype,jtype;
   if (utils::strmatch(arg[0],"^\\d+$") && utils::strmatch(arg[1],"^\\d+$")) {
     itype = utils::inumeric(FLERR,arg[0],false,lmp);
@@ -1450,24 +893,14 @@ void Input::pair_coeff()
       arg[1] = str;
     }
   }
-
   force->pair->coeff(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::pair_modify()
 {
   if (force->pair == nullptr)
     error->all(FLERR,"Pair_modify command before pair_style is defined");
   force->pair->modify_params(narg,arg);
 }
-
-/* ----------------------------------------------------------------------
-   if old pair style exists and new style is same, just change settings
-   else create new pair class
-------------------------------------------------------------------------- */
-
 void Input::pair_style()
 {
   if (narg < 1) utils::missing_cmd_args(FLERR, "pair_style", error);
@@ -1480,96 +913,58 @@ void Input::pair_style()
       return;
     }
   }
-
   force->create_pair(arg[0],1);
   if (force->pair) force->pair->settings(narg-1,&arg[1]);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::pair_write()
 {
   if (force->pair == nullptr)
     error->all(FLERR,"Pair_write command before pair_style is defined");
   force->pair->write_file(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::processors()
 {
   if (domain->box_exist)
     error->all(FLERR,"Processors command after simulation box is defined");
   comm->set_processors(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::region()
 {
   domain->add_region(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::reset_timestep()
 {
   update->reset_timestep(narg,arg);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::run_style()
 {
   if (domain->box_exist == 0)
     error->all(FLERR,"Run_style command before simulation box is defined");
   update->create_integrate(narg,arg,1);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::timestep()
 {
   if (narg != 1) error->all(FLERR,"Illegal timestep command");
-
   update->update_time();
   update->dt = utils::numeric(FLERR,arg[0],false,lmp);
   update->dt_default = 0;
-
-  // timestep command can be invoked between runs or by run every
-  // calls to other classes that need to know timestep size changed
-  // similar logic is in FixDtReset::end_of_step()
-  // only need to do this if a run has already occurred
-
   if (update->first_update == 0) return;
-
   int respaflag = 0;
   if (utils::strmatch(update->integrate_style, "^respa")) respaflag = 1;
   if (respaflag) update->integrate->reset_dt();
-
   if (force->pair) force->pair->reset_dt();
   for (auto &ifix : modify->get_fix_list()) ifix->reset_dt();
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::uncompute()
 {
   if (narg != 1) error->all(FLERR,"Illegal uncompute command");
   modify->delete_compute(arg[0]);
 }
-
-
-/* ---------------------------------------------------------------------- */
-
 void Input::unfix()
 {
   if (narg != 1) error->all(FLERR,"Illegal unfix command");
   modify->delete_fix(arg[0]);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Input::units()
 {
   if (narg != 1) error->all(FLERR,"Illegal units command: expected 1 argument but found {}", narg);
@@ -1577,13 +972,6 @@ void Input::units()
     error->all(FLERR,"Units command after simulation box is defined");
   update->set_units(arg[0]);
 }
-
-/* ---------------------------------------------------------------------- */
-/* ----------------------------------------------------------------------
-   function for meta commands
-------------------------------------------------------------------------- */
-/* ---------------------------------------------------------------------- */
-
 int Input::meta(const std::string &prefix)
 {
   auto mycmd = fmt::format("{}_{}", utils::uppercase(prefix), utils::uppercase(arg[0]));

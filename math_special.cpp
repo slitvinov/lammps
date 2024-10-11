@@ -1,18 +1,9 @@
-// clang-format off
 #include "math_special.h"
-
 #include <cmath>
-#include <cstdint> // IWYU pragma: keep
+#include <cstdint>
 #include <limits>
-
 using namespace LAMMPS_NS;
-
 static constexpr int nmaxfactorial = 167;
-
-/* ----------------------------------------------------------------------
-   factorial n table, size nmaxfactorial+1
-------------------------------------------------------------------------- */
-
 static const double nfac_table[] = {
   1,
   1,
@@ -181,86 +172,16 @@ static const double nfac_table[] = {
   3.28721858553429e+293,
   5.42391066613159e+295,
   9.00369170577843e+297,
-  1.503616514865e+300, // nmaxfactorial = 167
+  1.503616514865e+300,
 };
-
-/* ----------------------------------------------------------------------
-   factorial n vial lookup from precomputed table
-------------------------------------------------------------------------- */
-
 double MathSpecial::factorial(const int n)
 {
   if (n < 0 || n > nmaxfactorial)
     return std::numeric_limits<double>::quiet_NaN();
-
   return nfac_table[n];
 }
-
-
-/* Library libcerf:
- *   Compute complex error functions, based on a new implementation of
- *   Faddeeva's w_of_z. Also provide Dawson and Voigt functions.
- *
- * File erfcx.c:
- *   Compute erfcx(x) = exp(x^2) erfc(x) function, for real x,
- *   using a novel algorithm that is much faster than DERFC of SLATEC.
- *   This function is used in the computation of Faddeeva, Dawson, and
- *   other complex error functions.
- *
- * Copyright:
- *   (C) 2012 Massachusetts Institute of Technology
- *   (C) 2013 Forschungszentrum Jülich GmbH
- *
- * Licence:
- *   Permission is hereby granted, free of charge, to any person obtaining
- *   a copy of this software and associated documentation files (the
- *   "Software"), to deal in the Software without restriction, including
- *   without limitation the rights to use, copy, modify, merge, publish,
- *   distribute, sublicense, and/or sell copies of the Software, and to
- *   permit persons to whom the Software is furnished to do so, subject to
- *   the following conditions:
- *
- *   The above copyright notice and this permission notice shall be
- *   included in all copies or substantial portions of the Software.
- *
- *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- *   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- *   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- *   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- *   LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- *   OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- *   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * Authors:
- *   Steven G. Johnson, Massachusetts Institute of Technology, 2012, core author
- *   Joachim Wuttke, Forschungszentrum Jülich, 2013, package maintainer
- *
- * Website:
- *   https://jugit.fz-juelich.de/mlz/libcerf
- *
- * Revision history:
- *   ../CHANGELOG
- *
- * Manual page:
- *   man 3 erfcx
- */
-
-/******************************************************************************/
-/* Lookup-table for Chebyshev polynomials for smaller |x|                     */
-/******************************************************************************/
-
 double MathSpecial::erfcx_y100(const double y100)
 {
-    // Steven G. Johnson, October 2012.
-
-    // Given y100=100*y, where y = 4/(4+x) for x >= 0, compute erfc(x).
-
-    // Uses a look-up table of 100 different Chebyshev polynomials
-    // for y intervals [0,0.01], [0.01,0.02], ...., [0.99,1], generated
-    // with the help of Maple and a little shell script.  This allows
-    // the Chebyshev polynomials to be of significantly lower degree (about 1/4)
-    // compared to fitting the whole [0,1] interval with a single polynomial.
-
     switch ((int) y100) {
     case 0: {
         double t = 2*y100 - 1;
@@ -663,35 +584,15 @@ double MathSpecial::erfcx_y100(const double y100)
         return 0.97771701335885035464e0 + (0.22000938572830479551e-1 + (0.27951610702682383001e-3 + (0.25153688325245314530e-5 + (0.16514019547822821453e-7 + (0.78191526829368231251e-10 + 0.24873652355555555556e-12 * t) * t) * t) * t) * t) * t;
     }
     }
-    /* we only get here if y = 1, i.e. |x| < 4*eps, in which case
-     * erfcx is within 1e-15 of 1.. */
     return 1.0;
-} /* erfcx_y100 */
-
-/* optimizer friendly implementation of exp2(x).
- *
- * strategy:
- *
- * split argument into an integer part and a fraction:
- * ipart = floor(x+0.5);
- * fpart = x - ipart;
- *
- * compute exp2(ipart) from setting the ieee754 exponent
- * compute exp2(fpart) using a pade' approximation for x in [-0.5;0.5[
- *
- * the result becomes: exp2(x) = exp2(ipart) * exp2(fpart)
- */
-
-/* IEEE 754 double precision floating point data manipulation */
+}
 typedef union
 {
-    double   f;
+    double f;
     uint64_t u;
-    struct {int32_t  i0,i1;} s;
-}  udi_t;
-
+    struct {int32_t i0,i1;} s;
+} udi_t;
 static const double fm_exp2_q[] = {
-/*  1.00000000000000000000e0, */
     2.33184211722314911771e2,
     4.36821166879210612817e3
 };
@@ -700,38 +601,29 @@ static const double fm_exp2_p[] = {
     2.02020656693165307700e1,
     1.51390680115615096133e3
 };
-
-/* double precision constants */
-#define FM_DOUBLE_LOG2OFE  1.4426950408889634074
-
+#define FM_DOUBLE_LOG2OFE 1.4426950408889634074
 double MathSpecial::exp2_x86(double x)
 {
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-    double   ipart, fpart, px, qx;
-    udi_t    epart;
-
+    double ipart, fpart, px, qx;
+    udi_t epart;
     ipart = floor(x+0.5);
     fpart = x - ipart;
     epart.s.i0 = 0;
     epart.s.i1 = (((int) ipart) + 1023) << 20;
-
     x = fpart*fpart;
-
-    px =        fm_exp2_p[0];
+    px = fm_exp2_p[0];
     px = px*x + fm_exp2_p[1];
-    qx =    x + fm_exp2_q[0];
+    qx = x + fm_exp2_q[0];
     px = px*x + fm_exp2_p[2];
     qx = qx*x + fm_exp2_q[1];
-
     px = px * fpart;
-
     x = 1.0 + 2.0*(px/(qx-px));
     return epart.f*x;
 #else
     return pow(2.0, x);
 #endif
 }
-
 double MathSpecial::fm_exp(double x)
 {
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
@@ -742,4 +634,3 @@ double MathSpecial::fm_exp(double x)
     return ::exp(x);
 #endif
 }
-

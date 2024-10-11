@@ -1,29 +1,10 @@
-/* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
 #include "label_map.h"
-
 #include "atom.h"
 #include "comm.h"
 #include "error.h"
 #include "force.h"
-
 #include <cstring>
-
 using namespace LAMMPS_NS;
-
-/* ---------------------------------------------------------------------- */
-
 LabelMap::LabelMap(LAMMPS *_lmp, int _natomtypes, int _nbondtypes, int _nangletypes,
                    int _ndihedraltypes, int _nimpropertypes) :
     Pointers(_lmp),
@@ -34,9 +15,6 @@ LabelMap::LabelMap(LAMMPS *_lmp, int _natomtypes, int _nbondtypes, int _nanglety
       nullptr;
   reset_type_labels();
 }
-
-/* ---------------------------------------------------------------------- */
-
 LabelMap::~LabelMap()
 {
   delete[] lmap2lmap.atom;
@@ -45,11 +23,6 @@ LabelMap::~LabelMap()
   delete[] lmap2lmap.dihedral;
   delete[] lmap2lmap.improper;
 }
-
-/* ----------------------------------------------------------------------
-   reset/allocate character-based type arrays (labels) of length ntypes
-------------------------------------------------------------------------- */
-
 void LabelMap::reset_type_labels()
 {
   typelabel_map.clear();
@@ -58,28 +31,24 @@ void LabelMap::reset_type_labels()
   lmap2lmap.atom = new int[natomtypes];
   for (auto &i : typelabel) i.clear();
   memset(lmap2lmap.atom, 0, natomtypes * sizeof(int));
-
   btypelabel_map.clear();
   btypelabel.resize(nbondtypes);
   delete[] lmap2lmap.bond;
   for (auto &i : btypelabel) i.clear();
   lmap2lmap.bond = new int[nbondtypes];
   memset(lmap2lmap.bond, 0, nbondtypes * sizeof(int));
-
   atypelabel_map.clear();
   atypelabel.resize(nangletypes);
   delete[] lmap2lmap.angle;
   for (auto &i : atypelabel) i.clear();
   lmap2lmap.angle = new int[nangletypes];
   memset(lmap2lmap.angle, 0, nangletypes * sizeof(int));
-
   dtypelabel_map.clear();
   dtypelabel.resize(ndihedraltypes);
   delete[] lmap2lmap.dihedral;
   for (auto &i : dtypelabel) i.clear();
   lmap2lmap.dihedral = new int[ndihedraltypes];
   memset(lmap2lmap.dihedral, 0, ndihedraltypes * sizeof(int));
-
   itypelabel_map.clear();
   itypelabel.resize(nimpropertypes);
   delete[] lmap2lmap.improper;
@@ -87,16 +56,10 @@ void LabelMap::reset_type_labels()
   lmap2lmap.improper = new int[nimpropertypes];
   memset(lmap2lmap.improper, 0, nimpropertypes * sizeof(int));
 }
-
-/* ----------------------------------------------------------------------
-   labelmap command in input script
-------------------------------------------------------------------------- */
-
 void LabelMap::modify_lmap(int narg, char **arg)
 {
   if ((narg < 1) || ((narg > 2) && ((narg % 2) == 0)))
     error->all(FLERR, "Incorrect number of arguments for labelmap command");
-
   int ntypes;
   std::vector<std::string> *labels;
   std::unordered_map<std::string, int> *labels_map;
@@ -131,7 +94,6 @@ void LabelMap::modify_lmap(int narg, char **arg)
     return;
   } else
     error->all(FLERR, "Unknown labelmap keyword {}", tlabel);
-
   int iarg = 1;
   if (narg == 1) utils::missing_cmd_args(FLERR, "labelmap " + tlabel, error);
   while (iarg < narg) {
@@ -153,13 +115,6 @@ void LabelMap::modify_lmap(int narg, char **arg)
     (*labels_map)[slabel] = itype;
   }
 }
-
-/* ----------------------------------------------------------------------
-   copy another map (lmap2) into this one
-   if label already exists, leave in place
-   else, put new label in next available slot
-------------------------------------------------------------------------- */
-
 void LabelMap::merge_lmap(LabelMap *lmap2, int mode)
 {
   switch (mode) {
@@ -168,12 +123,6 @@ void LabelMap::merge_lmap(LabelMap *lmap2, int mode)
       break;
   }
 }
-
-/* ----------------------------------------------------------------------
-   get mapping between this label map and another (lmap2)
-   values of lmap2lmap point to equivalent types in lmap2
-------------------------------------------------------------------------- */
-
 void LabelMap::create_lmap2lmap(LabelMap *lmap2, int mode)
 {
   switch (mode) {
@@ -183,22 +132,11 @@ void LabelMap::create_lmap2lmap(LabelMap *lmap2, int mode)
       break;
   }
 }
-
-/* ----------------------------------------------------------------------
-   find type label with name or create type if it doesn't exist
-   return numeric type
-------------------------------------------------------------------------- */
-
 int LabelMap::find_or_create(const std::string &mylabel, std::vector<std::string> &labels,
                              std::unordered_map<std::string, int> &labels_map)
 {
   auto search = labels_map.find(mylabel);
   if (search != labels_map.end()) return search->second;
-
-  // if no match found, create new label at next available index
-  // label map assumed to be intialized with numeric index
-  // user labels are assumed to be alphanumeric (not a number)
-
   auto labels_map_size = labels_map.size();
   if (labels_map_size < labels.size()) {
     labels[labels_map_size] = mylabel;
@@ -206,21 +144,9 @@ int LabelMap::find_or_create(const std::string &mylabel, std::vector<std::string
     labels_map[mylabel] = index;
     return index;
   }
-
-  // if label cannot be found or created, need more space reserved
-
   error->all(FLERR, "Topology type exceeds system topology type");
-
-  // never reaches here, just to prevent compiler warning
-
   return -1;
 }
-
-/* ----------------------------------------------------------------------
-   return numeric type given a type label
-   return -1 if type not yet defined
-------------------------------------------------------------------------- */
-
 int LabelMap::find(const std::string &mylabel, int mode) const
 {
   switch (mode) {
@@ -231,12 +157,6 @@ int LabelMap::find(const std::string &mylabel, int mode) const
       return -1;
   }
 }
-
-/* ----------------------------------------------------------------------
-   get type given type labels map
-   return -1 if type not yet defined
-------------------------------------------------------------------------- */
-
 int LabelMap::search(const std::string &mylabel,
                      const std::unordered_map<std::string, int> &labels_map) const
 {
@@ -244,11 +164,6 @@ int LabelMap::search(const std::string &mylabel,
   if (search == labels_map.end()) return -1;
   return search->second;
 }
-
-/* ----------------------------------------------------------------------
-   check that all types have been assigned a unique type label
-------------------------------------------------------------------------- */
-
 bool LabelMap::is_complete(int mode) const
 {
   switch (mode) {
@@ -258,11 +173,6 @@ bool LabelMap::is_complete(int mode) const
   }
   return false;
 }
-
-/* ----------------------------------------------------------------------
-   proc 0 writes to data file
-------------------------------------------------------------------------- */
-
 void LabelMap::write_data(FILE *fp)
 {
   if (is_complete(Atom::ATOM)) {
@@ -270,43 +180,33 @@ void LabelMap::write_data(FILE *fp)
     for (int i = 0; i < natomtypes; i++) fmt::print(fp, "{} {}\n", i + 1, typelabel[i]);
   }
 }
-
-/* ----------------------------------------------------------------------
-   proc 0 reads from restart file, bcasts
-------------------------------------------------------------------------- */
-
 void LabelMap::read_restart(FILE *fp)
 {
   char *charlabel;
-
   for (int i = 0; i < natomtypes; i++) {
     charlabel = read_string(fp);
     typelabel[i] = charlabel;
     typelabel_map[charlabel] = i + 1;
     delete[] charlabel;
   }
-
   for (int i = 0; i < nbondtypes; i++) {
     charlabel = read_string(fp);
     btypelabel[i] = charlabel;
     btypelabel_map[charlabel] = i + 1;
     delete[] charlabel;
   }
-
   for (int i = 0; i < nangletypes; i++) {
     charlabel = read_string(fp);
     atypelabel[i] = charlabel;
     atypelabel_map[charlabel] = i + 1;
     delete[] charlabel;
   }
-
   for (int i = 0; i < ndihedraltypes; i++) {
     charlabel = read_string(fp);
     dtypelabel[i] = charlabel;
     dtypelabel_map[charlabel] = i + 1;
     delete[] charlabel;
   }
-
   for (int i = 0; i < nimpropertypes; i++) {
     charlabel = read_string(fp);
     itypelabel[i] = charlabel;
@@ -314,29 +214,14 @@ void LabelMap::read_restart(FILE *fp)
     delete[] charlabel;
   }
 }
-
-/* ----------------------------------------------------------------------
-   proc 0 writes to restart file
-------------------------------------------------------------------------- */
-
 void LabelMap::write_restart(FILE *fp)
 {
   for (int i = 0; i < natomtypes; i++) write_string(typelabel[i], fp);
-
   for (int i = 0; i < nbondtypes; i++) write_string(btypelabel[i], fp);
-
   for (int i = 0; i < nangletypes; i++) write_string(atypelabel[i], fp);
-
   for (int i = 0; i < ndihedraltypes; i++) write_string(dtypelabel[i], fp);
-
   for (int i = 0; i < nimpropertypes; i++) write_string(itypelabel[i], fp);
 }
-
-/* ----------------------------------------------------------------------
-   read a char string (including nullptr) and bcast it
-   str is allocated here, ptr is returned, caller must deallocate
-------------------------------------------------------------------------- */
-
 char *LabelMap::read_string(FILE *fp)
 {
   int n = read_int(fp);
@@ -346,12 +231,6 @@ char *LabelMap::read_string(FILE *fp)
   MPI_Bcast(value, n, MPI_CHAR, 0, world);
   return value;
 }
-
-/* ----------------------------------------------------------------------
-   write a flag and a C-style char string (including the terminating null
-   byte) into the restart file
-------------------------------------------------------------------------- */
-
 void LabelMap::write_string(const std::string &str, FILE *fp)
 {
   const char *cstr = str.c_str();
@@ -359,11 +238,6 @@ void LabelMap::write_string(const std::string &str, FILE *fp)
   fwrite(&n, sizeof(int), 1, fp);
   fwrite(cstr, sizeof(char), n, fp);
 }
-
-/* ----------------------------------------------------------------------
-   read an int from restart file and bcast it
-------------------------------------------------------------------------- */
-
 int LabelMap::read_int(FILE *fp)
 {
   int value;
@@ -371,11 +245,6 @@ int LabelMap::read_int(FILE *fp)
   MPI_Bcast(&value, 1, MPI_INT, 0, world);
   return value;
 }
-
-/* ----------------------------------------------------------------------
-   write out all current label map values as labelmap commands
-------------------------------------------------------------------------- */
-
 void LabelMap::write_map(const std::string &filename)
 {
   if (comm->me == 0) {

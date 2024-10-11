@@ -1,24 +1,4 @@
-// clang-format off
-/* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
-/* ----------------------------------------------------------------------
-   Contributing author (triclinic and multi-neigh) : Pieter in 't Veld (SNL)
-   Contributing author (improved multi-neigh) : Joel Clemmer (SNL)
-------------------------------------------------------------------------- */
-
 #include "neighbor.h"
-
 #include "atom.h"
 #include "atom_vec.h"
 #include "comm.h"
@@ -35,26 +15,20 @@
 #include "neigh_request.h"
 #include "npair.h"
 #include "pair.h"
-#include "style_nbin.h"  // IWYU pragma: keep
-#include "style_npair.h"  // IWYU pragma: keep
+#include "style_nbin.h"
+#include "style_npair.h"
 #include "suffix.h"
 #include "tokenizer.h"
 #include "update.h"
-
 #include <cmath>
 #include <cstring>
-
 using namespace LAMMPS_NS;
 using namespace NeighConst;
-
 #define RQDELTA 1
 #define EXDELTA 1
 #define DELTA_PERATOM 64
-
 #define BIG 1.0e20
-
 enum{NONE,ALL,PARTIAL,TEMPLATE};
-
 static const char cite_neigh_multi_old[] =
   "neighbor multi/old command: doi:10.1016/j.cpc.2008.03.005\n\n"
   "@Article{Intveld08,\n"
@@ -67,7 +41,6 @@ static const char cite_neigh_multi_old[] =
   " number =  5,\n"
   " pages =   {320--329}\n"
   "}\n\n";
-
 static const char cite_neigh_multi[] =
   "neighbor multi command: doi:10.1016/j.cpc.2008.03.005, doi:10.1007/s40571-020-00361-2\n\n"
   "@Article{Intveld08,\n"
@@ -96,27 +69,16 @@ static const char cite_neigh_multi[] =
   " issue = {3}\n"
   " year = {2022}\n"
   "}\n\n";
-
-// template for factory functions:
-// there will be one instance for each style keyword in the respective style_xxx.h files
-
 template <typename S, typename T> static S *style_creator(LAMMPS *lmp)
 {
   return new T(lmp);
 }
-
-//#define NEIGH_LIST_DEBUG 1
-
-/* ---------------------------------------------------------------------- */
-
 Neighbor::Neighbor(LAMMPS *lmp) : Pointers(lmp),
 pairclass(nullptr), pairnames(nullptr), pairmasks(nullptr)
 {
   MPI_Comm_rank(world,&me);
   MPI_Comm_size(world,&nprocs);
-
   firsttime = 1;
-
   style = Neighbor::BIN;
   every = 1;
   delay = 0;
@@ -127,67 +89,43 @@ pairclass(nullptr), pairnames(nullptr), pairmasks(nullptr)
   build_once = 0;
   cluster_check = 0;
   ago = -1;
-
   cutneighmax = 0.0;
   cutneighsq = nullptr;
   cutneighghostsq = nullptr;
   cuttype = nullptr;
   cuttypesq = nullptr;
   fixchecklist = nullptr;
-
-  // pairwise neighbor lists and associated data structs
-
   nlist = 0;
   lists = nullptr;
-
   nbin = 0;
   neigh_bin = nullptr;
-
   neigh_pair = nullptr;
-
-
   npair_perpetual = 0;
   plist = nullptr;
-
   nrequest = maxrequest = 0;
   requests = nullptr;
   j_sorted = nullptr;
-
   old_nrequest = 0;
   old_requests = nullptr;
-
   old_style = style;
   old_triclinic = 0;
   old_pgsize = pgsize;
   old_oneatom = oneatom;
-
   binclass = nullptr;
   binnames = nullptr;
   binmasks = nullptr;
-
-  // coords at last neighboring
-
   maxhold = 0;
   xhold = nullptr;
   lastcall = -1;
   last_setup_bins = -1;
-
-  // pair exclusion list info
-
   includegroup = 0;
-
   nex_type = maxex_type = 0;
   ex1_type = ex2_type = nullptr;
   ex_type = nullptr;
-
   nex_group = maxex_group = 0;
   ex1_group = ex2_group = ex1_bit = ex2_bit = nullptr;
-
   nex_mol = maxex_mol = 0;
   ex_mol_group = ex_mol_bit = ex_mol_intra = nullptr;
-
-  // Multi data
-
   type2collection = nullptr;
   collection2cut = nullptr;
   collection = nullptr;
@@ -195,99 +133,65 @@ pairclass(nullptr), pairnames(nullptr), pairmasks(nullptr)
   custom_collection_flag = 0;
   interval_collection_flag = 0;
   nmax_collection = 0;
-
-  // Kokkos setting
-
   copymode = 0;
-
-  // GPU setting
-
   overlap_topo = 0;
 }
-
-/* ---------------------------------------------------------------------- */
-
 Neighbor::~Neighbor()
 {
   if (copymode) return;
-
   memory->destroy(cutneighsq);
   memory->destroy(cutneighghostsq);
   delete[] cuttype;
   delete[] cuttypesq;
   delete[] fixchecklist;
-
   for (int i = 0; i < nlist; i++) delete lists[i];
   for (int i = 0; i < nbin; i++) delete neigh_bin[i];
   for (int i = 0; i < nlist; i++) delete neigh_pair[i];
   delete[] lists;
   delete[] neigh_bin;
   delete[] neigh_pair;
-
   delete[] plist;
-
   for (int i = 0; i < nrequest; i++)
     if (requests[i]) delete requests[i];
   memory->sfree(requests);
   for (int i = 0; i < old_nrequest; i++)
     if (old_requests[i]) delete old_requests[i];
   memory->sfree(old_requests);
-
   delete[] j_sorted;
-
   delete[] binclass;
   delete[] binnames;
   delete[] binmasks;
   delete[] pairclass;
   delete[] pairnames;
   delete[] pairmasks;
-
   memory->destroy(xhold);
-
   memory->destroy(ex1_type);
   memory->destroy(ex2_type);
   memory->destroy(ex_type);
-
   memory->destroy(ex1_group);
   memory->destroy(ex2_group);
   delete[] ex1_bit;
   delete[] ex2_bit;
-
   memory->destroy(ex_mol_group);
   delete[] ex_mol_bit;
   memory->destroy(ex_mol_intra);
-
   memory->destroy(type2collection);
   memory->destroy(collection2cut);
   memory->destroy(collection);
   memory->destroy(cutcollectionsq);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Neighbor::init()
 {
   int i,j,n;
-
   overlap_topo = 0;
   ncalls = ndanger = 0;
   dimension = domain->dimension;
   triclinic = domain->triclinic;
   newton_pair = force->newton_pair;
-
-  // error check
-
   if (delay > 0 && (delay % every) != 0)
     error->all(FLERR,"Neighbor delay must be 0 or multiple of every setting");
-
   if (pgsize < 10*oneatom)
     error->all(FLERR,"Neighbor page size must be >= 10x the one atom setting");
-
-  // ------------------------------------------------------------------
-  // settings
-
-  // bbox lo/hi ptrs = bounding box of entire domain, stored by Domain
-
   if (triclinic == 0) {
     bboxlo = domain->boxlo;
     bboxhi = domain->boxhi;
@@ -295,20 +199,11 @@ void Neighbor::init()
     bboxlo = domain->boxlo_bound;
     bboxhi = domain->boxhi_bound;
   }
-
-  // set neighbor cutoffs (force cutoff + skin)
-  // trigger determines when atoms migrate and neighbor lists are rebuilt
-  //   needs to be non-zero for migration distance check
-  //   even if pair = nullptr and no neighbor lists are used
-  // cutneigh = force cutoff + skin if cutforce > 0, else cutneigh = 0
-  // cutneighghost = pair cutghost if it requests it, else same as cutneigh
-
   triggersq = 0.25*skin*skin;
   boxcheck = 0;
   if (domain->box_change && (domain->xperiodic || domain->yperiodic ||
                              (dimension == 3 && domain->zperiodic)))
       boxcheck = 1;
-
   n = atom->ntypes;
   if (cutneighsq == nullptr) {
     memory->create(cutneighsq,n+1,n+1,"neigh:cutneighsq");
@@ -316,11 +211,9 @@ void Neighbor::init()
     cuttype = new double[n+1];
     cuttypesq = new double[n+1];
   }
-
   double cutoff,delta,cut;
   cutneighmin = BIG;
   cutneighmax = 0.0;
-
   for (i = 1; i <= n; i++) {
     cuttype[i] = cuttypesq[i] = 0.0;
     for (j = 1; j <= n; j++) {
@@ -329,13 +222,11 @@ void Neighbor::init()
       if (cutoff > 0.0) delta = skin;
       else delta = 0.0;
       cut = cutoff + delta;
-
       cutneighsq[i][j] = cut*cut;
       cuttype[i] = MAX(cuttype[i],cut);
       cuttypesq[i] = MAX(cuttypesq[i],cut*cut);
       cutneighmin = MIN(cutneighmin,cut);
       cutneighmax = MAX(cutneighmax,cut);
-
       if (force->pair && force->pair->ghostneigh) {
         cut = force->pair->cutghost[i][j] + skin;
         cutneighghostsq[i][j] = cut*cut;
@@ -343,12 +234,8 @@ void Neighbor::init()
     }
   }
   cutneighmaxsq = cutneighmax * cutneighmax;
-
-  // Define cutoffs for multi
   if (style == Neighbor::MULTI) {
     int icollection, jcollection;
-
-    // If collections not yet defined, create default map using types
     if (!custom_collection_flag) {
       ncollections = n;
       interval_collection_flag = 0;
@@ -357,23 +244,10 @@ void Neighbor::init()
       for (i = 1; i <= n; i++)
         type2collection[i] = i-1;
     }
-
     memory->grow(cutcollectionsq, ncollections, ncollections, "neigh:cutcollectionsq");
-
-    // 3 possible ways of defining collections
-    // 1) Types are used to define collections
-    //    Each collection loops through its owned types, and uses cutneighsq to calculate its cutoff
-    // 2) Collections are defined by intervals, point particles
-    //    Types are first sorted into collections based on cutneighsq[i][i]
-    //    Each collection loops through its owned types, and uses cutneighsq to calculate its cutoff
-    // 3) Collections are defined by intervals, finite particles
-    //
-
-    // Define collection cutoffs
     for (i = 0; i < ncollections; i++)
       for (j = 0; j < ncollections; j++)
         cutcollectionsq[i][j] = 0.0;
-
     if (!interval_collection_flag) {
       finite_cut_flag = 0;
       for (i = 1; i <= n; i++){
@@ -389,7 +263,6 @@ void Neighbor::init()
     } else {
       if (force->pair->finitecutflag) {
         finite_cut_flag = 1;
-        // If cutoffs depend on finite atom sizes, use radii of intervals to find cutoffs
         double ri, rj, tmp;
         for (i = 0; i < ncollections; i++){
           ri = collection2cut[i]*0.5;
@@ -401,17 +274,12 @@ void Neighbor::init()
         }
       } else {
         finite_cut_flag = 0;
-
-        // Map types to collections
         if (!type2collection)
           memory->create(type2collection,n+1,"neigh:type2collection");
-
         for (i = 1; i <= n; i++)
           type2collection[i] = -1;
-
         double cuttmp;
         for (i = 1; i <= n; i++){
-          // Remove skin added to cutneighsq
           cuttmp = sqrt(cutneighsq[i][i]) - skin;
           for (icollection = 0; icollection < ncollections; icollection ++){
             if (collection2cut[icollection] >= cuttmp) {
@@ -419,12 +287,9 @@ void Neighbor::init()
               break;
             }
           }
-
           if (type2collection[i] == -1)
             error->all(FLERR, "Pair cutoff exceeds interval cutoffs for multi");
         }
-
-        // Define cutoffs
         for (i = 1; i <= n; i++){
           icollection = type2collection[i];
           for (j = 1; j <= n; j++){
@@ -438,54 +303,34 @@ void Neighbor::init()
       }
     }
   }
-
-  // rRESPA cutoffs
-
   int respa = 0;
-  // fixchecklist = other classes that can induce reneighboring in decide()
-
   delete[] fixchecklist;
   fixchecklist = nullptr;
   fixchecklist = new int[modify->nfix];
-
   fix_check = 0;
   for (i = 0; i < modify->nfix; i++)
     if (modify->fix[i]->force_reneighbor)
       fixchecklist[fix_check++] = i;
-
   if (dist_check == 0) {
     memory->destroy(xhold);
     maxhold = 0;
     xhold = nullptr;
   }
-
-  // first time allocation
-
   if (dist_check) {
     if (maxhold == 0) {
       maxhold = atom->nmax;
       memory->create(xhold,maxhold,3,"neigh:xhold");
     }
   }
-
-  // ------------------------------------------------------------------
-  // exclusion lists
-
-  // depend on type, group, molecule settings from neigh_modify
-  // warn if exclusions used with KSpace solver
-
   n = atom->ntypes;
-
   if (nex_type == 0 && nex_group == 0 && nex_mol == 0) exclude = 0;
   else exclude = 1;
-
   if (nex_type) {
     memory->destroy(ex_type);
     memory->create(ex_type,n+1,n+1,"neigh:ex_type");
     for (i = 1; i <= n; i++)
       for (j = 1; j <= n; j++)
         ex_type[i][j] = 0;
-
     for (i = 0; i < nex_type; i++) {
       if (ex1_type[i] <= 0 || ex1_type[i] > n ||
           ex2_type[i] <= 0 || ex2_type[i] > n)
@@ -494,7 +339,6 @@ void Neighbor::init()
       ex_type[ex2_type[i]][ex1_type[i]] = 1;
     }
   }
-
   if (nex_group) {
     delete[] ex1_bit;
     delete[] ex2_bit;
@@ -505,125 +349,72 @@ void Neighbor::init()
       ex2_bit[i] = group->bitmask[ex2_group[i]];
     }
   }
-
   if (nex_mol) {
     delete[] ex_mol_bit;
     ex_mol_bit = new int[nex_mol];
     for (i = 0; i < nex_mol; i++)
       ex_mol_bit[i] = group->bitmask[ex_mol_group[i]];
   }
-  // ------------------------------------------------------------------
-  // create pairwise lists
-  // one-time call to init_styles() to scan style files and setup
-  // init_pair() creates auxiliary classes: NBin, NStencil, NPair
-
   if (firsttime) init_styles();
   firsttime = 0;
-
   int same = init_pair();
-
-  // invoke copy_neighbor_info() in Bin,Stencil,Pair classes
-  // copied once per run in case any cutoff, exclusion, special info changed
-
   for (i = 0; i < nbin; i++) neigh_bin[i]->copy_neighbor_info();
   for (i = 0; i < nlist; i++)
     if (neigh_pair[i]) neigh_pair[i]->copy_neighbor_info();
-
   if (!same && (nrequest > 0) && (comm->me == 0)) print_pairwise_info();
-
-  // can now delete requests so next run can make new ones
-  // print_pairwise_info() made use of requests
-  // set of NeighLists now stores all needed info
-
   for (i = 0; i < nrequest; i++) {
     delete requests[i];
     requests[i] = nullptr;
   }
   nrequest = 0;
 }
-
-/* ----------------------------------------------------------------------
-   create and initialize lists of Nbin, Nstencil, NPair classes
-   lists have info on all classes in 3 style*.h files
-   cannot do this in constructor, b/c too early to instantiate classes
-------------------------------------------------------------------------- */
-
 void Neighbor::init_styles()
 {
-  // extract info from NBin classes listed in style_nbin.h
-
   nbclass = 0;
-
-#define NBIN_CLASS
+#define NBIN_CLASS 
 #define NBinStyle(key,Class,bitmasks) nbclass++;
-#include "style_nbin.h"  // IWYU pragma: keep
+#include "style_nbin.h"
 #undef NBinStyle
 #undef NBIN_CLASS
-
   binclass = new BinCreator[nbclass];
   binnames = new char*[nbclass];
   binmasks = new int[nbclass];
   nbclass = 0;
-
-#define NBIN_CLASS
+#define NBIN_CLASS 
 #define NBinStyle(key,Class,bitmasks) \
   binnames[nbclass] = (char *) #key; \
-  binclass[nbclass] = &style_creator<NBin, Class>;   \
+  binclass[nbclass] = &style_creator<NBin, Class>; \
   binmasks[nbclass++] = bitmasks;
-#include "style_nbin.h"  // IWYU pragma: keep
+#include "style_nbin.h"
 #undef NBinStyle
 #undef NBIN_CLASS
-
   npclass = 0;
-
-#define NPAIR_CLASS
+#define NPAIR_CLASS 
 #define NPairStyle(key,Class,bitmasks) npclass++;
-#include "style_npair.h"  // IWYU pragma: keep
+#include "style_npair.h"
 #undef NPairStyle
 #undef NPAIR_CLASS
-
   pairclass = new PairCreator[npclass];
   pairnames = new char*[npclass];
   pairmasks = new int[npclass];
   npclass = 0;
-
-#define NPAIR_CLASS
+#define NPAIR_CLASS 
 #define NPairStyle(key,Class,bitmasks) \
   pairnames[npclass] = (char *) #key; \
-  pairclass[npclass] = &style_creator<NPair, Class>;  \
+  pairclass[npclass] = &style_creator<NPair, Class>; \
   pairmasks[npclass++] = bitmasks;
-#include "style_npair.h"  // IWYU pragma: keep
+#include "style_npair.h"
 #undef NPairStyle
 #undef NPAIR_CLASS
 }
-
-/* ----------------------------------------------------------------------
-   create and initialize NPair classes
-------------------------------------------------------------------------- */
-
 int Neighbor::init_pair()
 {
   int i,j,k,m;
-
-  // test if pairwise lists need to be re-created
-  // no need to re-create if:
-  //   neigh style, triclinic, pgsize, oneatom have not changed
-  //   current requests = old requests
-  // so just return:
-  //   delete requests so next run can make new ones
-  //   current set of NeighLists already stores all needed info
-  // requests are compared via identical() before:
-  //   any requests are morphed using logic below
-  //   any requests are added below, e.g. as parents of pair hybrid skip lists
-  // copy them via requests_new2old() BEFORE any changes made to requests
-  //   necessary b/c morphs can change requestor settings (see comment below)
-
   int same = 1;
   if (style != old_style) same = 0;
   if (triclinic != old_triclinic) same = 0;
   if (pgsize != old_pgsize) same = 0;
   if (oneatom != old_oneatom) same = 0;
-
   if (nrequest != old_nrequest) same = 0;
   else
     for (i = 0; i < nrequest; i++)
@@ -631,86 +422,35 @@ int Neighbor::init_pair()
 #ifdef NEIGH_LIST_DEBUG
   if (comm->me == 0) printf("SAME flag %d\n",same);
 #endif
-
   if (same) return same;
   requests_new2old();
-
-  // delete old lists since creating new ones
-
   for (i = 0; i < nlist; i++) delete lists[i];
   for (i = 0; i < nbin; i++) delete neigh_bin[i];
   for (i = 0; i < nlist; i++) delete neigh_pair[i];
   delete[] lists;
   delete[] neigh_bin;
   delete[] neigh_pair;
-
-  // error check on requests
-  // do not allow occasional, ghost, bin list
-  //   b/c it still uses variant of coord2bin() in NPair() method
-  //     instead of atom2bin, this could cause error b/c stoms have
-  //     moved out of proc domain by time occasional list is built
-  //   solution would be to use a different NBin variant
-  //     that used Npair::coord2bin(x,ix,iy,iz) (then delete it from NPair)
-  //     and stored the ix,iy,iz values for all atoms (including ghosts)
-  //     at time of binning when neighbor lists are rebuilt,
-  //     similar to what vanilla Nbin::coord2atom() does now in atom2bin
-
   if (style == Neighbor::BIN) {
     for (i = 0; i < nrequest; i++)
       if (requests[i]->occasional && requests[i]->ghost)
         error->all(FLERR,"Cannot request an occasional binned neighbor list "
                    "with ghost info");
   }
-
-  // morph requests in various ways
-  // purpose is to avoid duplicate or inefficient builds
-  // may add new requests if a needed request to derive from does not exist
-  // methods:
-  //   (1) unique = create unique lists if cutoff is explicitly set
-  //   (2) skip = create any new non-skip lists needed by pair hybrid skip lists
-  //   (3) granular = adjust parent and skip lists for granular onesided usage
-  //   (4) h/f = pair up any matching half/full lists
-  //   (5) copy = convert as many lists as possible to copy lists
-  // order of morph methods matters:
-  //   (3) after (2), b/c it adjusts lists created by (2)
-  //   (4) after (2) and (3),
-  //       b/c (2) may create new full lists, (3) may change them
-  //   (5) last, after all lists are finalized, so all possible copies/trims found
-
   int nrequest_original = nrequest;
-
   morph_unique();
   morph_skip();
-  morph_granular();     // this method can change flags set by requestor
-
-  // sort requests by cutoff distance for trimming, used by
-  //  morph_halffull and morph_copy_trim. Must come after
-  //  morph_skip() which change the number of requests
-
+  morph_granular();
   sort_requests();
-
   morph_halffull();
   morph_copy_trim();
-
-  // create new lists, one per request including added requests
-  // wait to allocate initial pages until copy lists are detected
-  // NOTE: can I allocate now, instead of down below?
-
   nlist = nrequest;
-
   lists = new NeighList*[nrequest];
   neigh_bin = new NBin*[nrequest];
   neigh_pair = new NPair*[nrequest];
-
-  // allocate new lists
-  // pass list ptr back to requestor (except for Command class)
-  // only for original requests, not ones added by Neighbor class
-
   for (i = 0; i < nrequest; i++) {
     lists[i] = new NeighList(lmp);
     lists[i]->index = i;
     lists[i]->requestor = requests[i]->requestor;
-
     if (requests[i]->pair) {
         lists[i]->requestor_type = NeighList::PAIR;
     } else if (requests[i]->fix) {
@@ -718,7 +458,6 @@ int Neighbor::init_pair()
     } else if (requests[i]->compute) {
         lists[i]->requestor_type = NeighList::COMPUTE;
     }
-
     if (requests[i]->pair && i < nrequest_original) {
       auto pair = (Pair *) requests[i]->requestor;
       pair->init_list(requests[i]->id,lists[i]);
@@ -730,31 +469,19 @@ int Neighbor::init_pair()
       compute->init_list(requests[i]->id,lists[i]);
     }
   }
-
-  // invoke post_constructor() for all lists
-  // copies info from requests to lists, sets ptrs to related lists
-
   for (i = 0; i < nrequest; i++)
     lists[i]->post_constructor(requests[i]);
-
-  // assign Bin,Stencil,Pair style to each list
-
   int flag;
   for (i = 0; i < nrequest; i++) {
     flag = choose_bin(requests[i]);
     lists[i]->bin_method = flag;
     if (flag < 0)
       error->all(FLERR,"Requested neighbor bin option does not exist");
-
     flag = choose_pair(requests[i]);
     lists[i]->pair_method = flag;
     if (flag < 0)
       error->all(FLERR,"Requested neighbor pair method does not exist");
   }
-
-  // instantiate unique Bin,Stencil classes in neigh_bin & neigh_stencil vecs
-  // unique = only one of its style, or request unique flag set (custom cutoff)
-
   nbin = 0;
   for (i = 0; i < nrequest; i++) {
     requests[i]->index_bin = -1;
@@ -769,18 +496,13 @@ int Neighbor::init_pair()
         continue;
       }
     }
-
     BinCreator &bin_creator = binclass[flag-1];
     neigh_bin[nbin] = bin_creator(lmp);
     neigh_bin[nbin]->post_constructor(requests[i]);
     neigh_bin[nbin]->istyle = flag;
-
     requests[i]->index_bin = nbin;
     nbin++;
   }
-
-  // instantiate one Pair class per list in neigh_pair vec
-
   for (i = 0; i < nrequest; i++) {
     requests[i]->index_pair = -1;
     flag = lists[i]->pair_method;
@@ -788,12 +510,10 @@ int Neighbor::init_pair()
       neigh_pair[i] = nullptr;
       continue;
     }
-
     PairCreator &pair_creator = pairclass[flag-1];
     lists[i]->np = neigh_pair[i] = pair_creator(lmp);
     neigh_pair[i]->post_constructor(requests[i]);
     neigh_pair[i]->istyle = flag;
-
     if (lists[i]->bin_method > 0) {
       neigh_pair[i]->nb = neigh_bin[requests[i]->index_bin];
       if (neigh_pair[i]->nb == nullptr)
@@ -801,48 +521,21 @@ int Neighbor::init_pair()
     }
     requests[i]->index_pair = i;
   }
-
-  // allocate initial pages for each list, except if copy flag set
-
   for (i = 0; i < nlist; i++) {
     lists[i]->setup_pages(pgsize,oneatom);
   }
-
-  // first-time allocation of per-atom data for lists that are built and store
-  // lists that do not store: copy
-  // use atom->nmax for both grow() args
-  //   i.e. grow first time to expanded size to avoid future reallocs
-  // also Kokkos list initialization
-
   int maxatom = atom->nmax;
   for (i = 0; i < nlist; i++) {
     if (neigh_pair[i] && (!lists[i]->copy || lists[i]->trim))
       lists[i]->grow(maxatom,maxatom);
   }
-
-  // plist = indices of perpetual NPair classes
-  //         perpetual = non-occasional, re-built at every reneighboring
-  // slist = indices of perpetual NStencil classes
-  //         perpetual = used by any perpetual NPair class
-
   delete[] plist;
   plist = new int[nlist];
-
   for (i = 0; i < nlist; i++) {
     if (lists[i]->occasional == 0 && lists[i]->pair_method)
       plist[npair_perpetual++] = i;
   }
-
-  // reorder plist vector if necessary
-  // relevant for lists that are derived from a parent list:
-  //   half-full,copy,skip
-  // the child index must appear in plist after the parent index
-  // swap two indices within plist when dependency is mis-ordered
-  // start double loop check again whenever a swap is made
-  // done when entire double loop test results in no swaps
-
   NeighList *ptr;
-
   int done = 0;
   while (!done) {
     done = 1;
@@ -858,7 +551,7 @@ int Neighbor::init_pair()
         for (j = 0; j < npair_perpetual; j++)
           if (m == plist[j]) break;
         if (j < i) continue;
-        int tmp = plist[i];     // swap I,J indices
+        int tmp = plist[i];
         plist[i] = plist[j];
         plist[j] = tmp;
         done = 0;
@@ -867,42 +560,27 @@ int Neighbor::init_pair()
       if (!done) break;
     }
   }
-
-  // debug output
-
 #ifdef NEIGH_LIST_DEBUG
   for (i = 0; i < nrequest; i++) lists[i]->print_attributes();
 #endif
-
   return same;
 }
-
-/* ----------------------------------------------------------------------
-   sort NeighRequests by cutoff distance
-    to find smallest list for trimming
-------------------------------------------------------------------------- */
-
 void Neighbor::sort_requests()
 {
   NeighRequest *jrq;
   int i,j,jmin;
   double jcut;
-
   delete[] j_sorted;
   j_sorted = new int[nrequest];
-
   for (i = 0; i < nrequest; i++)
     j_sorted[i] = i;
-
   for (i = 0; i < nrequest; i++) {
     double cutoff_min = cutneighmax;
     jmin = i;
-
     for (j = i; j < nrequest-1; j++) {
       jrq = requests[j_sorted[j]];
       if (jrq->cut) jcut = jrq->cutoff;
       else jcut = cutneighmax;
-
       if (jcut <= cutoff_min) {
         cutoff_min = jcut;
         jmin = j;
@@ -913,28 +591,14 @@ void Neighbor::sort_requests()
     j_sorted[jmin] = tmp;
   }
 }
-
-/* ----------------------------------------------------------------------
-   scan NeighRequests to set additional flags:
-   custom cutoff lists and accelerator lists
-------------------------------------------------------------------------- */
-
 void Neighbor::morph_unique()
 {
   NeighRequest *irq;
-
   for (int i = 0; i < nrequest; i++) {
     irq = requests[i];
-
-    // if cut flag set by requestor and cutoff is different than default,
-    //  set unique flag, otherwise unset cut flag
-    // this forces Pair,Stencil,Bin styles to be instantiated separately
-    // also add skin to cutoff of perpetual lists
-
     if (irq->cut) {
       if (!irq->occasional)
         irq->cutoff += skin;
-
       if (irq->cutoff != cutneighmax) {
         irq->unique = 1;
       } else {
@@ -944,64 +608,27 @@ void Neighbor::morph_unique()
     }
   }
 }
-
-/* ----------------------------------------------------------------------
-   scan NeighRequests to process all skip lists
-   look for a matching non-skip list
-   if one exists, point at it via skiplist
-   else make new parent via copy_request() and point at it
-------------------------------------------------------------------------- */
-
 void Neighbor::morph_skip()
 {
   int i,j,inewton,jnewton;
   NeighRequest *irq,*jrq,*nrq;
-
   for (i = 0; i < nrequest; i++) {
     irq = requests[i];
-
-    // only processing skip lists
-
     if (!irq->skip) continue;
-
-    // these lists are created other ways, no need for skipping
-    // halffull list and its full parent may both skip,
-    //   but are checked to ensure matching skip info
-
     if (irq->halffull) continue;
     if (irq->copy) continue;
-
-    // check all other lists
-
     for (j = 0; j < nrequest; j++) {
       if (i == j) continue;
       jrq = requests[j];
-
-      // can only skip from a perpetual non-skip list
-
       if (jrq->occasional) continue;
       if (jrq->skip) continue;
-
-      // both lists must be half, or both full
-
       if (irq->half != jrq->half) continue;
       if (irq->full != jrq->full) continue;
-
-      // both lists must be newton on, or both newton off
-      // IJ newton = 1 for newton on, 2 for newton off
-
       inewton = irq->newton;
       if (inewton == 0) inewton = force->newton_pair ? 1 : 2;
       jnewton = jrq->newton;
       if (jnewton == 0) jnewton = force->newton_pair ? 1 : 2;
       if (inewton != jnewton) continue;
-
-      // these flags must be same,
-      //   else 2 lists do not store same pairs
-      //   or their data structures are different
-      // this includes custom cutoff set by requestor
-      // NOTE: need check for 2 Kokkos flags?
-
       if (irq->ghost != jrq->ghost) continue;
       if (irq->size != jrq->size) continue;
       if (irq->history != jrq->history) continue;
@@ -1010,24 +637,12 @@ void Neighbor::morph_skip()
       if (irq->ssa != jrq->ssa) continue;
       if (irq->cut != jrq->cut) continue;
       if (irq->cutoff != jrq->cutoff) continue;
-
-      // 2 lists are a match
-
       break;
     }
-
-    // if matching list exists, point to it
-    // else create a new identical list except non-skip
-    // for new list, set neigh = 1, skip = 0, no skip vec/array,
-    //   copy unique flag (since copy_request() will not do it)
-    // note: parents of skip lists do not have associated history
-    //   b/c child skip lists have the associated history
-
     if (j < nrequest) irq->skiplist = j;
     else {
       int newrequest = request(this,-1);
       irq->skiplist = newrequest;
-
       nrq = requests[newrequest];
       nrq->copy_request(irq,0);
       nrq->pair = nrq->fix = nrq->compute = nrq->command = 0;
@@ -1037,150 +652,69 @@ void Neighbor::morph_skip()
     }
   }
 }
-
-/* ----------------------------------------------------------------------
-   scan NeighRequests just added by morph_skip for hybrid granular
-   adjust newton/oneside parent settings if children require onesided skipping
-   also set children off2on flag if parent becomes a newton off list
-   this is needed because line/gran and tri/gran pair styles
-     require onesided neigh lists and system newton on,
-     but parent list must be newton off to enable the onesided skipping
-------------------------------------------------------------------------- */
-
 void Neighbor::morph_granular()
 {
   int i,j;
   NeighRequest *irq,*jrq;
-
   for (i = 0; i < nrequest; i++) {
     irq = requests[i];
-
-    // only examine NeighRequests added by morph_skip()
-    // only those with size attribute for granular systems
-
     if (!irq->neigh) continue;
     if (!irq->size) continue;
-
-    // check children of this list
-
     int onesided = -1;
     for (j = 0; j < nrequest; j++) {
       jrq = requests[j];
-
-      // only consider JRQ pair, size lists that skip from Irq list
-
       if (!jrq->pair) continue;
       if (!jrq->size) continue;
       if (!jrq->skip || jrq->skiplist != i) continue;
-
-      // onesided = -1 if no children
-      // onesided = 0/1 = child granonesided value if same for all children
-      // onesided = 2 if children have different granonesided values
-
       if (onesided < 0) onesided = jrq->granonesided;
       else if (onesided != jrq->granonesided) onesided = 2;
       if (onesided == 2) break;
     }
-
-    // if onesided = 2, parent has children with both granonesided = 0/1
-    // force parent newton off (newton = 2) to enable onesided skip by child
-    // set parent granonesided = 0, so it stores all neighs in usual manner
-    // set off2on = 1 for all children, since they expect newton on lists
-    //   this is b/c granonesided only set by line/gran and tri/gran which
-    //   both require system newton on
-
     if (onesided == 2) {
       irq->newton = 2;
       irq->granonesided = 0;
-
       for (j = 0; j < nrequest; j++) {
         jrq = requests[j];
-
-        // only consider JRQ pair, size lists that skip from Irq list
-
         if (!jrq->pair) continue;
         if (!jrq->size) continue;
         if (!jrq->skip || jrq->skiplist != i) continue;
-
         jrq->off2on = 1;
       }
     }
   }
 }
-
-/* ----------------------------------------------------------------------
-   scan NeighRequests for possible half lists to derive from full lists
-   if 2 requests match, set half list to derive from full list
-------------------------------------------------------------------------- */
-
 void Neighbor::morph_halffull()
 {
   int i,j,jj;
   NeighRequest *irq,*jrq;
   double icut,jcut;
-
   for (i = 0; i < nrequest; i++) {
     irq = requests[i];
     int trim_flag = irq->trim;
-
-    // only processing half lists
-
     if (!irq->half) continue;
-
-    // these lists are created other ways, no need for halffull
-    // do want to process skip lists
-
     if (irq->copy) continue;
-
-    // check all other lists
-
     for (jj = 0; jj < nrequest; jj++) {
       if (irq->cut) j = j_sorted[jj];
       else j = jj;
-
       jrq = requests[j];
-
-      // can only derive from a perpetual full list
-      // newton setting of derived list does not matter
-
       if (jrq->occasional) continue;
       if (!jrq->full) continue;
-
-      // trim a list with longer cutoff
-
       if (irq->cut) icut = irq->cutoff;
       else icut = cutneighmax;
-
       if (jrq->cut) jcut = jrq->cutoff;
       else jcut = cutneighmax;
-
       if (icut > jcut) continue;
       else if (icut != jcut) trim_flag = 1;
-
-      // these flags must be same,
-      //   else 2 lists do not store same pairs
-      //   or their data structures are different
-
       if (irq->ghost != jrq->ghost) continue;
       if (irq->size != jrq->size) continue;
       if (irq->history != jrq->history) continue;
       if (irq->bond != jrq->bond) continue;
       if (irq->omp != jrq->omp) continue;
       if (irq->ssa != jrq->ssa) continue;
-
-      // skip flag must be same
-      // if both are skip lists, skip info must match
-
       if (irq->skip != jrq->skip) continue;
       if (irq->skip && irq->same_skip(jrq) == 0) continue;
-
-      // 2 lists are a match
-
       break;
     }
-
-    // if matching list exists, point to it
-
     if (jj < nrequest) {
       irq->halffull = 1;
       irq->halffulllist = j;
@@ -1188,107 +722,47 @@ void Neighbor::morph_halffull()
     }
   }
 }
-
-/* ----------------------------------------------------------------------
-   scan NeighRequests for possible copies or trims
-   if 2 requests match, turn one into a copy or trim of the other
-------------------------------------------------------------------------- */
-
 void Neighbor::morph_copy_trim()
 {
   int i,j,jj,inewton,jnewton;
   NeighRequest *irq,*jrq;
   double icut,jcut;
-
   for (i = 0; i < nrequest; i++) {
     irq = requests[i];
     int trim_flag = irq->trim;
-
-    // this list is already a copy list due to another morph method
-
     if (irq->copy) continue;
-
-    // check all other lists
-
     for (jj = 0; jj < nrequest; jj++) {
       if (irq->cut) j = j_sorted[jj];
       else j = jj;
-
       if (i == j) continue;
       jrq = requests[j];
-
-      // other list is already copied from this one
-
       if (jrq->copy && jrq->copylist == i) continue;
-
-      // trim a list with longer cutoff
-
       if (irq->cut) icut = irq->cutoff;
       else icut = cutneighmax;
-
       if (jrq->cut) jcut = jrq->cutoff;
       else jcut = cutneighmax;
-
       if (icut > jcut) continue;
       else if (icut != jcut) trim_flag = 1;
-
-      // other list (jrq) to copy from must be perpetual
-      // list that becomes a copy list (irq) can be perpetual or occasional
-      // if both lists are perpetual, require j < i
-      //   to prevent circular dependence with 3 or more copies of a list
-
       if (jrq->occasional) continue;
       if (!irq->occasional && !irq->cut && j > i) continue;
-
-      // both lists must be half, or both full
-
       if (irq->half != jrq->half) continue;
       if (irq->full != jrq->full) continue;
-
-      // both lists must be newton on, or both newton off
-      // IJ newton = 1 for newton on, 2 for newton off
-
       inewton = irq->newton;
       if (inewton == 0) inewton = force->newton_pair ? 1 : 2;
       jnewton = jrq->newton;
       if (jnewton == 0) jnewton = force->newton_pair ? 1 : 2;
       if (inewton != jnewton) continue;
-
-      // ok for non-ghost list to copy from ghost list, but not vice versa
-
       if (irq->ghost && !jrq->ghost) continue;
-
-      // do not copy from a list with respa middle/inner
-      // b/c its outer list will not be complete
-
       if (jrq->respamiddle) continue;
       if (jrq->respainner) continue;
-
-      // these flags must be same,
-      //   else 2 lists do not store same pairs
-      //   or their data structures are different
-      // no need to check omp b/c it stores same pairs
-      // NOTE: need check for 2 Kokkos flags?
-
       if (irq->size != jrq->size) continue;
       if (irq->history != jrq->history) continue;
       if (irq->bond != jrq->bond) continue;
       if (irq->ssa != jrq->ssa) continue;
-
-      // skip flag must be same
-      // if both are skip lists, skip info must match
-
       if (irq->skip != jrq->skip) continue;
       if (irq->skip && irq->same_skip(jrq) == 0) continue;
-
-      // 2 lists are a match
-
       break;
     }
-
-    // turn list I into a copy of list J
-    // do not copy a list from another copy list, but from its parent list
-
     if (jj < nrequest) {
       irq->copy = 1;
       irq->trim = trim_flag;
@@ -1299,29 +773,19 @@ void Neighbor::morph_copy_trim()
     }
   }
 }
-
-
-/* ----------------------------------------------------------------------
-   output summary of pairwise neighbor list info
-   only called by proc 0
-------------------------------------------------------------------------- */
-
 void Neighbor::print_pairwise_info()
 {
   int i;
   NeighRequest *rq;
-
   const double cutghost = MAX(cutneighmax,comm->cutghostuser);
-
   double binsize, bbox[3];
-  bbox[0] =  bboxhi[0]-bboxlo[0];
-  bbox[1] =  bboxhi[1]-bboxlo[1];
-  bbox[2] =  bboxhi[2]-bboxlo[2];
+  bbox[0] = bboxhi[0]-bboxlo[0];
+  bbox[1] = bboxhi[1]-bboxlo[1];
+  bbox[2] = bboxhi[2]-bboxlo[2];
   if (binsizeflag) binsize = binsize_user;
   else if (style == Neighbor::BIN) binsize = 0.5*cutneighmax;
   else binsize = 0.5*cutneighmin;
   if (binsize == 0.0) binsize = bbox[0];
-
   int nperpetual = 0;
   int noccasional = 0;
   int nextra = 0;
@@ -1330,7 +794,6 @@ void Neighbor::print_pairwise_info()
     else if (lists[i]->occasional) noccasional++;
     else nperpetual++;
   }
-
   std::string out = "Neighbor list info ...\n";
   out += fmt::format("  update: every = {} steps, delay = {} steps, check = {}\n",
                      every,delay,dist_check ? "yes" : "no");
@@ -1342,10 +805,8 @@ void Neighbor::print_pairwise_info()
     out += fmt::format("  binsize = {:.8g}, bins = {:g} {:g} {:g}\n",binsize,
                        ceil(bbox[0]/binsize), ceil(bbox[1]/binsize),
                        ceil(bbox[2]/binsize));
-
   out += fmt::format("  {} neighbor lists, perpetual/occasional/extra = {} {} {}\n",
                      nlist,nperpetual,noccasional,nextra);
-
   for (i = 0; i < nlist; i++) {
     rq = requests[i];
     if (rq->pair) {
@@ -1361,12 +822,8 @@ void Neighbor::print_pairwise_info()
     } else if (rq->neigh) {
       out += fmt::format("  ({}) neighbor class addition",i+1);
     }
-
     if (rq->occasional) out += ", occasional";
     else out += ", perpetual";
-
-    // order these to get single output of most relevant
-
     if (rq->copy) {
       if (rq->trim)
         out += fmt::format(", trim from ({})",rq->copylist+1);
@@ -1380,19 +837,14 @@ void Neighbor::print_pairwise_info()
     else if (rq->skip)
       out += fmt::format(", skip from ({})",rq->skiplist+1);
     out += "\n";
-
-    // list of neigh list attributes
-
     out += "      attributes: ";
     if (rq->half) out += "half";
     else if (rq->full) out += "full";
-
     if (rq->newton == 0) {
       if (force->newton_pair) out += ", newton on";
       else out += ", newton off";
     } else if (rq->newton == 1) out += ", newton on";
     else if (rq->newton == 2) out += ", newton off";
-
     if (rq->ghost) out += ", ghost";
     if (rq->size) out += ", size";
     if (rq->history) out += ", history";
@@ -1405,61 +857,36 @@ void Neighbor::print_pairwise_info()
     if (rq->cut) out += fmt::format(", cut {}",rq->cutoff);
     if (rq->off2on) out += ", off2on";
     out += "\n";
-
     out += "      ";
     if (lists[i]->pair_method == 0) out += "pair build: none\n";
     else out += fmt::format("pair build: {}\n",pairnames[lists[i]->pair_method-1]);
-
     out += "      ";
     if (lists[i]->bin_method == 0) out += "bin: none\n";
     else out += fmt::format("bin: {}\n",binnames[lists[i]->bin_method-1]);
   }
   utils::logmesg(lmp,out);
 }
-
-/* ----------------------------------------------------------------------
-   make copy of current requests and Neighbor params
-   used to compare to when next run occurs
-------------------------------------------------------------------------- */
-
 void Neighbor::requests_new2old()
 {
   for (int i = 0; i < old_nrequest; i++) delete old_requests[i];
   memory->sfree(old_requests);
-
   old_nrequest = nrequest;
   old_requests = (NeighRequest **)
     memory->smalloc(old_nrequest*sizeof(NeighRequest *),"neighbor:old_requests");
-
   for (int i = 0; i < old_nrequest; i++)
     old_requests[i] = new NeighRequest(requests[i]);
-
   old_style = style;
   old_triclinic = triclinic;
   old_pgsize = pgsize;
   old_oneatom = oneatom;
 }
-
-/* ----------------------------------------------------------------------
-   find and return request made by classptr
-   if not found or classptr = nullptr, return nullptr
-   id is optional and defaults to 0, which is the request id value unless set explicitly
-------------------------------------------------------------------------- */
-
 NeighRequest *Neighbor::find_request(void *classptr, const int id) const
 {
   if (classptr == nullptr) return nullptr;
-
   for (int i = 0; i < nrequest; i++)
     if ((requests[i]->requestor == classptr) && (requests[i]->id == id)) return requests[i];
-
   return nullptr;
 }
-
-/* ----------------------------------------------------------------------
-   return vector with neighbor list requests from pair styles
-------------------------------------------------------------------------- */
-
 const std::vector<NeighRequest *> Neighbor::get_pair_requests() const
 {
   std::vector<NeighRequest *> matches;
@@ -1467,83 +894,34 @@ const std::vector<NeighRequest *> Neighbor::get_pair_requests() const
     if (requests[i]->pair) matches.push_back(requests[i]);
   return matches;
 }
-
-/* ----------------------------------------------------------------------
-   find and return list requested by classptr
-   if not found or classptr = nullptr, return nullptr
-   id is optional and defaults to 0, which is the request id value unless set explicitly
-------------------------------------------------------------------------- */
-
 NeighList *Neighbor::find_list(void *classptr, const int id) const
 {
   if (classptr == nullptr) return nullptr;
-
   for (int i = 0; i < nlist; i++)
     if ((lists[i]->requestor == classptr) && (lists[i]->id == id)) return lists[i];
-
   return nullptr;
 }
-
-/* ----------------------------------------------------------------------
-   assign NBin class to a NeighList
-   use neigh request settings to build mask
-   match mask to list of masks of known Nbin classes
-   return index+1 of match in list of masks
-   return 0 for no binning
-   return -1 if no match
-------------------------------------------------------------------------- */
-
 int Neighbor::choose_bin(NeighRequest *rq)
 {
-  // no binning needed
-
   if (style == Neighbor::NSQ) return 0;
   if (rq->skip || rq->copy || rq->halffull) return 0;
-
-  // use request settings to match exactly one NBin class mask
-  // checks are bitwise using NeighConst bit masks
-
   int mask;
-
   for (int i = 0; i < nbclass; i++) {
     mask = binmasks[i];
-
-    // require match of these request flags and mask bits
-    // (!A != !B) is effectively a logical xor
     if (!rq->ssa != !(mask & NB_SSA)) continue;
-    // multi neighbor style require multi bin style
     if (style == Neighbor::MULTI) {
       if (!(mask & NB_MULTI)) continue;
     } else {
       if (!(mask & NB_STANDARD)) continue;
     }
-
     return i+1;
   }
-
-  // error return if matched none
-
   return -1;
 }
-
-/* ----------------------------------------------------------------------
-   assign NPair class to a NeighList
-   use neigh request settings to build mask
-   match mask to list of masks of known NPair classes
-   return index+1 of match in list of masks
-   return 0 for no binning
-   return -1 if no match
-------------------------------------------------------------------------- */
-
 int Neighbor::choose_pair(NeighRequest *rq)
 {
-  // error check for includegroup with ghost neighbor request
-
   if (includegroup && rq->ghost)
     error->all(FLERR,"Neighbor include group not allowed with ghost neighbors");
-
-  // convert newton request to newtflag = on or off
-
   bool newtflag;
   if (rq->newton == 0 && newton_pair) newtflag = true;
   else if (rq->newton == 0 && !newton_pair) newtflag = false;
@@ -1551,17 +929,8 @@ int Neighbor::choose_pair(NeighRequest *rq)
   else if (rq->newton == 2) newtflag = false;
   else error->all(FLERR,"Illegal 'newton' flag in neighbor list request");
   int mask;
-
   for (int i = 0; i < npclass; i++) {
     mask = pairmasks[i];
-
-    //printf("  PAIR NAMES i %d %d name %s mask %d\n",i,nrequest,
-    //       pairnames[i],pairmasks[i]);
-
-    // if copy request, no further checks needed, just return or continue
-    // trim and Kokkos device/host flags must also match in order to copy
-    // intel and omp flags must match to trim
-
     if (rq->copy) {
       if (!(mask & NP_COPY)) continue;
       if (rq->trim) {
@@ -1570,30 +939,17 @@ int Neighbor::choose_pair(NeighRequest *rq)
       }
       return i+1;
     }
-
-    // exactly one of half or full is set and must match
-
     if (rq->half) {
       if (!(mask & NP_HALF)) continue;
     } else if (rq->full) {
       if (!(mask & NP_FULL)) continue;
     }
-
-    // newtflag is on or off and must match
-
     if (newtflag) {
       if (!(mask & NP_NEWTON)) continue;
     } else if (!newtflag) {
       if (!(mask & NP_NEWTOFF)) continue;
     }
-
-    // if molecular on, do not match ATOMONLY (b/c a MOLONLY Npair exists)
-    // if molecular off, do not match MOLONLY (b/c an ATOMONLY Npair exists)
     if (mask & NP_MOLONLY) continue;
-
-    // require match of these request flags and mask bits
-    // (!A != !B) is effectively a logical xor
-
     if (!rq->ghost != !(mask & NP_GHOST)) continue;
     if (!rq->size != !(mask & NP_SIZE)) continue;
     if (!rq->respaouter != !(mask & NP_RESPA)) continue;
@@ -1602,16 +958,10 @@ int Neighbor::choose_pair(NeighRequest *rq)
     if (!rq->bond != !(mask & NP_BOND)) continue;
     if (!rq->omp != !(mask & NP_OMP)) continue;
     if (!rq->ssa != !(mask & NP_SSA)) continue;
-
     if (!rq->skip != !(mask & NP_SKIP)) continue;
-
     if (!rq->trim != !(mask & NP_TRIM)) continue;
-
     if (!rq->halffull != !(mask & NP_HALF_FULL)) continue;
     if (!rq->off2on != !(mask & NP_OFF2ON)) continue;
-
-    // neighbor style is one of NSQ, BIN, MULTI_OLD, or MULTI and must match
-
     if (style == Neighbor::NSQ) {
       if (!(mask & NP_NSQ)) continue;
     } else if (style == Neighbor::BIN) {
@@ -1621,27 +971,15 @@ int Neighbor::choose_pair(NeighRequest *rq)
     } else if (style == Neighbor::MULTI) {
       if (!(mask & NP_MULTI)) continue;
     }
-
-    // domain triclinic flag is on or off and must match
-
     if (triclinic) {
       if (!(mask & NP_TRI)) continue;
     } else if (!triclinic) {
       if (!(mask & NP_ORTHO)) continue;
     }
-
     return i+1;
   }
-
-  // error return if matched none
-
   return -1;
 }
-
-/* ----------------------------------------------------------------------
-   called internally to request a pairwise neighbor list
-------------------------------------------------------------------------- */
-
 int Neighbor::request(void *requestor, int instance)
 {
   if (nrequest == maxrequest) {
@@ -1649,28 +987,20 @@ int Neighbor::request(void *requestor, int instance)
     requests = (NeighRequest **)
       memory->srealloc(requests,maxrequest*sizeof(NeighRequest *), "neighbor:requests");
   }
-
   requests[nrequest] = new NeighRequest(lmp, requestor, instance);
   nrequest++;
   return nrequest-1;
 }
-
-/* ----------------------------------------------------------------------
-  add_request() is called by other classes to request a pairwise neighbor list
-------------------------------------------------------------------------- */
-
 NeighRequest *Neighbor::add_request(Pair *requestor, int flags)
 {
   int irequest = request(requestor, requestor->instance_me);
   auto req = requests[irequest];
   req->apply_flags(flags);
-  // apply intel flag. omp flag is set globally via set_omp_neighbor()
   if (requestor->suffix_flag & Suffix::INTEL) {
     req->omp = 0;
   }
   return req;
 }
-
 NeighRequest *Neighbor::add_request(Fix *requestor, int flags)
 {
   int irequest = request(requestor, requestor->instance_me);
@@ -1680,7 +1010,6 @@ NeighRequest *Neighbor::add_request(Fix *requestor, int flags)
   req->apply_flags(flags);
   return req;
 }
-
 NeighRequest *Neighbor::add_request(Compute *requestor, int flags)
 {
   int irequest = request(requestor, requestor->instance_me);
@@ -1690,7 +1019,6 @@ NeighRequest *Neighbor::add_request(Compute *requestor, int flags)
   req->apply_flags(flags);
   return req;
 }
-
 NeighRequest *Neighbor::add_request(Command *requestor, const char *style, int flags)
 {
   int irequest = request(requestor, 0);
@@ -1702,29 +1030,12 @@ NeighRequest *Neighbor::add_request(Command *requestor, const char *style, int f
   req->apply_flags(flags);
   return req;
 }
-/* ----------------------------------------------------------------------
-   setup neighbor binning and neighbor stencils
-   called before run and every reneighbor if box size/shape changes
-   only operates on perpetual lists
-   build_one() operates on occasional lists
-------------------------------------------------------------------------- */
-
 void Neighbor::setup_bins()
 {
-  // invoke setup_bins() for all NBin
-  // actual binning is performed in build()
-
   for (int i = 0; i < nbin; i++)
     neigh_bin[i]->setup_bins(style);
-
-  // invoke create_setup() and create() for all perpetual NStencil
-  // same ops performed for occasional lists in build_one()
-
   last_setup_bins = update->ntimestep;
 }
-
-/* ---------------------------------------------------------------------- */
-
 int Neighbor::decide()
 {
   ago++;
@@ -1734,24 +1045,10 @@ int Neighbor::decide()
     return check_distance();
   } else return 0;
 }
-
-/* ----------------------------------------------------------------------
-   if any atom moved trigger distance (half of neighbor skin) return 1
-   shrink trigger distance if box size has changed
-   conservative shrink procedure:
-     compute distance each of 8 corners of box has moved since last reneighbor
-     reduce skin distance by sum of 2 largest of the 8 values
-     if reduced skin distance is negative, set to zero
-     new trigger = 1/2 of reduced skin distance
-   for orthogonal box, only need 2 lo/hi corners
-   for triclinic, need all 8 corners since deformations can displace all 8
-------------------------------------------------------------------------- */
-
 int Neighbor::check_distance()
 {
   double delx,dely,delz,rsq;
   double delta,deltasq,delta1,delta2;
-
   if (boxcheck) {
     if (triclinic == 0) {
       delx = bboxlo[0] - boxlo_hold[0];
@@ -1781,11 +1078,9 @@ int Neighbor::check_distance()
       deltasq = delta*delta;
     }
   } else deltasq = triggersq;
-
   double **x = atom->x;
   int nlocal = atom->nlocal;
   if (includegroup) nlocal = atom->nfirst;
-
   int flag = 0;
   for (int i = 0; i < nlocal; i++) {
     delx = x[i][0] - xhold[i][0];
@@ -1794,39 +1089,22 @@ int Neighbor::check_distance()
     rsq = delx*delx + dely*dely + delz*delz;
     if (rsq > deltasq) flag = 1;
   }
-
   int flagall;
   MPI_Allreduce(&flag,&flagall,1,MPI_INT,MPI_MAX,world);
   if (flagall && ago == MAX(every,delay)) ndanger++;
   return flagall;
 }
-
-/* ----------------------------------------------------------------------
-   build perpetual neighbor lists
-   called at setup and every few timesteps during run or minimization
-   topology lists also built if topoflag = 1 (Kokkos calls with topoflag=0)
-------------------------------------------------------------------------- */
-
 void Neighbor::build(int topoflag)
 {
   int i,m;
-
   ago = 0;
   ncalls++;
   lastcall = update->ntimestep;
-
   int nlocal = atom->nlocal;
   int nall = nlocal + atom->nghost;
-  // rebuild collection array from scratch
   if (style == Neighbor::MULTI) build_collection(0);
-
-  // check that using special bond flags will not overflow neigh lists
-
   if (nall > NEIGHMASK)
     error->one(FLERR,"Too many local+ghost atoms for neighbor list");
-
-  // store current atom positions and box size if needed
-
   if (dist_check) {
     double **x = atom->x;
     if (includegroup) nlocal = atom->nfirst;
@@ -1859,13 +1137,6 @@ void Neighbor::build(int topoflag)
       }
     }
   }
-
-  // bin atoms for all NBin instances
-  // not just NBin associated with perpetual lists, also occasional lists
-  // b/c cannot wait to bin occasional lists in build_one() call
-  // if bin then, atoms may have moved outside of proc domain & bin extent,
-  //   leading to errors or even a crash
-
   if (style != Neighbor::NSQ) {
     if (last_setup_bins < 0) setup_bins();
     for (i = 0; i < nbin; i++) {
@@ -1873,10 +1144,6 @@ void Neighbor::build(int topoflag)
       neigh_bin[i]->bin_atoms();
     }
   }
-
-  // build pairwise lists for all perpetual NPair/NeighList
-  // grow() with nlocal/nall args so that only realloc if have to
-
   for (i = 0; i < npair_perpetual; i++) {
     m = plist[i];
     if (!lists[m]->copy || lists[m]->trim)
@@ -1885,69 +1152,33 @@ void Neighbor::build(int topoflag)
     neigh_pair[m]->build(lists[m]);
   }
 }
-
-/* ----------------------------------------------------------------------
-   build a single occasional pairwise neighbor list indexed by I
-   called by other classes
-------------------------------------------------------------------------- */
-
 void Neighbor::build_one(class NeighList *mylist, int preflag)
 {
-  // check if list structure is initialized
-
   if (mylist == nullptr)
     error->all(FLERR,"Trying to build an occasional neighbor list before initialization complete");
-
-  // build_one() should never be invoked on a perpetual list
-
   if (!mylist->occasional) error->all(FLERR,"Neighbor::build_one() invoked on perpetual list");
-
-  // no need to build if already built since last re-neighbor
-  // preflag is set by fix bond/create and fix bond/swap
-  //   b/c they invoke build_one() on same step neigh list is re-built,
-  //   but before re-build, so need to use ">" instead of ">="
-
   NPair *np = neigh_pair[mylist->index];
-
   if (preflag) {
     if (np->last_build > lastcall) return;
   } else {
     if (np->last_build >= lastcall) return;
   }
-
-  // if this is copy list and parent is occasional list,
-  // or this is halffull and parent is occasional list,
-  // or this is skip list and parent is occasional list,
-  // ensure parent is current
-
   if (mylist->listcopy && mylist->listcopy->occasional)
     build_one(mylist->listcopy,preflag);
   if (mylist->listfull && mylist->listfull->occasional)
     build_one(mylist->listfull,preflag);
   if (mylist->listskip && mylist->listskip->occasional)
     build_one(mylist->listskip,preflag);
-
-  // create stencil if hasn't been created since last setup_bins() call
-
-  // build the list
-
   if (!mylist->copy || mylist->trim)
     mylist->grow(atom->nlocal,atom->nlocal+atom->nghost);
   np->build_setup();
   np->build(mylist);
 }
-
-/* ----------------------------------------------------------------------
-   set neighbor style and skin distance
-------------------------------------------------------------------------- */
-
 void Neighbor::set(int narg, char **arg)
 {
   if (narg != 2) error->all(FLERR,"Illegal neighbor command: expected 2 arguments but found {}", narg);
-
   skin = utils::numeric(FLERR,arg[0],false,lmp);
   if (skin < 0.0) error->all(FLERR, "Invalid neighbor argument: {}", arg[0]);
-
   if (strcmp(arg[1],"nsq") == 0) style = Neighbor::NSQ;
   else if (strcmp(arg[1],"bin") == 0) style = Neighbor::BIN;
   else if (strcmp(arg[1],"multi") == 0) {
@@ -1956,14 +1187,7 @@ void Neighbor::set(int narg, char **arg)
   } else if (strcmp(arg[1],"multi/old") == 0) style = Neighbor::MULTI_OLD;
   else error->all(FLERR,"Unknown neighbor {} argument: {}", arg[0], arg[1]);
 }
-
-/* ----------------------------------------------------------------------
-   reset timestamps in all NeignBin, NStencil, NPair classes
-   so that neighbor lists will rebuild properly with timestep change
-   ditto for lastcall and last_setup_bins
-------------------------------------------------------------------------- */
-
-void Neighbor::reset_timestep(bigint /*ntimestep*/)
+void Neighbor::reset_timestep(bigint )
 {
   for (int i = 0; i < nbin; i++)
     neigh_bin[i]->last_bin = -1;
@@ -1971,15 +1195,9 @@ void Neighbor::reset_timestep(bigint /*ntimestep*/)
     if (!neigh_pair[i]) continue;
     neigh_pair[i]->last_build = -1;
   }
-
   lastcall = -1;
   last_setup_bins = -1;
 }
-
-/* ----------------------------------------------------------------------
-   modify parameters of the pair-wise neighbor build
-------------------------------------------------------------------------- */
-
 void Neighbor::modify_params(int narg, char **arg)
 {
   int iarg = 0;
@@ -2034,7 +1252,6 @@ void Neighbor::modify_params(int narg, char **arg)
       iarg += 2;
     } else if (strcmp(arg[iarg],"exclude") == 0) {
       if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "neigh_modify exclude", error);
-
       if (strcmp(arg[iarg+1],"type") == 0) {
         if (iarg+4 > narg) utils::missing_cmd_args(FLERR, "neigh_modify exclude type", error);
         if (nex_type == maxex_type) {
@@ -2067,7 +1284,7 @@ void Neighbor::modify_params(int narg, char **arg)
         if (nex_mol == maxex_mol) {
           maxex_mol += EXDELTA;
           memory->grow(ex_mol_group,maxex_mol,"neigh:ex_mol_group");
-	  memory->grow(ex_mol_intra,maxex_mol,"neigh:ex_mol_intra");
+   memory->grow(ex_mol_intra,maxex_mol,"neigh:ex_mol_intra");
         }
         ex_mol_group[nex_mol] = group->find(arg[iarg+2]);
         if (ex_mol_group[nex_mol] == -1)
@@ -2085,7 +1302,6 @@ void Neighbor::modify_params(int narg, char **arg)
     } else if (strcmp(arg[iarg],"collection/interval") == 0) {
       if (style != Neighbor::MULTI)
         error->all(FLERR,"Cannot use collection/interval command without multi setting");
-
       if (iarg+2 > narg)
         utils::missing_cmd_args(FLERR, "neigh_modify collection/interval", error);
       ncollections = utils::inumeric(FLERR,arg[iarg+1],false,lmp);
@@ -2093,33 +1309,23 @@ void Neighbor::modify_params(int narg, char **arg)
         error->all(FLERR, "Invalid collection/interval keyword: illegal number of custom collections: {}", ncollections);
       if (iarg+2+ncollections > narg)
         error->all(FLERR, "Invalid collection/interval keyword: expected {} separate lists of types", ncollections);
-
       int i;
-
-      // Invalidate old user cutoffs
-
       comm->ncollections_cutoff = 0;
       interval_collection_flag = 1;
       custom_collection_flag = 1;
       memory->grow(collection2cut,ncollections,"neigh:collection2cut");
-
-      // Set upper cutoff for each collection
-
       double cut_interval;
       for (i = 0; i < ncollections; i++){
         cut_interval = utils::numeric(FLERR,arg[iarg+2+i],false,lmp);
         collection2cut[i] = cut_interval;
-
         if (i != 0)
           if (collection2cut[i-1] >= collection2cut[i])
             error->all(FLERR,"Nonsequential interval cutoffs in collection/interval setting");
       }
-
       iarg += 2 + ncollections;
     } else if (strcmp(arg[iarg],"collection/type") == 0) {
       if (style != Neighbor::MULTI)
         error->all(FLERR,"Cannot use collection/type command without multi setting");
-
       if (iarg+2 > narg)
         utils::missing_cmd_args(FLERR, "neigh_modify collection/type", error);
       ncollections = utils::inumeric(FLERR,arg[iarg+1],false,lmp);
@@ -2127,25 +1333,15 @@ void Neighbor::modify_params(int narg, char **arg)
         error->all(FLERR, "Invalid collection/type keyword: illegal number of custom collections: {}", ncollections);
       if (iarg+2+ncollections > narg)
         error->all(FLERR, "Invalid collection/type keyword: expected {} separate lists of types", ncollections);
-
       int ntypes = atom->ntypes;
       int nlo, nhi, i, k;
-
-      // Invalidate old user cutoffs
-
       comm->ncollections_cutoff = 0;
       interval_collection_flag = 0;
       custom_collection_flag = 1;
       if (!type2collection)
         memory->create(type2collection,ntypes+1,"neigh:type2collection");
-
-      // Erase previous mapping
-
       for (i = 1; i <= ntypes; i++)
         type2collection[i] = -1;
-
-      // For each custom range, define mapping for types in interval
-
       for (i = 0; i < ncollections; i++){
         std::vector<std::string> words = Tokenizer(arg[iarg+2+i], ",").as_vector();
         for (const auto &word : words) {
@@ -2157,24 +1353,15 @@ void Neighbor::modify_params(int narg, char **arg)
           }
         }
       }
-
-      // Check for undefined atom type
-
       for (i = 1; i <= ntypes; i++){
         if (type2collection[i] == -1) {
           error->all(FLERR,"Type missing in collection/type commnd");
         }
       }
-
       iarg += 2 + ncollections;
     } else error->all(FLERR,"Unknown neigh_modify keyword: {}", arg[iarg]);
   }
 }
-
-/* ----------------------------------------------------------------------
-   convenience function to allow modifying parameters from a single string
-------------------------------------------------------------------------- */
-
 void Neighbor::modify_params(const std::string &modcmd)
 {
   auto args = utils::split_words(modcmd);
@@ -2186,22 +1373,15 @@ void Neighbor::modify_params(const std::string &modcmd)
   modify_params(args.size(),newarg);
   delete[] newarg;
 }
-
-/* ----------------------------------------------------------------------
-   remove the first group-group exclusion matching group1, group2
-------------------------------------------------------------------------- */
-
 void Neighbor::exclusion_group_group_delete(int group1, int group2)
 {
   int m, mlast;
   for (m = 0; m < nex_group; m++)
     if (ex1_group[m] == group1 && ex2_group[m] == group2 )
       break;
-
   mlast = m;
   if (mlast == nex_group)
     error->all(FLERR,"Unable to find group-group exclusion");
-
   for (m = mlast+1; m < nex_group; m++) {
     ex1_group[m-1] = ex1_group[m];
     ex2_group[m-1] = ex2_group[m];
@@ -2210,29 +1390,14 @@ void Neighbor::exclusion_group_group_delete(int group1, int group2)
   }
   nex_group--;
 }
-
-/* ----------------------------------------------------------------------
-   return the value of exclude - used to check compatibility with GPU
-------------------------------------------------------------------------- */
-
 int Neighbor::exclude_setting()
 {
   return exclude;
 }
-
-/* ----------------------------------------------------------------------
-   If nonzero, call build_topology from GPU styles instead to overlap comp
-------------------------------------------------------------------------- */
-
 void Neighbor::set_overlap_topo(int s)
 {
   overlap_topo = s;
 }
-
-/* ----------------------------------------------------------------------
-   check if any of the old requested neighbor lists are full
-------------------------------------------------------------------------- */
-
 int Neighbor::any_full()
 {
   int any_full = 0;
@@ -2241,36 +1406,27 @@ int Neighbor::any_full()
   }
   return any_full;
 }
-
-/* ----------------------------------------------------------------------
-   populate collection array for multi starting at the index istart
-------------------------------------------------------------------------- */
-
 void Neighbor::build_collection(int istart)
 {
   if (style != Neighbor::MULTI)
     error->all(FLERR, "Cannot define atom collections without neighbor style multi");
-
   int nmax = atom->nlocal+atom->nghost;
   if (nmax > nmax_collection) {
     nmax_collection = nmax+DELTA_PERATOM;
     memory->grow(collection, nmax_collection, "neigh:collection");
   }
-
   if (finite_cut_flag) {
     double cut;
     int icollection;
     for (int i = istart; i < nmax; i++){
       cut = force->pair->atom2cut(i);
       collection[i] = -1;
-
       for (icollection = 0; icollection < ncollections; icollection++){
         if (collection2cut[icollection] >= cut) {
           collection[i] = icollection;
           break;
         }
       }
-
       if (collection[i] == -1)
         error->one(FLERR, "Atom cutoff exceeds interval cutoffs for multi");
     }
@@ -2281,21 +1437,11 @@ void Neighbor::build_collection(int istart)
     }
   }
 }
-
-/* ----------------------------------------------------------------------
-   for neighbor list statistics in Finish class
-------------------------------------------------------------------------- */
-
 bigint Neighbor::get_nneigh_full()
 {
-  // find a non-skip neighbor list containing full pairwise interactions
-  // count neighbors in that list for stats purposes
-  // allow it to be Kokkos neigh list as well
-
   int m;
   for (m = 0; m < old_nrequest; m++)
     if (old_requests[m]->full && !old_requests[m]->skip) break;
-
   bigint nneighfull = -1;
   if (m < old_nrequest) {
     nneighfull = 0;
@@ -2309,34 +1455,21 @@ bigint Neighbor::get_nneigh_full()
   }
   return nneighfull;
 }
-
 bigint Neighbor::get_nneigh_half()
 {
-  // find a non-skip neighbor list containing half pairwise interactions
-  // count neighbors in that list for stats purposes
-  // allow it to be Kokkos neigh list as well
-
   int m;
   for (m = 0; m < old_nrequest; m++)
     if (old_requests[m]->half && !old_requests[m]->skip && lists[m] && lists[m]->numneigh) break;
-
   bigint nneighhalf = -1;
   if (m < old_nrequest) {
     nneighhalf = 0;
   }
   return nneighhalf;
 }
-
-
-/* ----------------------------------------------------------------------
-   return # of bytes of allocated memory
-------------------------------------------------------------------------- */
-
 double Neighbor::memory_usage()
 {
   double bytes = 0;
   bytes += memory->usage(xhold,maxhold,3);
-
   for (int i = 0; i < nlist; i++)
     if (lists[i]) bytes += lists[i]->memory_usage();
   for (int i = 0; i < nbin; i++)

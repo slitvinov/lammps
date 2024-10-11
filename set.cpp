@@ -1,19 +1,4 @@
-// clang-format off
-/* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
 #include "set.h"
-
 #include "arg_info.h"
 #include "atom.h"
 #include "atom_vec.h"
@@ -31,15 +16,11 @@
 #include "random_park.h"
 #include "region.h"
 #include "variable.h"
-
 #include <cmath>
 #include <cstring>
-
 using namespace LAMMPS_NS;
 using namespace MathConst;
-
 enum{ATOM_SELECT,TYPE_SELECT,GROUP_SELECT,REGION_SELECT};
-
 enum{TYPE,TYPE_FRACTION,TYPE_RATIO,TYPE_SUBSET,
      MOLECULE,X,Y,Z,VX,VY,VZ,CHARGE,MASS,SHAPE,LENGTH,TRI,
      DIPOLE,DIPOLE_RANDOM,SPIN_ATOM,SPIN_RANDOM,SPIN_ELECTRON,RADIUS_ELECTRON,
@@ -47,11 +28,7 @@ enum{TYPE,TYPE_FRACTION,TYPE_RATIO,TYPE_SUBSET,
      DIAMETER,RADIUS_ATOM,DENSITY,VOLUME,IMAGE,BOND,
      SPH_E,SPH_CV,SPH_RHO,EDPD_TEMP,EDPD_CV,CC,SMD_MASS_DENSITY,
      SMD_CONTACT_RADIUS,DPDTHETA,EPSILON,IVEC,DVEC,IARRAY,DARRAY};
-
 #define BIG INT_MAX
-
-/* ---------------------------------------------------------------------- */
-
 void Set::command(int narg, char **arg)
 {
   if (domain->box_exist == 0)
@@ -59,32 +36,21 @@ void Set::command(int narg, char **arg)
   if (atom->natoms == 0)
     error->all(FLERR,"Set command on system without atoms");
   if (narg < 4) error->all(FLERR,"Illegal set command: need at least four arguments");
-
-  // style and ID info
-
   if (strcmp(arg[0],"atom") == 0) style = ATOM_SELECT;
   else if (strcmp(arg[0],"type") == 0) style = TYPE_SELECT;
   else if (strcmp(arg[0],"group") == 0) style = GROUP_SELECT;
   else if (strcmp(arg[0],"region") == 0) style = REGION_SELECT;
   else error->all(FLERR,"Unknown set command style: {}", arg[0]);
-
   id = utils::strdup(arg[1]);
   select = nullptr;
   selection(atom->nlocal);
-
-  // loop over keyword/value pairs
-  // call appropriate routine to reset attributes
-
   if (comm->me == 0) utils::logmesg(lmp,"Setting atom values ...\n");
-
   int allcount,origarg;
-
   int iarg = 2;
   while (iarg < narg) {
     varflag = varflag1 = varflag2 = varflag3 = varflag4 = 0;
     count = 0;
     origarg = iarg;
-
     if (strcmp(arg[iarg],"mass") == 0) {
       if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "set mass", error);
       if (utils::strmatch(arg[iarg+1],"^v_")) varparse(arg[iarg+1],1);
@@ -109,7 +75,6 @@ void Set::command(int narg, char **arg)
       }
       set(DENSITY);
       iarg += 2;
-
     } else if (strcmp(arg[iarg],"image") == 0) {
       if (iarg+4 > narg) utils::missing_cmd_args(FLERR, "set image", error);
       ximageflag = yimageflag = zimageflag = 0;
@@ -139,7 +104,6 @@ void Set::command(int narg, char **arg)
                    "Cannot set non-zero image flag for non-periodic dimension");
       set(IMAGE);
       iarg += 4;
-
     } else if (strcmp(arg[iarg],"sph/e") == 0) {
       if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "set sph/e", error);
       if (utils::strmatch(arg[iarg+1],"^v_")) varparse(arg[iarg+1],1);
@@ -148,7 +112,6 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set attribute {} for atom style {}", arg[iarg], atom->get_style());
       set(SPH_E);
       iarg += 2;
-
     } else if (strcmp(arg[iarg],"sph/cv") == 0) {
       if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "set sph/cv", error);
       if (utils::strmatch(arg[iarg+1],"^v_")) varparse(arg[iarg+1],1);
@@ -157,7 +120,6 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set attribute {} for atom style {}", arg[iarg], atom->get_style());
       set(SPH_CV);
       iarg += 2;
-
     } else if (strcmp(arg[iarg],"sph/rho") == 0) {
       if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "set sph/rho", error);
       if (utils::strmatch(arg[iarg+1],"^v_")) varparse(arg[iarg+1],1);
@@ -166,7 +128,6 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set attribute {} for atom style {}", arg[iarg], atom->get_style());
       set(SPH_RHO);
       iarg += 2;
-
     } else if (strcmp(arg[iarg],"edpd/temp") == 0) {
       if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "set edpd/temp", error);
       if (strcmp(arg[iarg+1],"NULL") == 0) dvalue = -1.0;
@@ -179,7 +140,6 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set attribute {} for atom style {}", arg[iarg], atom->get_style());
       set(EDPD_TEMP);
       iarg += 2;
-
     } else if (strcmp(arg[iarg],"edpd/cv") == 0) {
       if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "set edpd/cv", error);
       if (strcmp(arg[iarg+1],"NULL") == 0) dvalue = -1.0;
@@ -192,7 +152,6 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set attribute {} for atom style {}", arg[iarg], atom->get_style());
       set(EDPD_CV);
       iarg += 2;
-
     } else if (strcmp(arg[iarg],"cc") == 0) {
       if (iarg+3 > narg) utils::missing_cmd_args(FLERR, "set cc", error);
       if (strcmp(arg[iarg+1],"NULL") == 0) dvalue = -1.0;
@@ -206,7 +165,6 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set attribute {} for atom style {}", arg[iarg], atom->get_style());
       set(CC);
       iarg += 3;
-
     } else if (strcmp(arg[iarg],"dpd/theta") == 0) {
       if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "set dpd/theta", error);
       if (strcmp(arg[iarg+1],"NULL") == 0) dvalue = -1.0;
@@ -219,11 +177,7 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set attribute {} for atom style {}", arg[iarg], atom->get_style());
       set(DPDTHETA);
       iarg += 2;
-
     } else {
-
-      // set custom per-atom vector or array or error out
-
       int flag,cols;
       ArgInfo argi(arg[iarg],ArgInfo::DNAME|ArgInfo::INAME);
       const char *pname = argi.get_name();
@@ -231,14 +185,11 @@ void Set::command(int narg, char **arg)
       index_custom = atom->find_custom(argi.get_name(),flag,cols);
       if (index_custom < 0)
         error->all(FLERR,"Set keyword or custom property {} does not exist",pname);
-
       switch (argi.get_type()) {
-
       case ArgInfo::INAME:
         if (utils::strmatch(arg[iarg+1],"^v_")) varparse(arg[iarg+1],1);
         else ivalue = utils::inumeric(FLERR,arg[iarg+1],false,lmp);
         if (flag != 0) error->all(FLERR,"Set command custom property {} is not integer",pname);
-
         if (argi.get_dim() == 0) {
           if (cols > 0)
             error->all(FLERR,"Set command custom integer property {} is not a vector",pname);
@@ -253,12 +204,10 @@ void Set::command(int narg, char **arg)
           set(IARRAY);
         } else error->all(FLERR,"Illegal set command");
         break;
-
       case ArgInfo::DNAME:
         if (utils::strmatch(arg[iarg+1],"^v_")) varparse(arg[iarg+1],1);
         else dvalue = utils::numeric(FLERR,arg[iarg+1],false,lmp);
         if (flag != 1) error->all(FLERR,"Custom property {} is not floating-point",argi.get_name());
-
         if (argi.get_dim() == 0) {
           if (cols > 0)
             error->all(FLERR,"Set command custom double property {} is not a vector",pname);
@@ -273,19 +222,13 @@ void Set::command(int narg, char **arg)
           set(DARRAY);
         } else error->all(FLERR,"Illegal set command");
         break;
-
       default:
         error->all(FLERR,"Illegal set command");
         break;
       }
       iarg += 2;
     }
-
-    // statistics
-    // for CC option, include species index
-
     MPI_Allreduce(&count,&allcount,1,MPI_INT,MPI_SUM,world);
-
     if (comm->me == 0) {
       if (strcmp(arg[origarg],"cc") == 0)
         utils::logmesg(lmp,"  {} settings made for {} index {}\n",
@@ -295,56 +238,40 @@ void Set::command(int narg, char **arg)
                        allcount,arg[origarg]);
     }
   }
-
-  // free local memory
-
   delete[] id;
   delete[] select;
 }
-
-/* ----------------------------------------------------------------------
-   select atoms according to ATOM, MOLECULE, TYPE, GROUP, REGION style
-   n = nlocal or nlocal+nghost depending on keyword
-------------------------------------------------------------------------- */
-
 void Set::selection(int n)
 {
   delete[] select;
   select = new int[n];
   int nlo,nhi;
-
   if (style == ATOM_SELECT) {
     if (atom->tag_enable == 0)
       error->all(FLERR,"Cannot use set atom with no atom IDs defined");
     bigint nlobig,nhibig;
     utils::bounds(FLERR,id,1,MAXTAGINT,nlobig,nhibig,error);
-
     tagint *tag = atom->tag;
     for (int i = 0; i < n; i++)
       if (tag[i] >= nlobig && tag[i] <= nhibig) select[i] = 1;
       else select[i] = 0;
-
   } else if (style == TYPE_SELECT) {
     int *type = atom->type;
     for (int i = 0; i < n; i++)
       if (type[i] >= nlo && type[i] <= nhi) select[i] = 1;
       else select[i] = 0;
-
   } else if (style == GROUP_SELECT) {
     int igroup = group->find(id);
     if (igroup == -1) error->all(FLERR,"Could not find set group ID {}", id);
     int groupbit = group->bitmask[igroup];
-
     int *mask = atom->mask;
     for (int i = 0; i < n; i++)
       if (mask[i] & groupbit) select[i] = 1;
       else select[i] = 0;
-
   } else if (style == REGION_SELECT) {
     auto region = domain->get_region_by_id(id);
     if (!region) error->all(FLERR,"Set region {} does not exist", id);
     region->prematch();
-
     double **x = atom->x;
     for (int i = 0; i < n; i++)
       if (region->match(x[i][0],x[i][1],x[i][2]))
@@ -352,18 +279,9 @@ void Set::selection(int n)
       else select[i] = 0;
   }
 }
-
-/* ----------------------------------------------------------------------
-   set owned atom properties directly
-   either scalar or per-atom values from atom-style variable(s)
-------------------------------------------------------------------------- */
-
 void Set::set(int keyword)
 {
-  // evaluate atom-style variable(s) if necessary
-
   vec1 = vec2 = vec3 = vec4 = nullptr;
-
   if (varflag) {
     int nlocal = atom->nlocal;
     if (varflag1) {
@@ -383,9 +301,6 @@ void Set::set(int keyword)
       input->variable->compute_atom(ivar4,0,vec4,1,0);
     }
   }
-
-  // check if properties of atoms in rigid bodies are updated
-  // that are cached as per-body data.
   switch (keyword) {
   case X:
   case Y:
@@ -403,19 +318,12 @@ void Set::set(int keyword)
       error->warning(FLERR,"Changing a property of atoms in rigid bodies "
                      "that has no effect unless rigid bodies are rebuild");
     break;
-  default: // assume no conflict for all other properties
+  default:
     break;
   }
-
-  // loop over selected atoms
-
   int nlocal = atom->nlocal;
   for (int i = 0; i < nlocal; i++) {
     if (!select[i]) continue;
-
-    // overwrite dvalue, ivalue, xyzw value if variables defined
-    // else the input script scalar value remains in place
-
     if (varflag) {
       if (varflag1) {
         dvalue = xvalue = vec1[i];
@@ -425,10 +333,6 @@ void Set::set(int keyword)
       if (varflag3) zvalue = vec3[i];
       if (varflag4) wvalue = vec4[i];
     }
-
-    // set values in per-atom arrays
-    // error check here in case atom-style variables generated bogus value
-
     if (keyword == TYPE) {
       if (ivalue <= 0 || ivalue > atom->ntypes)
         error->one(FLERR,"Invalid value in set command");
@@ -443,13 +347,10 @@ void Set::set(int keyword)
     else if (keyword == EDPD_TEMP) atom->edpd_temp[i] = dvalue;
     else if (keyword == EDPD_CV) atom->edpd_cv[i] = dvalue;
     else if (keyword == CC) atom->cc[i][cc_index-1] = dvalue;
-
     else if (keyword == SMD_MASS_DENSITY) {
-      // set mass from volume and supplied mass density
       atom->rmass[i] = atom->vfrac[i] * dvalue;
     }
     else if (keyword == SMD_CONTACT_RADIUS) atom->contact_radius[i] = dvalue;
-
     else if (keyword == IMAGE) {
       int xbox = (atom->image[i] & IMGMASK) - IMGMAX;
       int ybox = (atom->image[i] >> IMGBITS & IMGMASK) - IMGMAX;
@@ -466,26 +367,19 @@ void Set::set(int keyword)
     }
     count++;
   }
-  // clear up per-atom memory if allocated
-
   memory->destroy(vec1);
   memory->destroy(vec2);
   memory->destroy(vec3);
   memory->destroy(vec4);
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Set::varparse(const char *name, int m)
 {
   varflag = 1;
   int ivar = input->variable->find(name+2);
-
   if (ivar < 0)
     error->all(FLERR,"Variable name {} for set command does not exist", name);
   if (!input->variable->atomstyle(ivar))
     error->all(FLERR,"Variable {} for set command is invalid style", name);
-
   if (m == 1) {
     varflag1 = 1; ivar1 = ivar;
   } else if (m == 2) {

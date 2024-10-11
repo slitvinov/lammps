@@ -1,18 +1,4 @@
-/* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
 #include "region.h"
-
 #include "domain.h"
 #include "error.h"
 #include "input.h"
@@ -20,48 +6,33 @@
 #include "math_extra.h"
 #include "update.h"
 #include "variable.h"
-
 #include <cmath>
 #include <cstring>
-
 using namespace LAMMPS_NS;
-
-/* ---------------------------------------------------------------------- */
-
-Region::Region(LAMMPS *lmp, int /*narg*/, char **arg) :
+Region::Region(LAMMPS *lmp, int , char **arg) :
     Pointers(lmp), id(nullptr), style(nullptr), reglist(nullptr), contact(nullptr), xstr(nullptr),
     ystr(nullptr), zstr(nullptr), tstr(nullptr)
 {
   id = utils::strdup(arg[0]);
   style = utils::strdup(arg[1]);
-
   varshape = 0;
   xstr = ystr = zstr = tstr = nullptr;
   dx = dy = dz = 0.0;
-
   size_restart = 5;
   Region::reset_vel();
   copymode = 0;
   nregion = 1;
 }
-
-/* ---------------------------------------------------------------------- */
-
 Region::~Region()
 {
   if (copymode) return;
-
   delete[] id;
   delete[] style;
-
   delete[] xstr;
   delete[] ystr;
   delete[] zstr;
   delete[] tstr;
 }
-
-/* ---------------------------------------------------------------------- */
-
 void Region::init()
 {
   if (xstr) {
@@ -90,91 +61,44 @@ void Region::init()
   }
   vel_timestep = -1;
 }
-
-/* ----------------------------------------------------------------------
-   return 1 if region is dynamic (moves/rotates) or has variable shape
-   else return 0 if static
-------------------------------------------------------------------------- */
-
 int Region::dynamic_check()
 {
   if (dynamic || varshape) return 1;
   return 0;
 }
-
-/* ----------------------------------------------------------------------
-   called before looping over atoms with match() or surface()
-   this ensures any variables used by region are invoked once per timestep
-     also ensures variables are invoked by all procs even those w/out atoms
-     necessary if equal-style variable invokes global operation
-   with MPI_Allreduce, e.g. xcm() or count()
-------------------------------------------------------------------------- */
-
 void Region::prematch()
 {
   if (varshape) shape_update();
   if (dynamic) pretransform();
 }
-
-/* ----------------------------------------------------------------------
-   determine if point x,y,z is a match to region volume
-   XOR computes 0 if 2 args are the same, 1 if different
-   note that inside() returns 1 for points on surface of region
-   thus point on surface of exterior region will not match
-   if region has variable shape, invoke shape_update() once per timestep
-   if region is dynamic, apply inverse transform to x,y,z
-     unmove first, then unrotate, so don't have to change rotation point
-   caller is responsible for wrapping this call with
-     modify->clearstep_compute() and modify->addstep_compute() if needed
-------------------------------------------------------------------------- */
-
 int Region::match(double x, double y, double z)
 {
   if (dynamic) inverse_transform(x, y, z);
   if (openflag) return 1;
   return !(inside(x, y, z) ^ interior);
 }
-
-/* ----------------------------------------------------------------------
-   generate list of contact points for interior or exterior regions
-   if region has variable shape, invoke shape_update() once per timestep
-   if region is dynamic:
-     before: inverse transform x,y,z (unmove, then unrotate)
-     after: forward transform contact point xs,yx,zs (rotate, then move),
-            then reset contact delx,dely,delz based on new contact point
-            no need to do this if no rotation since delxyz doesn't change
-   caller is responsible for wrapping this call with
-     modify->clearstep_compute() and modify->addstep_compute() if needed
-------------------------------------------------------------------------- */
-
 int Region::surface(double x, double y, double z, double cutoff)
 {
   int ncontact;
   double xs, ys, zs;
   double xnear[3], xorig[3];
-
   if (dynamic) {
     xorig[0] = x;
     xorig[1] = y;
     xorig[2] = z;
     inverse_transform(x, y, z);
   }
-
   xnear[0] = x;
   xnear[1] = y;
   xnear[2] = z;
-
   if (!openflag) {
     if (interior)
       ncontact = surface_interior(xnear, cutoff);
     else
       ncontact = surface_exterior(xnear, cutoff);
   } else {
-    // one of surface_int/ext() will return 0
-    // so no need to worry about offset of contact indices
     ncontact = surface_exterior(xnear, cutoff) + surface_interior(xnear, cutoff);
   }
-
   if (rotateflag && ncontact) {
     for (int i = 0; i < ncontact; i++) {
       xs = xnear[0] - contact[i].delx;
@@ -186,16 +110,8 @@ int Region::surface(double x, double y, double z, double cutoff)
       contact[i].delz = xorig[2] - zs;
     }
   }
-
   return ncontact;
 }
-
-/* ----------------------------------------------------------------------
-   add a single contact at Nth location in contact array
-   x = particle position
-   xp,yp,zp = region surface point
-------------------------------------------------------------------------- */
-
 void Region::add_contact(int n, double *x, double xp, double yp, double zp)
 {
   double delx = x[0] - xp;
@@ -207,12 +123,6 @@ void Region::add_contact(int n, double *x, double xp, double yp, double zp)
   contact[n].dely = dely;
   contact[n].delz = delz;
 }
-
-/* ----------------------------------------------------------------------
-   pre-compute dx,dy,dz and theta for a moving/rotating region
-   called once for the region before per-atom loop, via prematch()
-------------------------------------------------------------------------- */
-
 void Region::pretransform()
 {
   if (moveflag) {
@@ -222,12 +132,6 @@ void Region::pretransform()
   }
   if (rotateflag) theta = input->variable->compute_equal(tvar);
 }
-
-/* ----------------------------------------------------------------------
-   transform a point x,y,z in region space to moved space
-   rotate first (around original P), then displace
-------------------------------------------------------------------------- */
-
 void Region::forward_transform(double &x, double &y, double &z)
 {
   if (rotateflag) rotate(x, y, z, theta);
@@ -237,12 +141,6 @@ void Region::forward_transform(double &x, double &y, double &z)
     z += dz;
   }
 }
-
-/* ----------------------------------------------------------------------
-   transform a point x,y,z in moved space back to region space
-   undisplace first, then unrotate (around original P)
-------------------------------------------------------------------------- */
-
 void Region::inverse_transform(double &x, double &y, double &z)
 {
   if (moveflag) {
@@ -252,27 +150,9 @@ void Region::inverse_transform(double &x, double &y, double &z)
   }
   if (rotateflag) rotate(x, y, z, -theta);
 }
-
-/* ----------------------------------------------------------------------
-   rotate x,y,z by angle via right-hand rule around point and runit normal
-   sign of angle determines whether rotating forward/backward in time
-   return updated x,y,z
-   R = vector axis of rotation
-   P = point = point to rotate around
-   R0 = runit = unit vector for R
-   X0 = x,y,z = initial coord of atom
-   D = X0 - P = vector from P to X0
-   C = (D dot R0) R0 = projection of D onto R, i.e. Dparallel
-   A = D - C = vector from R line to X0, i.e. Dperp
-   B = R0 cross A = vector perp to A in plane of rotation, same len as A
-   A,B define plane of circular rotation around R line
-   new x,y,z = P + C + A cos(angle) + B sin(angle)
-------------------------------------------------------------------------- */
-
 void Region::rotate(double &x, double &y, double &z, double angle)
 {
   double a[3], b[3], c[3], d[3], disp[3];
-
   double sine = sin(angle);
   double cosine = cos(angle);
   d[0] = x - point[0];
@@ -295,24 +175,14 @@ void Region::rotate(double &x, double &y, double &z, double angle)
   y = point[1] + c[1] + disp[1];
   z = point[2] + c[2] + disp[2];
 }
-
-/* ----------------------------------------------------------------------
-   parse optional parameters at end of region input line
-------------------------------------------------------------------------- */
-
 void Region::options(int narg, char **arg)
 {
   if (narg < 0) utils::missing_cmd_args(FLERR, "region", error);
-
-  // option defaults
-
   interior = 1;
   scaleflag = 1;
   moveflag = rotateflag = 0;
-
   openflag = 0;
   for (int i = 0; i < 6; i++) open_faces[i] = 0;
-
   int iarg = 0;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "units") == 0) {
@@ -333,7 +203,6 @@ void Region::options(int narg, char **arg)
       else
         error->all(FLERR, "Illegal region side: {}", arg[iarg + 1]);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "move") == 0) {
       if (iarg + 4 > narg) utils::missing_cmd_args(FLERR, "region move", error);
       if (strcmp(arg[iarg + 1], "NULL") != 0) {
@@ -353,7 +222,6 @@ void Region::options(int narg, char **arg)
       }
       moveflag = 1;
       iarg += 4;
-
     } else if (strcmp(arg[iarg], "rotate") == 0) {
       if (iarg + 8 > narg) utils::missing_cmd_args(FLERR, "region rotate", error);
       if (strstr(arg[iarg + 1], "v_") != arg[iarg + 1]) error->all(FLERR, "Illegal region command");
@@ -366,41 +234,29 @@ void Region::options(int narg, char **arg)
       axis[2] = utils::numeric(FLERR, arg[iarg + 7], false, lmp);
       rotateflag = 1;
       iarg += 8;
-
     } else if (strcmp(arg[iarg], "open") == 0) {
       if (iarg + 2 > narg) utils::missing_cmd_args(FLERR, "region open", error);
       int iface = utils::inumeric(FLERR, arg[iarg + 1], false, lmp);
       if (iface < 1 || iface > 6) error->all(FLERR, "Illegal region open face index: {}", iface);
-      // additional checks on valid face index are done by region classes
       open_faces[iface - 1] = 1;
       openflag = 1;
       iarg += 2;
     } else
       error->all(FLERR, "Illegal region command argument: {}", arg[iarg]);
   }
-
-  // error check
-
   if ((moveflag || rotateflag) && (strcmp(style, "union") == 0 || strcmp(style, "intersect") == 0))
     error->all(FLERR, "Region union or intersect cannot be dynamic");
-
-  // setup scaling
-
   if (scaleflag) {
     xscale = domain->lattice->xlattice;
     yscale = domain->lattice->ylattice;
     zscale = domain->lattice->zlattice;
   } else
     xscale = yscale = zscale = 1.0;
-
   if (rotateflag) {
     point[0] *= xscale;
     point[1] *= yscale;
     point[2] *= zscale;
   }
-
-  // runit = unit vector along rotation axis
-
   if (rotateflag) {
     double len = sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
     if (len == 0.0) error->all(FLERR, "Region cannot have 0 length rotation vector");
@@ -408,26 +264,14 @@ void Region::options(int narg, char **arg)
     runit[1] = axis[1] / len;
     runit[2] = axis[2] / len;
   }
-
   if (moveflag || rotateflag)
     dynamic = 1;
   else
     dynamic = 0;
 }
-
-/* ----------------------------------------------------------------------
-   find nearest point to C on line segment A,B and return it as D
-   project (C-A) onto (B-A)
-   t = length of that projection, normalized by length of (B-A)
-   t <= 0, C is closest to A
-   t >= 1, C is closest to B
-   else closest point is between A and B
-------------------------------------------------------------------------- */
-
 void Region::point_on_line_segment(double *a, double *b, double *c, double *d)
 {
   double ba[3], ca[3];
-
   MathExtra::sub3(b, a, ba);
   MathExtra::sub3(c, a, ca);
   double t = MathExtra::dot3(ca, ba) / MathExtra::dot3(ba, ba);
@@ -445,18 +289,6 @@ void Region::point_on_line_segment(double *a, double *b, double *c, double *d)
     d[2] = a[2] + t * ba[2];
   }
 }
-
-/* ----------------------------------------------------------------------
-   infer translational and angular velocity of region
-   necessary b/c motion variables are for displacement & theta
-     there is no analytic formula for v & omega
-   prev[4] contains values of dx,dy,dz,theta at previous step
-     used for difference, then updated to current step values
-   dt is time elapsed since previous step
-   rpoint = point updated by current displacement
-   called by fix wall/gran/region every timestep
-------------------------------------------------------------------------- */
-
 void Region::set_velocity()
 {
   if (vel_timestep == update->ntimestep) return;
@@ -472,7 +304,6 @@ void Region::set_velocity()
     prev[1] = dy;
     prev[2] = dz;
   }
-
   if (rotateflag) {
     rpoint[0] = point[0] + dx;
     rpoint[1] = point[1] + dy;
@@ -486,23 +317,12 @@ void Region::set_velocity()
       omega[0] = omega[1] = omega[2] = 0.0;
     prev[3] = theta;
   }
-
   if (varshape) { set_velocity_shape(); }
 }
-
-/* ----------------------------------------------------------------------
-   compute velocity of wall for given contact
-   since contacts only store delx/y/z, need to pass particle coords
-     to compute contact point
-   called by fix/wall/gran/region every contact every timestep
-------------------------------------------------------------------------- */
-
 void Region::velocity_contact(double *vwall, double *x, int ic)
 {
   double xc[3];
-
   vwall[0] = vwall[1] = vwall[2] = 0.0;
-
   if (moveflag) {
     vwall[0] = v[0];
     vwall[1] = v[1];
@@ -516,26 +336,13 @@ void Region::velocity_contact(double *vwall, double *x, int ic)
     vwall[1] += omega[2] * (xc[0] - rpoint[0]) - omega[0] * (xc[2] - rpoint[2]);
     vwall[2] += omega[0] * (xc[1] - rpoint[1]) - omega[1] * (xc[0] - rpoint[0]);
   }
-
   if (varshape && contact[ic].varflag) velocity_contact_shape(vwall, xc);
 }
-
-/* ----------------------------------------------------------------------
-   increment length of restart buffer based on region info
-   used by restart of fix/wall/gran/region
-------------------------------------------------------------------------- */
-
 void Region::length_restart_string(int &n)
 {
   n += sizeof(int) + strlen(id) + 1 + sizeof(int) + strlen(style) + 1 + sizeof(int) +
       size_restart * sizeof(double);
 }
-
-/* ----------------------------------------------------------------------
-   region writes its current style, id, number of sub-regions, position/angle
-   needed by fix/wall/gran/region to compute velocity by differencing scheme
-------------------------------------------------------------------------- */
-
 void Region::write_restart(FILE *fp)
 {
   int sizeid = (strlen(id) + 1);
@@ -547,37 +354,22 @@ void Region::write_restart(FILE *fp)
   fwrite(&nregion, sizeof(int), 1, fp);
   fwrite(prev, sizeof(double), size_restart, fp);
 }
-
-/* ----------------------------------------------------------------------
-   region reads style, id, number of sub-regions from restart file
-   if they match current region, also read previous position/angle
-   needed by fix/wall/gran/region to compute velocity by differencing scheme
-------------------------------------------------------------------------- */
-
 int Region::restart(char *buf, int &n)
 {
   int size = *((int *) (&buf[n]));
   n += sizeof(int);
   if ((size <= 0) || (strcmp(&buf[n], id) != 0)) return 0;
   n += size;
-
   size = *((int *) (&buf[n]));
   n += sizeof(int);
   if ((size <= 0) || (strcmp(&buf[n], style) != 0)) return 0;
   n += size;
-
   int restart_nreg = *((int *) (&buf[n]));
   n += sizeof(int);
   if (restart_nreg != nregion) return 0;
-
   memcpy(prev, &buf[n], size_restart * sizeof(double));
   return 1;
 }
-
-/* ----------------------------------------------------------------------
-   set prev vector to zero
-------------------------------------------------------------------------- */
-
 void Region::reset_vel()
 {
   for (int i = 0; i < size_restart; i++) prev[i] = 0;

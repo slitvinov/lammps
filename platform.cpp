@@ -1,53 +1,24 @@
-/* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-/** \file platform.cpp
- * This file provides abstractions for a variety of platform specific
- * functionality in a namespace "platform".  This is a companion to
- * the "utils" namespace with convenience and utility functions. */
-
 #include "platform.h"
-
 #include "fmt/format.h"
 #include "text_file_reader.h"
 #include "utils.h"
-
 #include <deque>
 #include <exception>
 #include <mpi.h>
-
-////////////////////////////////////////////////////////////////////////
-// include system headers and tweak system settings
 #if defined(_WIN32)
-
 #ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 
 #endif
-
 #if defined(_WIN32_WINNT)
 #undef _WIN32_WINNT
 #endif
-
-// target Windows version is windows 7 and later
 #define _WIN32_WINNT _WIN32_WINNT_WIN7
 #define PSAPI_VERSION 2
-
 #include <direct.h>
-#include <io.h>    // for _get_osfhandle()
+#include <io.h>
 #include <sys/stat.h>
 #include <windows.h>
-
-#else    // not Windows  ///////////////////////////////////////////////
-
+#else
 #include <dirent.h>
 #include <dlfcn.h>
 #include <sys/resource.h>
@@ -56,44 +27,30 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 #endif
-
 #if defined(__APPLE__)
 #include <fcntl.h>
 #include <sys/syslimits.h>
 #endif
-////////////////////////////////////////////////////////////////////////
-
 #include <chrono>
 #include <cstring>
 #include <thread>
-
-/* ------------------------------------------------------------------ */
-
-/// Struct for listing on-the-fly compression/decompression commands
 struct compress_info {
-  /// identifier for the different compression algorithms
   enum styles { NONE, GZIP, BZIP2, ZSTD, XZ, LZMA, LZ4 };
-  const std::string extension;          ///< filename extension for the current algorithm
-  const std::string command;            ///< command to perform compression or decompression
-  const std::string compressflags;      ///< flags to append to compress from stdin to stdout
-  const std::string uncompressflags;    ///< flags to decompress file to stdout
-  const int style;                      ///< compression style flag
+  const std::string extension;
+  const std::string command;
+  const std::string compressflags;
+  const std::string uncompressflags;
+  const int style;
 };
-
-// clang-format off
 static const std::vector<compress_info> compress_styles = {
-    {"",     "",      "",       "",        compress_info::NONE},
-    {"gz",   "gzip",  " > ",    " -cdf ",  compress_info::GZIP},
-    {"bz2",  "bzip2", " > ",    " -cdf ",  compress_info::BZIP2},
-    {"zst",  "zstd",  " -q > ", " -cdf ",  compress_info::ZSTD},
-    {"xz",   "xz",    " > ",    " -cdf ",  compress_info::XZ},
+    {"", "", "", "", compress_info::NONE},
+    {"gz", "gzip", " > ", " -cdf ", compress_info::GZIP},
+    {"bz2", "bzip2", " > ", " -cdf ", compress_info::BZIP2},
+    {"zst", "zstd", " -q > ", " -cdf ", compress_info::ZSTD},
+    {"xz", "xz", " > ", " -cdf ", compress_info::XZ},
     {"lzma", "xz", " --format=lzma > ", " --format=lzma -cdf ", compress_info::LZMA},
-    {"lz4",  "lz4",   " > ",    " -cdf ",  compress_info::LZ4},
+    {"lz4", "lz4", " > ", " -cdf ", compress_info::LZ4},
 };
-// clang-format on
-
-/* ------------------------------------------------------------------ */
-
 static const compress_info &find_compress_type(const std::string &file)
 {
   std::size_t dot = file.find_last_of('.');
@@ -105,32 +62,17 @@ static const compress_info &find_compress_type(const std::string &file)
   }
   return compress_styles[0];
 }
-
-/* ------------------------------------------------------------------ */
-
-// set reference time stamp during executable/library init.
-// should provide better resolution than using epoch, if the system clock supports it.
 static auto initial_time = std::chrono::steady_clock::now();
-
 using namespace LAMMPS_NS;
-
-// get CPU time
-
-// clang-format off
-// clang compilers are optimizing this function too aggressively returning always 0
 #if defined(__clang__)
 [[clang::optnone]]
 #elif defined(_MSC_VER)
 #pragma optimize("",off)
 #endif
 double platform::cputime()
-// clang-format on
 {
   double rv = 0.0;
-
 #ifdef _WIN32
-
-  // from MSD docs.
   FILETIME ct, et, kt, ut;
   union {
     FILETIME ft;
@@ -140,61 +82,39 @@ double platform::cputime()
     cpu.ft = ut;
     rv = cpu.ui * 0.0000001;
   }
-
-#else /* ! _WIN32 */
-
+#else
   struct rusage ru;
   if (getrusage(RUSAGE_SELF, &ru) == 0) {
     rv = (double) ru.ru_utime.tv_sec;
     rv += (double) ru.ru_utime.tv_usec * 0.000001;
   }
-
 #endif
-
   return rv;
 }
 #if defined(__clang__)
 #elif defined(_MSC_VER)
 #pragma optimize("", on)
 #endif
-
-/* ----------------------------------------------------------------------
-   get wall time
------------------------------------------------------------------------- */
 double platform::walltime()
 {
   return std::chrono::duration<double>(std::chrono::steady_clock::now() - initial_time).count();
 }
-
-/* ----------------------------------------------------------------------
-   sleep with microsecond resolution
------------------------------------------------------------------------- */
 void platform::usleep(int usec)
 {
   return std::this_thread::sleep_for(std::chrono::microseconds(usec));
 }
-
-/* ----------------------------------------------------------------------
-   get Operating system and version info
-------------------------------------------------------------------------- */
-
 std::string platform::os_info()
 {
   std::string buf;
-
 #if defined(_WIN32)
-
-  // Get Windows Edition name from registry
   char value[1024];
   DWORD value_length = 1024;
   const char *subkey = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
   const char *entry = "CurrentBuild";
   RegGetValue(HKEY_LOCAL_MACHINE, subkey, entry, RRF_RT_REG_SZ, nullptr, &value,
               (LPDWORD) &value_length);
-  // enforce zero termination
   value[1023] = '\0';
   auto build = std::string(value);
-
   if (build == "6002") {
     buf = "Windows Vista";
   } else if (build == "6003") {
@@ -243,7 +163,6 @@ std::string platform::os_info()
     const char *entry = "ProductName";
     RegGetValue(HKEY_LOCAL_MACHINE, subkey, entry, RRF_RT_REG_SZ, nullptr, &value,
                 (LPDWORD) &value_length);
-    // enforce zero termination
     value[1023] = '\0';
     buf = value;
   }
@@ -252,13 +171,10 @@ std::string platform::os_info()
   majorv = (DWORD) (LOBYTE(LOWORD(fullversion)));
   minorv = (DWORD) (HIBYTE(LOWORD(fullversion)));
   if (fullversion < 0x80000000) buildv = (DWORD) (HIWORD(fullversion));
-
   buf += ", Windows ABI " + std::to_string(majorv) + "." + std::to_string(minorv) + " (" +
       std::to_string(buildv) + ") on ";
-
   SYSTEM_INFO si;
   GetSystemInfo(&si);
-
   switch (si.wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_AMD64:
       buf += "x86_64";
@@ -278,10 +194,7 @@ std::string platform::os_info()
 #else
   struct utsname ut;
   uname(&ut);
-
-  // try to get OS distribution name, if available
   buf = ut.sysname;
-
   if (platform::file_is_readable("/etc/os-release")) {
     try {
       TextFileReader reader("/etc/os-release", "");
@@ -293,19 +206,13 @@ std::string platform::os_info()
         }
       }
     } catch (std::exception &e) {
-      ;    // EOF but keyword not found
+      ;
     }
   }
-
   buf += std::string(" ") + ut.release + " " + ut.machine;
 #endif
   return buf;
 }
-
-/* ----------------------------------------------------------------------
-   identify C++ standard version
-------------------------------------------------------------------------- */
-
 std::string platform::cxx_standard()
 {
 #if __cplusplus > 202002L
@@ -324,11 +231,6 @@ std::string platform::cxx_standard()
   return "unknown";
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   identify compiler and its version
-------------------------------------------------------------------------- */
-
 std::string platform::compiler_info()
 {
   std::string buf = "(Unknown)";
@@ -374,21 +276,11 @@ std::string platform::compiler_info()
 #endif
   return buf;
 }
-
-/* ----------------------------------------------------------------------
-   detect OpenMP standard
-------------------------------------------------------------------------- */
-
 std::string platform::openmp_standard()
 {
-
 #if !defined(_OPENMP)
   return "OpenMP not enabled";
 #else
-
-  // Supported OpenMP version corresponds to the release date of the
-  // specifications as posted at https://www.openmp.org/specifications/
-
 #if _OPENMP > 202011
   return "OpenMP newer than version 5.1";
 #elif _OPENMP == 202011
@@ -412,14 +304,8 @@ std::string platform::openmp_standard()
 #else
   return "unknown OpenMP version";
 #endif
-
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   identify MPI vendor from defines in the mpi.h file.
-------------------------------------------------------------------------- */
-
 std::string platform::mpi_vendor()
 {
 #if defined(MPI_STUBS)
@@ -435,7 +321,6 @@ std::string platform::mpi_vendor()
 #elif defined(HP_MPI)
   return "HP MPI";
 #elif defined(MSMPI_VER)
-  // Get Microsoft MPI version from registry
   char value[1024];
   DWORD value_length = 1024;
   const char *subkey = "SOFTWARE\\Microsoft\\MPI";
@@ -449,11 +334,6 @@ std::string platform::mpi_vendor()
   return "Unknown MPI implementation";
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   detect MPI version info
-------------------------------------------------------------------------- */
-
 std::string platform::mpi_info(int &major, int &minor)
 {
 #if (defined(MPI_VERSION) && (MPI_VERSION > 2)) || defined(MPI_STUBS)
@@ -469,7 +349,6 @@ std::string platform::mpi_info(int &major, int &minor)
   static char version[MAX_VERSION_STRING];
   strncpy(version, mpi_vendor().c_str(), MAX_VERSION_STRING);
 #endif
-
 #if defined(MPI_VERSION)
   MPI_Get_version(&major, &minor);
 #else
@@ -478,11 +357,6 @@ std::string platform::mpi_info(int &major, int &minor)
 #endif
   return {version};
 }
-
-/* ----------------------------------------------------------------------
-   collect available compression tool info
-------------------------------------------------------------------------- */
-
 std::string platform::compress_info()
 {
   std::string buf = "Available compression formats:\n\n";
@@ -497,17 +371,11 @@ std::string platform::compress_info()
   if (none_found) buf += "None\n";
   return buf;
 }
-/* ----------------------------------------------------------------------
-   set environment variable
-------------------------------------------------------------------------- */
-
 int platform::putenv(const std::string &vardef)
 {
   if (vardef.size() == 0) return -1;
-
   auto found = vardef.find_first_of('=');
 #ifdef _WIN32
-  // must assign a value to variable with _putenv_s()
   if (found == std::string::npos)
     return _putenv_s(vardef.c_str(), "1");
   else
@@ -520,35 +388,22 @@ int platform::putenv(const std::string &vardef)
 #endif
   return -1;
 }
-
-/* ----------------------------------------------------------------------
-   unset environment variable
-------------------------------------------------------------------------- */
-
 int platform::unsetenv(const std::string &variable)
 {
   if (variable.size() == 0) return -1;
 #ifdef _WIN32
-  // emulate POSIX semantics by returning -1 on trying to unset non-existing variable
   const char *ptr = getenv(variable.c_str());
   if (!ptr) return -1;
-  // empty _putenv_s() definition deletes variable
   return _putenv_s(variable.c_str(), "");
 #else
   return ::unsetenv(variable.c_str());
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   split a "path" environment variable into a list
-------------------------------------------------------------------------- */
-
 std::vector<std::string> platform::list_pathenv(const std::string &var)
 {
   std::vector<std::string> dirs;
   const char *ptr = getenv(var.c_str());
   if (ptr == nullptr) return dirs;
-
   std::string pathvar = ptr;
   std::size_t first = 0, next;
   while (true) {
@@ -563,17 +418,11 @@ std::vector<std::string> platform::list_pathenv(const std::string &var)
   }
   return dirs;
 }
-
-/* ----------------------------------------------------------------------
-   find the full path name of an executable
-------------------------------------------------------------------------- */
-
 std::string platform::find_exe_path(const std::string &cmd)
 {
   if (cmd.size() == 0) return "";
   auto pathdirs = list_pathenv("PATH");
 #ifdef _WIN32
-  // windows always looks in "." and does it first
   pathdirs.insert(pathdirs.begin(), ".");
 #else
   struct stat info;
@@ -594,49 +443,28 @@ std::string platform::find_exe_path(const std::string &cmd)
   }
   return "";
 }
-
-/* ----------------------------------------------------------------------
-   wrapper functions for loading shared objects and libraries
-------------------------------------------------------------------------- */
-
 #ifdef _WIN32
-
-// open a shared object file
 void *platform::dlopen(const std::string &fname)
 {
   return (void *) LoadLibrary(fname.c_str());
 }
-
-// return dynamic linker error string
-
 std::string platform::dlerror()
 {
   return "";
 }
-
-// close a shared object
 int platform::dlclose(void *handle)
 {
-  /* FreeLibrary returns nonzero on success unlike dlclose() */
   return (FreeLibrary((HINSTANCE) handle) == 0);
 }
-
-// resolve a symbol in shared object
 void *platform::dlsym(void *handle, const std::string &symbol)
 {
   return (void *) GetProcAddress((HINSTANCE) handle, symbol.c_str());
 }
-
 #else
-
-// open a shared object file
 void *platform::dlopen(const std::string &fname)
 {
   return ::dlopen(fname.c_str(), RTLD_NOW | RTLD_GLOBAL);
 }
-
-// return dynamic linker error string
-
 std::string platform::dlerror()
 {
   const char *errmesg = ::dlerror();
@@ -645,78 +473,43 @@ std::string platform::dlerror()
   else
     return {""};
 }
-
-// close a shared object
 int platform::dlclose(void *handle)
 {
   return ::dlclose(handle);
 }
-
-// resolve a symbol in shared object
 void *platform::dlsym(void *handle, const std::string &symbol)
 {
   return ::dlsym(handle, symbol.c_str());
 }
 #endif
-
-/* ---------------------------------------------------------------------- */
-
-/** On Linux the folder /proc/self/fd holds symbolic links to the actual
- * pathnames associated with each open file descriptor of the current process.
- * On MacOS the same kind of information can be obtained using ``fcntl(fd,F_GETPATH,buf)``.
- * On Windows we use ``GetFinalPathNameByHandleA()`` which is available with
- * Windows Vista and later. If the buffer is too small (< 16 bytes) a null pointer is returned.
- *
- * This function is used to provide a filename with error messages in functions
- * where the filename is not passed as an argument, but the FILE * pointer.  */
-
 const char *platform::guesspath(FILE *fp, char *buf, int len)
 {
-  // no point in guessing a path with a short buffer or NULL pointer as buffer
   if ((buf == nullptr) || (len < 16)) return nullptr;
-
-  // zero buffer and reserve last character in buffer for terminating '\0'
   memset(buf, 0, len);
   len--;
-
 #if defined(__linux__)
-
   int fd = fileno(fp);
-  // get pathname from /proc or copy (unknown)
   if (readlink((std::string("/proc/self/fd/") + std::to_string(fd)).c_str(), buf, len) <= 0)
     strncpy(buf, "(unknown)", len);
-
 #elif defined(__APPLE__)
-
   int fd = fileno(fp);
   char filepath[PATH_MAX];
   if (fcntl(fd, F_GETPATH, filepath) != -1)
     strncpy(buf, filepath, len);
   else
     strncpy(buf, "(unknown)", len);
-
 #elif defined(_WIN32)
-
   char filepath[MAX_PATH];
   HANDLE h = (HANDLE) _get_osfhandle(_fileno(fp));
   if (GetFinalPathNameByHandleA(h, filepath, MAX_PATH, FILE_NAME_NORMALIZED) > 0)
     strncpy(buf, filepath, len);
   else
     strncpy(buf, "(unknown)", len);
-
-#else    // unsupported OS
-
+#else
   strncpy(buf, "(unknown)", len);
-
 #endif
-
   return buf;
 }
-
-/* ----------------------------------------------------------------------
-   detect terminal, e.g. for using a pager automatically
-------------------------------------------------------------------------- */
-
 bool platform::is_console(FILE *fp)
 {
   if (!fp) return false;
@@ -726,16 +519,9 @@ bool platform::is_console(FILE *fp)
   return (isatty(fileno(fp)) == 1);
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   Get string with path to the current directory
-   PATH_MAX may not be a compile time constant, so we must allocate and delete a buffer.
-------------------------------------------------------------------------- */
-
 std::string platform::current_directory()
 {
   std::string cwd;
-
 #if defined(_WIN32)
   char *buf = new char[MAX_PATH];
   if (_getcwd(buf, MAX_PATH)) { cwd = buf; }
@@ -747,11 +533,6 @@ std::string platform::current_directory()
 #endif
   return cwd;
 }
-
-/* ----------------------------------------------------------------------
-   check if a path is a directory
-------------------------------------------------------------------------- */
-
 bool platform::path_is_directory(const std::string &path)
 {
 #if defined(_WIN32)
@@ -765,16 +546,10 @@ bool platform::path_is_directory(const std::string &path)
 #endif
   return ((info.st_mode & S_IFDIR) != 0);
 }
-
-/* ----------------------------------------------------------------------
-   get directory listing in string vector
-------------------------------------------------------------------------- */
-
 std::vector<std::string> platform::list_directory(const std::string &dir)
 {
   std::vector<std::string> files;
   if (!path_is_directory(dir)) return files;
-
 #if defined(_WIN32)
   HANDLE handle;
   WIN32_FIND_DATA fd;
@@ -801,11 +576,6 @@ std::vector<std::string> platform::list_directory(const std::string &dir)
 #endif
   return files;
 }
-
-/* ----------------------------------------------------------------------
-   Change current directory
-------------------------------------------------------------------------- */
-
 int platform::chdir(const std::string &path)
 {
 #if defined(_WIN32)
@@ -814,21 +584,14 @@ int platform::chdir(const std::string &path)
   return ::chdir(path.c_str());
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   Create a directory. Create entire path if necessary.
-------------------------------------------------------------------------- */
-
 int platform::mkdir(const std::string &path)
 {
   std::deque<std::string> dirlist = {path};
   std::string dirname = path_dirname(path);
-
   while ((dirname != ".") && (dirname != "")) {
     dirlist.push_front(dirname);
     dirname = path_dirname(dirname);
   }
-
   int rv;
   for (const auto &dir : dirlist) {
     if (!path_is_directory(dir)) {
@@ -842,14 +605,8 @@ int platform::mkdir(const std::string &path)
   }
   return 0;
 }
-
-/* ----------------------------------------------------------------------
-   Delete a directory and its contents recursively
-------------------------------------------------------------------------- */
-
 int platform::rmdir(const std::string &path)
 {
-  // recurse through directory tree deleting files and directories
   auto entries = list_directory(path);
   for (const auto &entry : entries) {
     const auto newpath = path_join(path, entry);
@@ -864,11 +621,6 @@ int platform::rmdir(const std::string &path)
   return ::rmdir(path.c_str());
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   Delete a file
-------------------------------------------------------------------------- */
-
 int platform::unlink(const std::string &path)
 {
 #if defined(_WIN32)
@@ -877,11 +629,6 @@ int platform::unlink(const std::string &path)
   return ::unlink(path.c_str());
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   Get current file stream position
-------------------------------------------------------------------------- */
-
 bigint platform::ftell(FILE *fp)
 {
 #if defined(_WIN32)
@@ -890,11 +637,6 @@ bigint platform::ftell(FILE *fp)
   return (bigint)::ftell(fp);
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   Set current file stream position
-------------------------------------------------------------------------- */
-
 int platform::fseek(FILE *fp, bigint pos)
 {
 #if defined(_WIN32)
@@ -909,11 +651,6 @@ int platform::fseek(FILE *fp, bigint pos)
     return ::fseek(fp, (long) pos, SEEK_SET);
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   Truncate opened file to given length
-------------------------------------------------------------------------- */
-
 int platform::ftruncate(FILE *fp, bigint length)
 {
 #if defined(_WIN32)
@@ -932,11 +669,6 @@ int platform::ftruncate(FILE *fp, bigint length)
   return ::ftruncate(fileno(fp), (off_t) length);
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   open pipe
-------------------------------------------------------------------------- */
-
 FILE *platform::popen(const std::string &cmd, const std::string &mode)
 {
   FILE *fp = nullptr;
@@ -953,11 +685,6 @@ FILE *platform::popen(const std::string &cmd, const std::string &mode)
 #endif
   return fp;
 }
-
-/* ----------------------------------------------------------------------
-   close pipe
-------------------------------------------------------------------------- */
-
 int platform::pclose(FILE *fp)
 {
 #if defined(_WIN32)
@@ -966,68 +693,36 @@ int platform::pclose(FILE *fp)
   return ::pclose(fp);
 #endif
 }
-
-/* ----------------------------------------------------------------------
-   strip off leading part of path, return just the filename
-------------------------------------------------------------------------- */
-
 std::string platform::path_basename(const std::string &path)
 {
   size_t start = path.find_last_of(platform::filepathsep);
-
   if (start == std::string::npos) {
     start = 0;
   } else {
     start += 1;
   }
-
   return path.substr(start);
 }
-
-/* ----------------------------------------------------------------------
-   Return only the leading part of a path, return just the directory
-------------------------------------------------------------------------- */
-
 std::string platform::path_dirname(const std::string &path)
 {
   size_t start = path.find_last_of(platform::filepathsep);
-
   if (start == std::string::npos) return ".";
-
   return path.substr(0, start);
 }
-
-/* ----------------------------------------------------------------------
-   join two paths.
-   if one of the two is an empty string just return the other unmodified
-   if the first string ends in the separator or the second begins with one, trim them
-------------------------------------------------------------------------- */
-
 std::string platform::path_join(const std::string &a, const std::string &b)
 {
   if (a.empty()) return b;
   if (b.empty()) return a;
-
-  // remove trailing separator(s) in first part
   std::string joined = a;
   while (joined.find_last_of(platform::filepathsep) == joined.size() - 1) {
     for (const auto &s : platform::filepathsep)
       if (joined.back() == s) joined.pop_back();
   }
-
-  // skip over leading separator(s) in second part
   std::size_t skip = 0;
   while (b.find_first_of(platform::filepathsep, skip) == skip) ++skip;
-
-  // combine and return
   joined += platform::filepathsep[0] + b.substr(skip);
   return joined;
 }
-
-/* ----------------------------------------------------------------------
-   try to open file for reading to prove if it exists and is accessible
-------------------------------------------------------------------------- */
-
 bool platform::file_is_readable(const std::string &path)
 {
   FILE *fp = fopen(path.c_str(), "r");
@@ -1037,52 +732,29 @@ bool platform::file_is_readable(const std::string &path)
   }
   return false;
 }
-
-/* ----------------------------------------------------------------------
-   check if filename has a known compression extension
-------------------------------------------------------------------------- */
-
 bool platform::has_compress_extension(const std::string &file)
 {
   return find_compress_type(file).style != ::compress_info::NONE;
 }
-
-/* ----------------------------------------------------------------------
-   open pipe to read a compressed file
-------------------------------------------------------------------------- */
-
 FILE *platform::compressed_read(const std::string &file)
 {
   FILE *fp = nullptr;
-
 #if defined(LAMMPS_GZIP)
   auto compress = find_compress_type(file);
   if (compress.style == ::compress_info::NONE) return nullptr;
-
   if (find_exe_path(compress.command).size())
-    // put quotes around file name so that they may contain blanks
     fp = popen((compress.command + compress.uncompressflags + "\"" + file + "\""), "r");
 #endif
   return fp;
 }
-
-/* ----------------------------------------------------------------------
-   open pipe to write a compressed file
-------------------------------------------------------------------------- */
-
 FILE *platform::compressed_write(const std::string &file)
 {
   FILE *fp = nullptr;
-
 #if defined(LAMMPS_GZIP)
   auto compress = find_compress_type(file);
   if (compress.style == ::compress_info::NONE) return nullptr;
-
   if (find_exe_path(compress.command).size())
-    // put quotes around file name so that they may contain blanks
     fp = popen((compress.command + compress.compressflags + "\"" + file + "\""), "w");
 #endif
   return fp;
 }
-
-/* ---------------------------------------------------------------------- */

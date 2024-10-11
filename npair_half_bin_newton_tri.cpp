@@ -1,17 +1,3 @@
-// clang-format off
-/* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
 #include "npair_half_bin_newton_tri.h"
 #include "neigh_list.h"
 #include "atom.h"
@@ -19,26 +5,14 @@
 #include "domain.h"
 #include "my_page.h"
 #include "error.h"
-
 using namespace LAMMPS_NS;
-
-/* ---------------------------------------------------------------------- */
-
 NPairHalfBinNewtonTri::NPairHalfBinNewtonTri(LAMMPS *lmp) : NPair(lmp) {}
-
-/* ----------------------------------------------------------------------
-   binned neighbor list construction with Newton's 3rd law for triclinic
-   each owned atom i checks its own bin and other bins in triclinic stencil
-   every pair stored exactly once by some processor
-------------------------------------------------------------------------- */
-
 void NPairHalfBinNewtonTri::build(NeighList *list)
 {
   int i,j,k,n,itype,jtype,ibin,which;
   tagint tagprev;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   int *neighptr;
-
   double **x = atom->x;
   int *type = atom->type;
   int *mask = atom->mask;
@@ -49,24 +23,15 @@ void NPairHalfBinNewtonTri::build(NeighList *list)
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
   MyPage<int> *ipage = list->ipage;
-
   int inum = 0;
   ipage->reset();
-
   for (i = 0; i < nlocal; i++) {
     n = 0;
     neighptr = ipage->vget();
-
     itype = type[i];
     xtmp = x[i][0];
     ytmp = x[i][1];
     ztmp = x[i][2];
-
-    // loop over all atoms in bins in stencil
-    // pairs for atoms j "below" i are excluded
-    // below = lower z or (equal z and lower y) or (equal zy and lower x)
-    //         (equal zyx and j <= i)
-    // latter excludes self-self interaction but allows superposed atoms
     ibin = atom2bin[i];
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
@@ -75,6 +40,5 @@ void NPairHalfBinNewtonTri::build(NeighList *list)
     if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
-
   list->inum = inum;
 }

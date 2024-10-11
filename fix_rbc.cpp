@@ -12,94 +12,90 @@
 #include <assert.h>
 #include <time.h>
 #include <vector>
-
 static const double SMALL = 0.001;
 static const double EPSILON = 1.0e-10;
-
-#define DIH_FORCE(i1, i2, i3, i4)                                                           \
-  do {                                                                                      \
-    assert(i1 != i2);                                                                       \
-    assert(i1 != i3);                                                                       \
-    assert(i1 != i4);                                                                       \
-    assert(i2 != i3);                                                                       \
-    assert(i2 != i4);                                                                       \
-    assert(i3 != i4);                                                                       \
+#define DIH_FORCE(i1,i2,i3,i4) \
+  do { \
+    assert(i1 != i2); \
+    assert(i1 != i3); \
+    assert(i1 != i4); \
+    assert(i2 != i3); \
+    assert(i2 != i4); \
+    assert(i3 != i4); \
                                                                                             \
-    d21x = x[i2][0] - x[i1][0];                                                             \
-    d21y = x[i2][1] - x[i1][1];                                                             \
-    d21z = x[i2][2] - x[i1][2];                                                             \
-    domain->minimum_image(d21x, d21y, d21z);                                                \
+    d21x = x[i2][0] - x[i1][0]; \
+    d21y = x[i2][1] - x[i1][1]; \
+    d21z = x[i2][2] - x[i1][2]; \
+    domain->minimum_image(d21x, d21y, d21z); \
                                                                                             \
-    d31x = x[i3][0] - x[i1][0];                                                             \
-    d31y = x[i3][1] - x[i1][1];                                                             \
-    d31z = x[i3][2] - x[i1][2];                                                             \
-    domain->minimum_image(d31x, d31y, d31z);                                                \
+    d31x = x[i3][0] - x[i1][0]; \
+    d31y = x[i3][1] - x[i1][1]; \
+    d31z = x[i3][2] - x[i1][2]; \
+    domain->minimum_image(d31x, d31y, d31z); \
                                                                                             \
-    d32x = x[i3][0] - x[i2][0];                                                             \
-    d32y = x[i3][1] - x[i2][1];                                                             \
-    d32z = x[i3][2] - x[i2][2];                                                             \
-    domain->minimum_image(d32x, d32y, d32z);                                                \
+    d32x = x[i3][0] - x[i2][0]; \
+    d32y = x[i3][1] - x[i2][1]; \
+    d32z = x[i3][2] - x[i2][2]; \
+    domain->minimum_image(d32x, d32y, d32z); \
                                                                                             \
-    d34x = x[i3][0] - x[i4][0];                                                             \
-    d34y = x[i3][1] - x[i4][1];                                                             \
-    d34z = x[i3][2] - x[i4][2];                                                             \
-    domain->minimum_image(d34x, d34y, d34z);                                                \
+    d34x = x[i3][0] - x[i4][0]; \
+    d34y = x[i3][1] - x[i4][1]; \
+    d34z = x[i3][2] - x[i4][2]; \
+    domain->minimum_image(d34x, d34y, d34z); \
                                                                                             \
-    d24x = x[i2][0] - x[i4][0];                                                             \
-    d24y = x[i2][1] - x[i4][1];                                                             \
-    d24z = x[i2][2] - x[i4][2];                                                             \
-    domain->minimum_image(d24x, d24y, d24z);                                                \
+    d24x = x[i2][0] - x[i4][0]; \
+    d24y = x[i2][1] - x[i4][1]; \
+    d24z = x[i2][2] - x[i4][2]; \
+    domain->minimum_image(d24x, d24y, d24z); \
                                                                                             \
-    d14x = x[i1][0] - x[i4][0];                                                             \
-    d14y = x[i1][1] - x[i4][1];                                                             \
-    d14z = x[i1][2] - x[i4][2];                                                             \
-    domain->minimum_image(d14x, d14y, d14z);                                                \
+    d14x = x[i1][0] - x[i4][0]; \
+    d14y = x[i1][1] - x[i4][1]; \
+    d14z = x[i1][2] - x[i4][2]; \
+    domain->minimum_image(d14x, d14y, d14z); \
                                                                                             \
-    n1x = d21y * d31z - d31y * d21z;                                                        \
-    n1y = d31x * d21z - d21x * d31z;                                                        \
-    n1z = d21x * d31y - d31x * d21y;                                                        \
-    n2x = d34y * d24z - d24y * d34z;                                                        \
-    n2y = d24x * d34z - d34x * d24z;                                                        \
-    n2z = d34x * d24y - d24x * d34y;                                                        \
-    n1 = n1x * n1x + n1y * n1y + n1z * n1z;                                                 \
-    n2 = n2x * n2x + n2y * n2y + n2z * n2z;                                                 \
-    nn = sqrt(n1 * n2);                                                                     \
+    n1x = d21y * d31z - d31y * d21z; \
+    n1y = d31x * d21z - d21x * d31z; \
+    n1z = d21x * d31y - d31x * d21y; \
+    n2x = d34y * d24z - d24y * d34z; \
+    n2y = d24x * d34z - d34x * d24z; \
+    n2z = d34x * d24y - d24x * d34y; \
+    n1 = n1x * n1x + n1y * n1y + n1z * n1z; \
+    n2 = n2x * n2x + n2y * n2y + n2z * n2z; \
+    nn = sqrt(n1 * n2); \
                                                                                             \
-    costheta = (n1x * n2x + n1y * n2y + n1z * n2z) / nn;                                    \
-    if (costheta > 1.0) costheta = 1.0;                                                     \
-    if (costheta < -1.0) costheta = -1.0;                                                   \
-    sintheta = sqrt(1.0 - costheta * costheta);                                             \
-    if (sintheta < SMALL) sintheta = SMALL;                                                 \
-    mx = -((n1x - n2x) * d14x + (n1y - n2y) * d14y + (n1z - n2z) * d14z);                   \
-    if (mx < 0) sintheta = -sintheta;                                                       \
+    costheta = (n1x * n2x + n1y * n2y + n1z * n2z) / nn; \
+    if (costheta > 1.0) costheta = 1.0; \
+    if (costheta < -1.0) costheta = -1.0; \
+    sintheta = sqrt(1.0 - costheta * costheta); \
+    if (sintheta < SMALL) sintheta = SMALL; \
+    mx = -((n1x - n2x) * d14x + (n1y - n2y) * d14y + (n1z - n2z) * d14z); \
+    if (mx < 0) sintheta = -sintheta; \
                                                                                             \
     alfa = rbc->kb * rbc->kT * (cos(rbc->theta0) - costheta * sin(rbc->theta0) / sintheta); \
-    a11 = -alfa * costheta / n1;                                                            \
-    a12 = alfa / nn;                                                                        \
-    a22 = -alfa * costheta / n2;                                                            \
+    a11 = -alfa * costheta / n1; \
+    a12 = alfa / nn; \
+    a22 = -alfa * costheta / n2; \
                                                                                             \
-    f1[0] = a11 * (n1y * d32z - n1z * d32y) + a12 * (n2y * d32z - n2z * d32y);              \
-    f1[1] = a11 * (n1z * d32x - n1x * d32z) + a12 * (n2z * d32x - n2x * d32z);              \
-    f1[2] = a11 * (n1x * d32y - n1y * d32x) + a12 * (n2x * d32y - n2y * d32x);              \
-    f2[0] = a11 * (n1z * d31y - n1y * d31z) + a22 * (n2y * d34z - n2z * d34y) +             \
-        a12 * (n2z * d31y - n2y * d31z + n1y * d34z - n1z * d34y);                          \
-    f2[1] = a11 * (n1x * d31z - n1z * d31x) + a22 * (n2z * d34x - n2x * d34z) +             \
-        a12 * (n2x * d31z - n2z * d31x + n1z * d34x - n1x * d34z);                          \
-    f2[2] = a11 * (n1y * d31x - n1x * d31y) + a22 * (n2x * d34y - n2y * d34x) +             \
-        a12 * (n2y * d31x - n2x * d31y + n1x * d34y - n1y * d34x);                          \
+    f1[0] = a11 * (n1y * d32z - n1z * d32y) + a12 * (n2y * d32z - n2z * d32y); \
+    f1[1] = a11 * (n1z * d32x - n1x * d32z) + a12 * (n2z * d32x - n2x * d32z); \
+    f1[2] = a11 * (n1x * d32y - n1y * d32x) + a12 * (n2x * d32y - n2y * d32x); \
+    f2[0] = a11 * (n1z * d31y - n1y * d31z) + a22 * (n2y * d34z - n2z * d34y) + \
+        a12 * (n2z * d31y - n2y * d31z + n1y * d34z - n1z * d34y); \
+    f2[1] = a11 * (n1x * d31z - n1z * d31x) + a22 * (n2z * d34x - n2x * d34z) + \
+        a12 * (n2x * d31z - n2z * d31x + n1z * d34x - n1x * d34z); \
+    f2[2] = a11 * (n1y * d31x - n1x * d31y) + a22 * (n2x * d34y - n2y * d34x) + \
+        a12 * (n2y * d31x - n2x * d31y + n1x * d34y - n1y * d34x); \
   } while (0)
-
-#define ID2LOCAL(dest, src)                                               \
-  do {                                                                    \
-    LAMMPS_NS::tagint o = src + mol * rbc->nv;                            \
-    (dest) = hash_search(tag2i, o, &status);                              \
-    if (status != 0)                                                      \
-      error->one(FLERR,                                                   \
+#define ID2LOCAL(dest,src) \
+  do { \
+    LAMMPS_NS::tagint o = src + mol * rbc->nv; \
+    (dest) = hash_search(tag2i, o, &status); \
+    if (status != 0) \
+      error->one(FLERR, \
                  "an atom (tag={}, i={}, id={}) has nonlocal connection " \
-                 "(tag={}, id={})",                                       \
-                 tag, i2, j, o, (src));                                   \
+                 "(tag={}, id={})", \
+                 tag, i2, j, o, (src)); \
   } while (0)
-
 struct LAMMPS_NS::FixRBC::RBC {
   int nt, nv;
   int *num_bond;
@@ -108,12 +104,10 @@ struct LAMMPS_NS::FixRBC::RBC {
   class NeighList *list;
   int (LAMMPS_NS::Comm::*exchange)(int, double *, double *&);
 };
-
 struct LocalAtom {
   int num_bond;
   int *angle;
 };
-
 struct Node {
   LAMMPS_NS::tagint key;
   int value;
@@ -121,7 +115,6 @@ struct Node {
 struct Hash {
   size_t M;
   struct Node *nodes;
-  //  std::unordered_map<LAMMPS_NS::tagint, int> map;
 };
 static int hash_ini(size_t, void *, struct Hash *);
 static int hash_insert(struct Hash *, LAMMPS_NS::tagint, int);
@@ -135,7 +128,6 @@ static int local(int i2, LocalAtom *atoms, LAMMPS_NS::tagint tag, double **x, do
       d31y, d31z, d32x, d32y, d32z, d34x, d34y, d34z, delx, dely, delz, fbond, lsq, mx, n1, n1x,
       n1y, n1z, n2, n2x, n2y, n2z, nn, r, rdl, rsq, sintheta, vv, dv[3], f1[3], f2[3];
   LAMMPS_NS::tagint mol;
-
   j = (tag - 1) % rbc->nv;
   mol = (tag - 1) / rbc->nv;
   nb = atoms->num_bond = rbc->num_bond[j];
@@ -150,13 +142,10 @@ static int local(int i2, LocalAtom *atoms, LAMMPS_NS::tagint tag, double **x, do
     assert(h == rbc->next[h1]);
     ID2LOCAL(i1, rbc->tri[h1]);
     ID2LOCAL(i4, rbc->tri[rbc->next[rbc->next[rbc->flip[h3]]]]);
-
-    /* begin bond */
     delx = x[i1][0] - x[i2][0];
     dely = x[i1][1] - x[i2][1];
     delz = x[i1][2] - x[i2][2];
     domain->minimum_image(delx, dely, delz);
-
     rsq = delx * delx + dely * dely + delz * delz;
     r = sqrt(rsq);
     lsq = rbc->l * rbc->l;
@@ -164,7 +153,6 @@ static int local(int i2, LocalAtom *atoms, LAMMPS_NS::tagint tag, double **x, do
     fbond = 1.0 / ((1.0 - rdl) * (1.0 - rdl)) + 4.0 * rdl - 1.0;
     fbond *= -0.25 * rbc->kT / rbc->lambda;
     fbond /= r;
-
     MathExtra::sub3(v[i1], v[i2], dv);
     double del[] = {delx, dely, delz};
     vv = MathExtra::dot3(del, dv) / r;
@@ -172,24 +160,17 @@ static int local(int i2, LocalAtom *atoms, LAMMPS_NS::tagint tag, double **x, do
     f[i2][0] -= delx * fbond - rbc->gamt * dv[0];
     f[i2][1] -= dely * fbond - rbc->gamt * dv[1];
     f[i2][2] -= delz * fbond - rbc->gamt * dv[2];
-    /* end bond */
-
-    /* begin dih */
     DIH_FORCE(i1, i2, i3, i0);
     f[i2][0] += f2[0];
     f[i2][1] += f2[1];
     f[i2][2] += f2[2];
-
     DIH_FORCE(i2, i3, i1, i4);
     f[i2][0] += f1[0];
     f[i2][1] += f1[1];
     f[i2][2] += f1[2];
-    /* end dih */
-
     atoms->angle[3 * l] = i1;
     atoms->angle[3 * l + 1] = i2;
     atoms->angle[3 * l + 2] = i3;
-
     i0 = i3;
     i3 = i1;
     h = rbc->flip[h1];
@@ -198,7 +179,6 @@ static int local(int i2, LocalAtom *atoms, LAMMPS_NS::tagint tag, double **x, do
   assert(l == nb);
   return 0;
 }
-
 static int area_force(int i2, LocalAtom *atoms, LAMMPS_NS::tagint tag, double **x, double **f,
                       double *center, double *area_volume, LAMMPS_NS::FixRBC::RBC *rbc,
                       LAMMPS_NS::Domain *domain, LAMMPS_NS::Error *error, Hash *index)
@@ -247,7 +227,6 @@ static int area_force(int i2, LocalAtom *atoms, LAMMPS_NS::tagint tag, double **
   }
   return 0;
 }
-
 LAMMPS_NS::FixRBC::FixRBC(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 {
   int a, b, c, i, nvf, status;
@@ -256,14 +235,12 @@ LAMMPS_NS::FixRBC::FixRBC(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, ar
   size_t nbytes;
   Hash hash;
   void *hash_work;
-
   arg += 3;
   narg -= 3;
   if (narg == 0) error->all(FLERR, "needs OFF file argument");
   off_path = *arg++;
   narg--;
   rbc = (struct RBC *) memory->smalloc(sizeof *rbc, "fix/rbc:RBC");
-
   rbc->nt = -1;
   rbc->nv = -1;
   rbc->cutoff = 0.5;
@@ -284,102 +261,70 @@ LAMMPS_NS::FixRBC::FixRBC(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, ar
   rbc->gamc = 30;
   rbc->list = NULL;
   rbc->exchange = &LAMMPS_NS::Comm::exchange_variable;
-
   int iarg = 0;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "rc") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: rc");
-
       rbc->cutoff = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "adpd") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: adpd");
-
       rbc->a0 = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "kb") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: kb");
-
       rbc->kb = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "kT") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: kT");
-
       rbc->kT = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "l") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: l");
-
       rbc->l = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "lambda") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: lambda");
-
       rbc->lambda = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "theta0") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: theta0");
-
       rbc->theta0 = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "q") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: q");
-
       rbc->q = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "cq") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: cq");
-
       rbc->cq = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "ka") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: ka");
-
       rbc->ka = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "area") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: area");
-
       rbc->area = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "l0") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: l0");
-
       rbc->l0 = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "kv") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: kv");
-
       rbc->kv = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "volume") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: volume");
-
       rbc->volume = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "gamt") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: gamt");
-
       rbc->gamt = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-
     } else if (strcmp(arg[iarg], "gamc") == 0) {
       if (iarg + 2 > narg) error->all(FLERR, "Illegal fix rbc command: gamc");
-
       rbc->gamc = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
     } else if (strcmp(arg[iarg], "all2all") == 0) {
@@ -390,7 +335,6 @@ LAMMPS_NS::FixRBC::FixRBC(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, ar
       error->all(FLERR, "Unknown fix rbc command {}", arg[iarg]);
     }
   }
-
   if ((off_file = fopen(off_path, "r")) == NULL) error->all(FLERR, "fail to open '{}'", off_path);
   if (fgets(line, sizeof line, off_file) == NULL) error->all(FLERR, "fail read '{}'", off_path);
   if (strncmp(line, "OFF", 3) != 0) error->all(FLERR, "not an OFF file '{}'", off_path);
@@ -408,7 +352,6 @@ LAMMPS_NS::FixRBC::FixRBC(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, ar
         nvf != 3)
       error->all(FLERR, "unexpected line '{}' in '{}'", line, off_path);
   }
-
   for (i = 0; i < 3 * rbc->nt; i++) {
     if (rbc->tri[i] < 0 || rbc->tri[i] >= rbc->nv)
       error->all(FLERR, "invalid vertice refernce {} in '{}', nv = {}", rbc->tri[i], off_path,
@@ -416,30 +359,24 @@ LAMMPS_NS::FixRBC::FixRBC(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, ar
   }
   if (fclose(off_file) != 0) error->all(FLERR, "fail to close '{}'", off_path);
   rbc->num_bond = (int *) memory->smalloc(rbc->nv * sizeof(int), "fix/rbc:num_bond");
-
   nbytes = 3 * 3 * rbc->nt * sizeof(struct Node);
   hash_work = memory->smalloc(nbytes, "fix/rbc:hash_work");
   hash_ini(nbytes, hash_work, &hash);
   rbc->halfedge = (int *) memory->smalloc(rbc->nv * sizeof(int), "fix/rbc:half_edges/rbc/halfedge");
   rbc->flip = (int *) memory->smalloc(3 * rbc->nt * sizeof(int), "fix/rbc:half_edges/rbc/flip");
   rbc->next = (int *) memory->smalloc(3 * rbc->nt * sizeof(int), "fix/rbc:half_edges/rbc/next");
-
   for (i = 0; i < rbc->nt; i++) {
     a = rbc->tri[3 * i];
     b = rbc->tri[3 * i + 1];
     c = rbc->tri[3 * i + 2];
-
     if (hash_insert(&hash, a + b * rbc->nv, 3 * i) != 0) error->one(FLERR, "hash is full");
     if (hash_insert(&hash, b + c * rbc->nv, 3 * i + 1) != 0) error->one(FLERR, "hash is full");
     if (hash_insert(&hash, c + a * rbc->nv, 3 * i + 2) != 0) error->one(FLERR, "hash is full");
-
     rbc->next[3 * i] = 3 * i + 1;
     rbc->next[3 * i + 1] = 3 * i + 2;
     rbc->next[3 * i + 2] = 3 * i;
   }
-
   for (i = 0; i < 3 * rbc->nt; i++) rbc->halfedge[rbc->tri[i]] = i;
-
   for (i = 0; i < rbc->nt; i++) {
     a = rbc->tri[3 * i];
     b = rbc->tri[3 * i + 1];
@@ -448,12 +385,10 @@ LAMMPS_NS::FixRBC::FixRBC(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, ar
     rbc->flip[3 * i + 1] = hash_search(&hash, c + b * rbc->nv, &status);
     rbc->flip[3 * i + 2] = hash_search(&hash, a + c * rbc->nv, &status);
   }
-
   for (i = 0; i < rbc->nv; i++) rbc->num_bond[i] = 0;
   for (i = 0; i < 3 * rbc->nt; i++) rbc->num_bond[rbc->tri[i]]++;
   memory->sfree(hash_work);
 }
-
 LAMMPS_NS::FixRBC::~FixRBC()
 {
   memory->sfree(rbc->tri);
@@ -463,13 +398,11 @@ LAMMPS_NS::FixRBC::~FixRBC()
   memory->sfree(rbc->num_bond);
   memory->sfree(rbc);
 }
-
 int LAMMPS_NS::FixRBC::setmask()
 {
   datamask_read = datamask_modify = 0;
   return LAMMPS_NS::FixConst::POST_FORCE;
 }
-
 void LAMMPS_NS::FixRBC::post_force(int)
 {
   int *mask = atom->mask;
@@ -499,11 +432,9 @@ void LAMMPS_NS::FixRBC::post_force(int)
   size_t nbytes;
   void *tag2i_work;
   struct Hash tag2i;
-
   char log_path[FILENAME_MAX];
   static FILE *log_file = NULL;
   struct timespec time;
-
   natomlist = 0;
   nbytes = 20 * (nall + 1) * sizeof(struct Node);
   tag2i_work = memory->smalloc(nbytes, "fix/rbc:tagi_work");
@@ -549,7 +480,6 @@ void LAMMPS_NS::FixRBC::post_force(int)
       center.emplace_back(0.0);
       center.emplace_back(0.0);
     }
-
     size[j]++;
     if (size[j] == (uint64_t) rbc->nv) {
       send[j] = 0;
@@ -650,12 +580,10 @@ void LAMMPS_NS::FixRBC::post_force(int)
                &index);
   }
   assert(rbc->list);
-
   if (rbc->a0 > 0) {
     numneigh = rbc->list->numneigh;
     firstneigh = rbc->list->firstneigh;
     cutsq = rbc->cutoff * rbc->cutoff;
-
     for (k = 0; k < natomlist; k++) {
       i = atomlist[k];
       moli = (tag[i] - 1) / rbc->nv;
@@ -699,17 +627,14 @@ void LAMMPS_NS::FixRBC::post_force(int)
   memory->sfree(out);
   memory->sfree(area_volume);
 }
-
 void LAMMPS_NS::FixRBC::init_list(int, class NeighList *ptr)
 {
   rbc->list = ptr;
 }
-
 void LAMMPS_NS::FixRBC::init()
 {
   neighbor->add_request(this);
 }
-
 static int hash_ini(size_t nbytes, void *memory, struct Hash *hash)
 {
   size_t i;

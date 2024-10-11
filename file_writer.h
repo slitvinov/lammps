@@ -1,27 +1,7 @@
-/* -*- c++ -*- ----------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
-/* ----------------------------------------------------------------------
-   Contributing author: Richard Berger (Temple U)
-------------------------------------------------------------------------- */
-
 #ifndef LMP_FILE_WRITER_H
-#define LMP_FILE_WRITER_H
-
+#define LMP_FILE_WRITER_H 
 #include <string>
-
 namespace LAMMPS_NS {
-
 class FileWriter {
  public:
   FileWriter() = default;
@@ -32,16 +12,11 @@ class FileWriter {
   virtual size_t write(const void *buffer, size_t length) = 0;
   virtual bool isopen() const = 0;
 };
-
 class FileWriterException : public std::exception {
   std::string message;
-
  public:
   FileWriterException(const std::string &msg) : message(msg) {}
-
   const char *what() const noexcept override { return message.c_str(); }
 };
-
-}    // namespace LAMMPS_NS
-
+}
 #endif

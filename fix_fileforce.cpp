@@ -10,20 +10,17 @@
 #include "update.h"
 #include "variable.h"
 #include <stdint.h>
-
 struct LAMMPS_NS::FixFileforce::Force {
   int64_t n[3];
   double scale;
   float *d;
 };
-
 LAMMPS_NS::FixFileforce::FixFileforce(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 {
   int64_t size, i, j;
   char line[2048], *force_path;
   FILE *force_file;
   float force4[4];
-
   arg += 3;
   narg -= 3;
   if (narg == 0) error->one(FLERR, "needs force file argument");
@@ -33,10 +30,8 @@ LAMMPS_NS::FixFileforce::FixFileforce(LAMMPS *lmp, int narg, char **arg) : Fix(l
   if (narg == 0) error->all(FLERR, "needs scale argument");
   force->scale = utils::numeric(FLERR, *arg++, false, lmp);
   narg--;
-
   if ((force_file = fopen(force_path, "r")) == NULL)
     error->one(FLERR, "fail to open '{}'", force_path);
-
   if (fscanf(force_file, "%*g %*g %*g") != 0) error->one(FLERR, "fail to read '{}'", force_path);
   if (fscanf(force_file, "%" SCNd64 " %" SCNd64 " %" SCNd64 "\n", &force->n[0], &force->n[1],
              &force->n[2]) != 3)
@@ -53,19 +48,16 @@ LAMMPS_NS::FixFileforce::FixFileforce(LAMMPS *lmp, int narg, char **arg) : Fix(l
   }
   if (fclose(force_file) != 0) error->one(FLERR, "fail to close '{}'", force_path);
 }
-
 LAMMPS_NS::FixFileforce::~FixFileforce()
 {
   memory->sfree(force->d);
   memory->sfree(force);
 }
-
 int LAMMPS_NS::FixFileforce::setmask()
 {
   datamask_read = datamask_modify = 0;
   return LAMMPS_NS::FixConst::POST_FORCE;
 }
-
 void LAMMPS_NS::FixFileforce::post_force(int)
 {
   double **x = atom->x;

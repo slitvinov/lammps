@@ -1,78 +1,52 @@
-/* -*- c++ -*- ----------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
 #ifndef LMP_INPUT_H
-#define LMP_INPUT_H
-
+#define LMP_INPUT_H 
 #include "pointers.h"
-
 #include <map>
-
 namespace LAMMPS_NS {
 class Command;
-
 class Input : protected Pointers {
   friend class Info;
   friend class Error;
   friend class Deprecated;
   friend class SimpleCommandsTest_Echo_Test;
-
  public:
-  int narg;                    // # of command args
-  char **arg;                  // parsed args for command
-  class Variable *variable;    // defined variables
-
+  int narg;
+  char **arg;
+  class Variable *variable;
   Input(class LAMMPS *, int, char **);
   ~Input() override;
-  void file();                                             // process all input
-  void file(const char *);                                 // process an input script
-  char *one(const std::string &);                          // process a single command
-  void substitute(char *&, char *&, int &, int &, int);    // substitute for variables in a string
-  void write_echo(const std::string &);                    // send text to active echo file pointers
-
+  void file();
+  void file(const char *);
+  char *one(const std::string &);
+  void substitute(char *&, char *&, int &, int &, int);
+  void write_echo(const std::string &);
  protected:
-  char *command;      // ptr to current command
-  int echo_screen;    // 0 = no, 1 = yes
-  int echo_log;       // 0 = no, 1 = yes
-
+  char *command;
+  int echo_screen;
+  int echo_log;
  private:
-  int me;                           // proc ID
-  int maxarg;                       // max # of args in arg
-  char *line, *copy, *work;         // input line & copy and work string
-  int maxline, maxcopy, maxwork;    // max lengths of char strings
-  int nfile, maxfile;               // current # and max # of open input files
-  int label_active;                 // 0 = no label, 1 = looking for label
-  char *labelstr;                   // label string being looked for
-  int jump_skip;                    // 1 if skipping next jump, 0 otherwise
-  bool utf8_warn;                   // true if need to warn about UTF-8 chars
-
-  FILE **infiles;    // list of open input files
-
+  int me;
+  int maxarg;
+  char *line, *copy, *work;
+  int maxline, maxcopy, maxwork;
+  int nfile, maxfile;
+  int label_active;
+  char *labelstr;
+  int jump_skip;
+  bool utf8_warn;
+  FILE **infiles;
  public:
   typedef Command *(*CommandCreator)(LAMMPS *);
   typedef std::map<std::string, CommandCreator> CommandCreatorMap;
   CommandCreatorMap *command_map;
-
  private:
-  void parse();                            // parse an input text line
-  char *nextword(char *, char **);         // find next word in string with quotes
-  int numtriple(char *);                   // count number of triple quotes
-  void reallocate(char *&, int &, int);    // reallocate a char string
-  int execute_command();                   // execute a single command
-
-  int meta(const std::string &);    // process meta-commands
-
-  void clear();    // input script commands
+  void parse();
+  char *nextword(char *, char **);
+  int numtriple(char *);
+  void reallocate(char *&, int &, int);
+  int execute_command();
+  int meta(const std::string &);
+  void clear();
   void echo();
   void ifthenelse();
   void include();
@@ -86,7 +60,6 @@ class Input : protected Pointers {
   void quit();
   void shell();
   void variable_command();
-
   void atom_modify();
   void atom_style();
   void boundary();
@@ -117,5 +90,5 @@ class Input : protected Pointers {
   void unfix();
   void units();
 };
-}    // namespace LAMMPS_NS
+}
 #endif

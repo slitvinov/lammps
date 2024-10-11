@@ -1,30 +1,10 @@
-/* -*- c++ -*- ----------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   https://www.lammps.org/, Sandia National Laboratories
-   LAMMPS development team: developers@lammps.org
-
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
-
-   See the README file in the top-level LAMMPS directory.
-------------------------------------------------------------------------- */
-
 #ifndef LMP_ATOM_H
-#define LMP_ATOM_H
-
+#define LMP_ATOM_H 
 #include "pointers.h"
-
 #include <map>
 #include <set>
-
 namespace LAMMPS_NS {
-
-// forward declarations
-
 class AtomVec;
-
 class Atom : protected Pointers {
  public:
   char *atom_style;
@@ -35,100 +15,49 @@ class Atom : protected Pointers {
   enum { ATOM = 0 };
   enum { NUMERIC = 0, LABELS = 1 };
   enum { MAP_NONE = 0, MAP_ARRAY = 1, MAP_HASH = 2, MAP_YES = 3 };
-
-  // atom counts
-
-  bigint natoms;         // total # of atoms in system, could be 0
-                         // natoms may not be current if atoms lost
-  int nlocal, nghost;    // # of owned and ghost atoms on this proc
-  int nmax;              // max # of owned+ghost in arrays on this proc
-  int tag_enable;        // 0/1 if atom ID tags are defined
-
-  // system properties
-
+  bigint natoms;
+  int nlocal, nghost;
+  int nmax;
+  int tag_enable;
   int ntypes;
-
-  int firstgroup;          // store atoms in this group first, -1 if unset
-  int nfirst;              // # of atoms in first group on this proc
-  char *firstgroupname;    // group-ID to store first, null pointer if unset
-
-  // --------------------------------------------------------------------
-  // 1st customization section: customize by adding new per-atom variable
-  // per-atom vectors and arrays
-
+  int firstgroup;
+  int nfirst;
+  char *firstgroupname;
   tagint *tag;
   int *type, *mask;
   imageint *image;
   double **x, **v, **f;
-
-  // charged and dipolar particles
-
   double *rmass;
   double *q, **mu;
-
-  // finite-size particles
-
   double *radius;
   double **omega, **angmom, **torque;
   double **quat;
   double *temperature, *heatflow;
-
-  // PERI package
-
   double *vfrac, *s0;
   double **x0;
-
-  // SPIN package
-
   double **sp, **fm, **fm_long;
-
-  // EFF and AWPMD packages
-
   int *spin;
   double *eradius, *ervel, *erforce;
   double *ervelforce;
   double **cs, **csforce, **vforce;
   int *etag;
-
-  // CG-DNA package
-
   tagint *id5p;
-
-  // MESO package
-
-  double **cc, **cc_flux;           // cc = chemical concentration
-  double *edpd_temp, *edpd_flux;    // temperature and heat flux
+  double **cc, **cc_flux;
+  double *edpd_temp, *edpd_flux;
   double *vest_temp;
-  double *edpd_cv;    // heat capacity
+  double *edpd_cv;
   int cc_species;
-
-  // MACHDYN package
-
   double *contact_radius;
   double **smd_data_9;
   double **smd_stress;
   double *eff_plastic_strain;
   double *eff_plastic_strain_rate;
   double *damage;
-
-  // SPH package
-
   double *rho, *drho, *esph, *desph, *cv;
   double **vest;
-
-  // end of customization section
-  // --------------------------------------------------------------------
-
-  // --------------------------------------------------------------------
-  // 2nd customization section: customize by adding new flags
-  // identical list as Atom::set_atomflag_defaults()
-  // most are existence flags for per-atom vectors and arrays
-  // 1 if variable is used, 0 if not
-
   int types_style;
   int peri_flag, electron_flag;
   int wavepacket_flag, sph_flag;
-
   int q_flag, mu_flag;
   int rmass_flag, radius_flag, omega_flag, torque_flag, angmom_flag, quat_flag;
   int temperature_flag, heatflow_flag;
@@ -137,13 +66,6 @@ class Atom : protected Pointers {
   int rho_flag, esph_flag, cv_flag, vest_flag;
   int dpd_flag, edpd_flag, tdpd_flag;
   int mesont_flag;
-
-
-  // end of customization section
-  // --------------------------------------------------------------------
-
-  // per-atom data struct describing all per-atom vectors/arrays
-
   struct PerAtom {
     std::string name;
     void *address;
@@ -154,66 +76,34 @@ class Atom : protected Pointers {
     int collength;
     int threadflag;
   };
-
   std::vector<PerAtom> peratom;
-
-  // custom vectors and arrays used by fix property/atom
-
   int **ivector, ***iarray;
   double **dvector, ***darray;
   int *icols, *dcols;
   char **ivname, **dvname, **ianame, **daname;
   int nivector, ndvector, niarray, ndarray;
-
-  // extra peratom info in restart file destined for fix & diag
-
   double **extra;
-
-  // per-type arrays
-
   double *mass;
   int *mass_setflag;
-
-  // callback ptrs for atom arrays managed by fix classes
-
-  int nextra_grow, nextra_restart, nextra_border;    // # of callbacks of each type
-  int *extra_grow, *extra_restart, *extra_border;    // index of fix to callback to
-  int nextra_grow_max, nextra_restart_max;           // size of callback lists
+  int nextra_grow, nextra_restart, nextra_border;
+  int *extra_grow, *extra_restart, *extra_border;
+  int nextra_grow_max, nextra_restart_max;
   int nextra_border_max;
   int nextra_store;
-
-  int map_style;                    // style of atom map: 0=none, 1=array, 2=hash
-  int map_user;                     // user requested map style:
-                                    // 0 = no request, 1=array, 2=hash, 3=yes
-  tagint map_tag_max;               // max atom ID that map() is setup for
-  std::set<tagint> *unique_tags;    // set to ensure that bodies have unique tags
-
-  // spatial sorting of atoms
-
-  int sortfreq;          // sort atoms every this many steps, 0 = off
-  bigint nextsort;       // next timestep to sort on
-  double userbinsize;    // requested sort bin size
-
-  // indices of atoms with same ID
-
-  int *sametag;    // sametag[I] = next atom with same ID, -1 if no more
-
-  // true if image flags were reset to 0 during data_atoms()
-
+  int map_style;
+  int map_user;
+  tagint map_tag_max;
+  std::set<tagint> *unique_tags;
+  int sortfreq;
+  bigint nextsort;
+  double userbinsize;
+  int *sametag;
   bool reset_image_flag[3];
-
-  // AtomVec factory types and map
-
   typedef AtomVec *(*AtomVecCreator)(LAMMPS *);
   typedef std::map<std::string, AtomVecCreator> AtomVecCreatorMap;
   AtomVecCreatorMap *avec_map;
-
-  // --------------------------------------------------------------------
-  // functions
-
   Atom(class LAMMPS *);
   ~Atom() override;
-
   void settings(class Atom *);
   void peratom_create();
   void add_peratom(const std::string &, void *, int, int, int threadflag = 0);
@@ -221,58 +111,39 @@ class Atom : protected Pointers {
   void add_peratom_vary(const std::string &, void *, int, int *, void *, int collength = 0);
   void create_avec(const std::string &, int, char **, int);
   virtual AtomVec *new_avec(const std::string &);
-
   void init();
   void setup();
-
   std::string get_style();
   AtomVec *style_match(const char *);
   void modify_params(int, char **);
   void tag_check();
   void tag_extend();
   int tag_consecutive();
-
   int parse_data(const char *);
-
   virtual void allocate_type_arrays();
   void set_mass(const char *, int, const char *, int, int, int *);
   void set_mass(const char *, int, int, double);
   void set_mass(const char *, int, int, char **);
   void set_mass(double *);
   void check_mass(const char *, int);
-
   int radius_consistency(int, double &);
-
   void first_reorder();
   virtual void sort();
-
   void add_callback(int);
   void delete_callback(const char *, int);
   void update_callback(int);
-
   int find_custom(const char *, int &, int &);
   virtual int add_custom(const char *, int, int);
   virtual void remove_custom(int, int, int);
-
   virtual void sync_modify(ExecutionSpace, unsigned int, unsigned int) {}
-
   void *extract(const char *);
   int extract_datatype(const char *);
-
   inline int *get_map_array() { return map_array; };
   inline int get_map_size() { return map_tag_max + 1; };
   inline int get_max_same() { return max_same; };
   inline int get_map_maxarray() { return map_maxarray + 1; };
-
-  // NOTE: placeholder method until KOKKOS/AtomVec is refactored
   int memcheck(const char *) { return 1; }
-
   double memory_usage();
-
-  // functions for global to local ID mapping
-  // map lookup function inlined for efficiency
-  // return -1 if no map defined
-
   inline int map(tagint global)
   {
     if (map_style == 1)
@@ -282,7 +153,6 @@ class Atom : protected Pointers {
     else
       return -1;
   };
-
   virtual void map_init(int check = 1);
   virtual void map_clear();
   virtual void map_set();
@@ -290,44 +160,33 @@ class Atom : protected Pointers {
   int map_style_set();
   virtual void map_delete();
   int map_find_hash(tagint);
-
  protected:
-  // global to local ID mapping
-
-  int *map_array;      // direct map via array that holds map_tag_max
-  int map_maxarray;    // allocated size of map_array (1 larger than this)
-
-  struct HashElem {    // hashed map
-    tagint global;     // key to search on = global ID
-    int local;         // value associated with key = local index
-    int next;          // next entry in this bucket, -1 if last
+  int *map_array;
+  int map_maxarray;
+  struct HashElem {
+    tagint global;
+    int local;
+    int next;
   };
-  int map_nhash;         // # of entries hash table can hold
-  int map_nused;         // # of actual entries in hash table
-  int map_free;          // ptr to 1st unused entry in hash table
-  int map_nbucket;       // # of hash buckets
-  int *map_bucket;       // ptr to 1st entry in each bucket
-  HashElem *map_hash;    // hash table
-
-  int max_same;    // allocated size of sametag
-
-  // spatial sorting of atoms
-
-  int nbins;                           // # of sorting bins
-  int nbinx, nbiny, nbinz;             // bins in each dimension
-  int maxbin;                          // max # of bins
-  int maxnext;                         // max size of next,permute
-  int *binhead;                        // 1st atom in each bin
-  int *next;                           // next atom in bin
-  int *permute;                        // permutation vector
-  double bininvx, bininvy, bininvz;    // inverse actual bin sizes
-  double bboxlo[3], bboxhi[3];         // bounding box of my sub-domain
-
+  int map_nhash;
+  int map_nused;
+  int map_free;
+  int map_nbucket;
+  int *map_bucket;
+  HashElem *map_hash;
+  int max_same;
+  int nbins;
+  int nbinx, nbiny, nbinz;
+  int maxbin;
+  int maxnext;
+  int *binhead;
+  int *next;
+  int *permute;
+  double bininvx, bininvy, bininvz;
+  double bboxlo[3], bboxhi[3];
   void set_atomflag_defaults();
   void setup_sort_bins();
   int next_prime(int);
 };
-
-}    // namespace LAMMPS_NS
-
+}
 #endif
