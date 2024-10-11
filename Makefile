@@ -17,7 +17,6 @@ atom_vec_atomic.o \
 atom_vec.o \
 comm_brick.o \
 comm.o \
-comm_tiled.o \
 compute.o \
 compute_pe_atom.o \
 compute_pressure.o \
