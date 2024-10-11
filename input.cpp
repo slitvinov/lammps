@@ -70,7 +70,6 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp)
       narg = 1;
       char **tmp = arg;
       arg = &argv[iarg+1];
-      echo();
       arg = tmp;
       iarg += 2;
      } else iarg++;
@@ -391,18 +390,11 @@ int Input::execute_command()
 {
   int flag = 1;
   std::string mycmd = command;
-  if (mycmd == "clear") clear();
-  else if (mycmd == "echo") echo();
-  else if (mycmd == "if") ifthenelse();
-  else if (mycmd == "include") include();
-  else if (mycmd == "jump") jump();
-  else if (mycmd == "label") label();
-  else if (mycmd == "log") log();
+  if (mycmd == "log") log();
   else if (mycmd == "next") next_command();
   else if (mycmd == "partition") partition();
   else if (mycmd == "print") print();
   else if (mycmd == "quit") quit();
-  else if (mycmd == "shell") shell();
   else if (mycmd == "variable") variable_command();
   else if (mycmd == "atom_modify") atom_modify();
   else if (mycmd == "atom_style") atom_style();
@@ -445,154 +437,6 @@ int Input::execute_command()
     return 0;
   }
   return -1;
-}
-void Input::clear()
-{
-  if (narg > 0) error->all(FLERR,"Illegal clear command: unexpected arguments but found {}", narg);
-  lmp->destroy();
-  lmp->create();
-  lmp->post_create();
-}
-void Input::echo()
-{
-  if (narg != 1) error->all(FLERR,"Illegal echo command: expected 1 argument but found {}", narg);
-  if (strcmp(arg[0],"none") == 0) {
-    echo_screen = 0;
-    echo_log = 0;
-  } else if (strcmp(arg[0],"screen") == 0) {
-    echo_screen = 1;
-    echo_log = 0;
-  } else if (strcmp(arg[0],"log") == 0) {
-    echo_screen = 0;
-    echo_log = 1;
-  } else if (strcmp(arg[0],"both") == 0) {
-    echo_screen = 1;
-    echo_log = 1;
-  } else error->all(FLERR,"Unknown echo keyword: {}", arg[0]);
-}
-void Input::ifthenelse()
-{
-  if (narg < 3) utils::missing_cmd_args(FLERR, "if", error);
-  int n = strlen(arg[0]) + 1;
-  if (n > maxline) reallocate(line,maxline,n);
-  strcpy(line,arg[0]);
-  substitute(line,work,maxline,maxwork,0);
-  double btest = variable->evaluate_boolean(line);
-  if (strcmp(arg[1],"then") != 0) error->all(FLERR,"Illegal if command: expected \"then\" but found \"{}\"", arg[1]);
-  int first = 2;
-  int iarg = first;
-  while (iarg < narg &&
-         (strcmp(arg[iarg],"elif") != 0 && strcmp(arg[iarg],"else") != 0))
-    iarg++;
-  int last = iarg-1;
-  if (btest != 0.0) {
-    int ncommands = last-first + 1;
-    if (ncommands <= 0) utils::missing_cmd_args(FLERR, "if then", error);
-    auto commands = new char*[ncommands];
-    ncommands = 0;
-    for (int i = first; i <= last; i++) {
-      n = strlen(arg[i]) + 1;
-      if (n == 1) error->all(FLERR,"Illegal if then command: execute command is empty");
-      commands[ncommands] = new char[n];
-      strcpy(commands[ncommands],arg[i]);
-      ncommands++;
-    }
-    for (int i = 0; i < ncommands; i++) {
-      one(commands[i]);
-      delete[] commands[i];
-    }
-    delete[] commands;
-    return;
-  }
-  if (iarg == narg) return;
-  while (iarg != narg) {
-    if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "if then", error);
-    if (strcmp(arg[iarg],"elif") == 0) {
-      n = strlen(arg[iarg+1]) + 1;
-      if (n > maxline) reallocate(line,maxline,n);
-      strcpy(line,arg[iarg+1]);
-      substitute(line,work,maxline,maxwork,0);
-      btest = variable->evaluate_boolean(line);
-      first = iarg+2;
-    } else {
-      btest = 1.0;
-      first = iarg+1;
-    }
-    iarg = first;
-    while (iarg < narg &&
-           (strcmp(arg[iarg],"elif") != 0 && strcmp(arg[iarg],"else") != 0))
-      iarg++;
-    last = iarg-1;
-    if (btest == 0.0) continue;
-    int ncommands = last-first + 1;
-    if (ncommands <= 0) utils::missing_cmd_args(FLERR, "if elif/else", error);
-    auto commands = new char*[ncommands];
-    ncommands = 0;
-    for (int i = first; i <= last; i++) {
-      n = strlen(arg[i]) + 1;
-      if (n == 1) error->all(FLERR,"Illegal if elif/else command: execute command is empty");
-      commands[ncommands] = new char[n];
-      strcpy(commands[ncommands],arg[i]);
-      ncommands++;
-    }
-    for (int i = 0; i < ncommands; i++) {
-      one(commands[i]);
-      delete[] commands[i];
-    }
-    delete[] commands;
-    return;
-  }
-}
-void Input::include()
-{
-  if (narg != 1) error->all(FLERR,"Illegal include command");
-  if (me == 0) {
-    if (nfile == maxfile)
-      error->one(FLERR,"Too many nested levels of input scripts");
-    int n = strlen(arg[0]) + 1;
-    if (n > maxline) reallocate(line,maxline,n);
-    strcpy(line,arg[0]);
-    substitute(line,work,maxline,maxwork,0);
-    infile = fopen(line,"r");
-    if (infile == nullptr)
-      error->one(FLERR,"Cannot open input script {}: {}", line, utils::getsyserror());
-    infiles[nfile++] = infile;
-  }
-  file();
-  if (me == 0) {
-    fclose(infile);
-    nfile--;
-    infile = infiles[nfile-1];
-  }
-}
-void Input::jump()
-{
-  if (narg < 1 || narg > 2) error->all(FLERR,"Illegal jump command: expected 1 or 2 argument(s) but found {}", narg);
-  if (jump_skip) {
-    jump_skip = 0;
-    return;
-  }
-  if (me == 0) {
-    if (strcmp(arg[0],"SELF") == 0) rewind(infile);
-    else {
-      if (infile && infile != stdin) fclose(infile);
-      infile = fopen(arg[0],"r");
-      if (infile == nullptr)
-        error->one(FLERR,"Cannot open input script {}: {}",
-                                     arg[0], utils::getsyserror());
-      infiles[nfile-1] = infile;
-    }
-  }
-  if (narg == 2) {
-    label_active = 1;
-    delete[] labelstr;
-    labelstr = utils::strdup(arg[1]);
-  }
-}
-void Input::label()
-{
-  if (narg != 1) error->all(FLERR,"Illegal label command: expected 1 argument but found {}", narg);
-  if (label_active && strcmp(labelstr,arg[0]) == 0) label_active = 0;
 }
 void Input::log()
 {
@@ -683,90 +527,6 @@ void Input::quit()
   if (narg == 0) error->done(0);
   if (narg == 1) error->done(utils::inumeric(FLERR,arg[0],false,lmp));
   error->all(FLERR,"Illegal quit command: expected 0 or 1 argument but found {}", narg);
-}
-void Input::shell()
-{
-  int rv,err;
-  if (narg < 1) utils::missing_cmd_args(FLERR, "shell", error);
-  if (strcmp(arg[0],"cd") == 0) {
-    if (narg != 2) error->all(FLERR,"Illegal shell command: expected 2 argument but found {}", narg);
-    rv = (platform::chdir(arg[1]) < 0) ? errno : 0;
-    MPI_Reduce(&rv,&err,1,MPI_INT,MPI_MAX,0,world);
-    errno = err;
-    if (me == 0 && err != 0) {
-      error->warning(FLERR, "Shell command 'cd {}' failed with error '{}'", arg[1], utils::getsyserror());
-    }
-  } else if (strcmp(arg[0],"mkdir") == 0) {
-    if (narg < 2) utils::missing_cmd_args(FLERR, "shell mkdir", error);
-    if (me == 0) {
-      for (int i = 1; i < narg; i++) {
-        rv = (platform::mkdir(arg[i]) < 0) ? errno : 0;
-        if (rv != 0)
-          error->warning(FLERR, "Shell command 'mkdir {}' failed with error '{}'", arg[i],
-                         utils::getsyserror());
-      }
-    }
-  } else if (strcmp(arg[0],"mv") == 0) {
-    if (narg != 3) error->all(FLERR,"Illegal shell command: expected 3 argument but found {}", narg);
-    if (me == 0) {
-      if (platform::path_is_directory(arg[2])) {
-        if (system(fmt::format("mv {} {}", arg[1], arg[2]).c_str()))
-          error->warning(FLERR,"Shell command 'mv {} {}' returned with non-zero status", arg[1], arg[2]);
-      } else {
-        if (rename(arg[1],arg[2]) < 0) {
-          error->warning(FLERR, "Shell command 'mv {} {}' failed with error '{}'",
-                         arg[1],arg[2],utils::getsyserror());
-        }
-      }
-    }
-  } else if (strcmp(arg[0],"rm") == 0) {
-    if (narg < 2) utils::missing_cmd_args(FLERR, "shell rm", error);
-    if (me == 0) {
-      int i = 1;
-      bool warn = true;
-      if (strcmp(arg[i], "-f") == 0) {
-        warn = false;
-        ++i;
-      }
-      for (;i < narg; i++) {
-        if (platform::unlink(arg[i]) < 0)
-          if (warn)
-            error->warning(FLERR, "Shell command 'rm {}' failed with error '{}'",
-                           arg[i], utils::getsyserror());
-      }
-    }
-  } else if (strcmp(arg[0],"rmdir") == 0) {
-    if (narg < 2) utils::missing_cmd_args(FLERR, "shell rmdir", error);
-    if (me == 0) {
-      for (int i = 1; i < narg; i++) {
-        if (platform::rmdir(arg[i]) < 0)
-          error->warning(FLERR, "Shell command 'rmdir {}' failed with error '{}'",
-                         arg[i], utils::getsyserror());
-      }
-    }
-  } else if (strcmp(arg[0],"putenv") == 0) {
-    if (narg < 2) utils::missing_cmd_args(FLERR, "shell putenv", error);
-    for (int i = 1; i < narg; i++) {
-      rv = 0;
-      if (arg[i]) rv = platform::putenv(arg[i]);
-      rv = (rv < 0) ? errno : 0;
-      MPI_Reduce(&rv,&err,1,MPI_INT,MPI_MAX,0,world);
-      errno = err;
-      if (me == 0 && err != 0)
-        error->warning(FLERR, "Shell command 'putenv {}' failed with error '{}'",
-                       arg[i], utils::getsyserror());
-    }
-  } else {
-    if (me == 0) {
-      std::string cmd = arg[0];
-      for (int i = 1; i < narg; i++) {
-        cmd += " ";
-        cmd += arg[i];
-      }
-      if (system(cmd.c_str()) != 0)
-        error->warning(FLERR,"Shell command {} returned with non-zero status", cmd);
-    }
-  }
 }
 void Input::variable_command()
 {
