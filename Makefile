@@ -15,7 +15,6 @@ atom_map.o \
 atom.o \
 atom_vec_atomic.o \
 atom_vec.o \
-balance.o \
 comm_brick.o \
 comm.o \
 comm_tiled.o \

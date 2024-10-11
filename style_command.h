@@ -1,4 +1,3 @@
-#include "balance.h"
 #include "create_atoms.h"
 #include "create_box.h"
 #include "run.h"
