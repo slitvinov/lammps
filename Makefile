@@ -60,7 +60,6 @@ memory.o \
 modify.o \
 my_page.o \
 my_pool_chunk.o \
-nbin_multi.o \
 nbin.o \
 nbin_standard.o \
 neighbor.o \
@@ -69,7 +68,6 @@ neigh_request.o \
 npair_copy.o \
 npair_full_bin_atomonly.o \
 npair_full_bin.o \
-npair_full_multi.o \
 npair_half_bin_atomonly_newton.o \
 npair_half_bin_newtoff.o \
 npair_half_bin_newton.o \
@@ -78,15 +76,9 @@ npair_halffull_newtoff.o \
 npair_halffull_newtoff_trim.o \
 npair_halffull_newton.o \
 npair_halffull_newton_trim.o \
-npair_half_multi_newtoff.o \
-npair_half_multi_newton.o \
-npair_half_multi_newton_tri.o \
 npair_half_size_bin_newtoff.o \
 npair_half_size_bin_newton.o \
 npair_half_size_bin_newton_tri.o \
-npair_half_size_multi_newtoff.o \
-npair_half_size_multi_newton.o \
-npair_half_size_multi_newton_tri.o \
 npair.o \
 pair_dpd.o \
 pair.o \

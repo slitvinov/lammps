@@ -795,22 +795,6 @@ int Variable::vectorstyle(int ivar)
 }
 
 /* ----------------------------------------------------------------------
-   check if variable with name is PYTHON and matches funcname
-   called by Python class before it invokes a Python function
-   return data storage so Python function can return a value for this variable
-   return nullptr if not a match
-------------------------------------------------------------------------- */
-
-char *Variable::pythonstyle(char *name, char *funcname)
-{
-  int ivar = find(name);
-  if (ivar < 0) return nullptr;
-  if (style[ivar] != PYTHON) return nullptr;
-  if (strcmp(data[ivar][0],funcname) != 0) return nullptr;
-  return data[ivar][1];
-}
-
-/* ----------------------------------------------------------------------
    return 1 if variable is INTERNAL style, 0 if not
    this is checked before call to set_internal() to assure it can be set
 ------------------------------------------------------------------------- */

@@ -36,7 +36,6 @@ class Variable : protected Pointers {
   int equalstyle(int);
   int atomstyle(int);
   int vectorstyle(int);
-  char *pythonstyle(char *, char *);
   int internalstyle(int);
 
   char *retrieve(const char *);
@@ -122,7 +121,6 @@ class Variable : protected Pointers {
     }
   };
 
-  int compute_python(int);
   void remove(int);
   void grow();
   void copy(int, char **, char **);
