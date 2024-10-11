@@ -87,7 +87,6 @@ region_block.o \
 region.o \
 region_prism.o \
 run.o \
-set.o \
 text_file_reader.o \
 tokenizer.o \
 universe.o \
