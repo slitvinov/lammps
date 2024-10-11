@@ -2628,11 +2628,3 @@ void Variable::print_var_error(const std::string &srcfile, const int lineno,
       error->one(srcfile,lineno,errmsg);
   }
 }
-void Variable::print_tree(Tree *tree, int level)
-{
-  printf("TREE %d: %d %g\n",level,tree->type,tree->value);
-  if (tree->first) print_tree(tree->first,level+1);
-  if (tree->second) print_tree(tree->second,level+1);
-  if (tree->nextra)
-    for (int i = 0; i < tree->nextra; i++) print_tree(tree->extra[i],level+1);
-}

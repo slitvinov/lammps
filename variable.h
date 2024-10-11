@@ -102,7 +102,6 @@ class Variable : protected Pointers {
   int parse_args(char *, char **);
   char *find_next_comma(char *);
   void print_var_error(const std::string &, int, const std::string &, int, int global = 1);
-  void print_tree(Tree *, int);
 };
 }
 #endif
