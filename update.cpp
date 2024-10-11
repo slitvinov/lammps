@@ -112,45 +112,6 @@ void Update::new_integrate(char *style, int narg, char **arg)
   }
   error->all(FLERR, "Illegal integrate style");
 }
-void Update::reset_timestep(int narg, char **arg)
-{
-  if (narg < 1) utils::missing_cmd_args(FLERR, "reset_timestep", error);
-  reset_timestep(utils::bnumeric(FLERR, arg[0], false, lmp), true);
-  if (narg > 1) {
-    if (strcmp(arg[1], "time") == 0) {
-      if (narg < 3) utils::missing_cmd_args(FLERR, "reset_timestep time", error);
-      atimestep = ntimestep;
-      atime = utils::numeric(FLERR, arg[2], false, lmp);
-    } else
-      error->all(FLERR, "Unknown reset_timestep option {}", arg[1]);
-  }
-}
-void Update::reset_timestep(bigint newstep, bool do_check)
-{
-  if (newstep < 0) error->all(FLERR, "Timestep must be >= 0");
-  bigint oldstep = ntimestep;
-  ntimestep = newstep;
-  if (newstep >= oldstep) update_time();
-  if (newstep < oldstep) {
-    atime = 0.0;
-    atimestep = newstep;
-  }
-  if (do_check) {
-    for (const auto &ifix : modify->get_fix_list())
-      if (ifix->time_depend)
-        error->all(FLERR, "Cannot reset timestep with time-dependent fix {} defined", ifix->style);
-  }
-  eflag_global = vflag_global = -1;
-  for (const auto &icompute : modify->get_compute_list()) {
-    icompute->invoked_scalar = -1;
-    icompute->invoked_vector = -1;
-    icompute->invoked_array = -1;
-    icompute->invoked_peratom = -1;
-    icompute->invoked_local = -1;
-    if (icompute->timeflag) icompute->clearstep();
-  }
-  neighbor->reset_timestep(ntimestep);
-}
 void Update::update_time()
 {
   atime += (ntimestep - atimestep) * dt;

@@ -76,7 +76,6 @@ class Neighbor : protected Pointers {
   virtual void build(int);
   void build_one(class NeighList *list, int preflag = 0);
   void set(int, char **);
-  void reset_timestep(bigint);
   void modify_params(int, char **);
   void modify_params(const std::string &);
   void exclusion_group_group_delete(int, int);

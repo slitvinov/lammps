@@ -419,7 +419,6 @@ int Input::execute_command()
   else if (mycmd == "pair_write") pair_write();
   else if (mycmd == "processors") processors();
   else if (mycmd == "region") region();
-  else if (mycmd == "reset_timestep") reset_timestep();
   else if (mycmd == "run_style") run_style();
   else if (mycmd == "timestep") timestep();
   else if (mycmd == "uncompute") uncompute();
@@ -691,10 +690,6 @@ void Input::processors()
 void Input::region()
 {
   domain->add_region(narg,arg);
-}
-void Input::reset_timestep()
-{
-  update->reset_timestep(narg,arg);
 }
 void Input::run_style()
 {

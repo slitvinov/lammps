@@ -75,7 +75,6 @@ class Input : protected Pointers {
   void pair_write();
   void processors();
   void region();
-  void reset_timestep();
   void run_style();
   void timestep();
   void uncompute();

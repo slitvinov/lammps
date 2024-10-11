@@ -1183,17 +1183,6 @@ void Neighbor::set(int narg, char **arg)
   } else if (strcmp(arg[1],"multi/old") == 0) style = Neighbor::MULTI_OLD;
   else error->all(FLERR,"Unknown neighbor {} argument: {}", arg[0], arg[1]);
 }
-void Neighbor::reset_timestep(bigint )
-{
-  for (int i = 0; i < nbin; i++)
-    neigh_bin[i]->last_bin = -1;
-  for (int i = 0; i < nlist; i++) {
-    if (!neigh_pair[i]) continue;
-    neigh_pair[i]->last_build = -1;
-  }
-  lastcall = -1;
-  last_setup_bins = -1;
-}
 void Neighbor::modify_params(int narg, char **arg)
 {
   int iarg = 0;

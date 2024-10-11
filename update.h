@@ -33,8 +33,6 @@ class Update : protected Pointers {
   void init();
   void set_units(const char *);
   void create_integrate(int, char **, int);
-  void reset_timestep(int, char **);
-  void reset_timestep(bigint, bool);
   void update_time();
   double memory_usage();
  private:
