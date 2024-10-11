@@ -10,7 +10,6 @@
 #include "math_special.h"
 #include "memory.h"
 #include "neighbor.h"
-#include "suffix.h"
 #include "update.h"
 #include <cfloat>
 #include <climits>
@@ -67,7 +66,6 @@ Pair::Pair(LAMMPS *lmp) :
   tabinner_disp = sqrt(2.0);
   trim_flag = 1;
   allocated = 0;
-  suffix_flag = Suffix::NONE;
   maxeatom = maxvatom = maxcvatom = 0;
   num_tally_compute = 0;
   nelements = nparams = maxparam = 0;

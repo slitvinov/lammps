@@ -17,7 +17,6 @@
 #include "pair.h"
 #include "style_nbin.h"
 #include "style_npair.h"
-#include "suffix.h"
 #include "tokenizer.h"
 #include "update.h"
 #include <cmath>
@@ -996,9 +995,6 @@ NeighRequest *Neighbor::add_request(Pair *requestor, int flags)
   int irequest = request(requestor, requestor->instance_me);
   auto req = requests[irequest];
   req->apply_flags(flags);
-  if (requestor->suffix_flag & Suffix::INTEL) {
-    req->omp = 0;
-  }
   return req;
 }
 NeighRequest *Neighbor::add_request(Fix *requestor, int flags)

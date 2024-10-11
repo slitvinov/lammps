@@ -15,7 +15,6 @@
 #include "memory.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "suffix.h"
 #include "universe.h"
 #include "update.h"
 #include "variable.h"
@@ -476,24 +475,6 @@ void LAMMPS::create()
 void LAMMPS::post_create()
 {
   if (skiprunflag) input->one("timer timeout 0 every 1");
-  int package_issued = Suffix::NONE;
-  if (num_package) {
-    std::string str;
-    for (int i = 0; i < num_package; i++) {
-      str = "package";
-      char *pkg_name = *(packargs[i]);
-      if (pkg_name != nullptr) {
-        if (strcmp("gpu", pkg_name) == 0) package_issued |= Suffix::GPU;
-        if (strcmp("omp", pkg_name) == 0) package_issued |= Suffix::OMP;
-        if (strcmp("intel", pkg_name) == 0) package_issued |= Suffix::INTEL;
-      }
-      for (char **ptr = packargs[i]; *ptr != nullptr; ++ptr) {
-        str += " ";
-        str += *ptr;
-      }
-      input->one(str);
-    }
-  }
 }
 void LAMMPS::init()
 {

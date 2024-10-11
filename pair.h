@@ -158,7 +158,6 @@ class Pair : protected Pointers {
   virtual void del_tally_callback(class Compute *);
  protected:
   int instance_me;
-  int suffix_flag;
   int offset_flag, mix_flag;
   double tabinner;
   double tabinner_disp;
