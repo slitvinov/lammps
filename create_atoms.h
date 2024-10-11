@@ -37,7 +37,6 @@ class CreateAtoms : public Command {
   class RanMars *ranlatt;
   int triclinic;
   double sublo[3], subhi[3];
-  void add_single();
   void add_random();
   int vartest(double *);
 };

@@ -199,9 +199,7 @@ void CreateAtoms::command(int narg, char **arg)
   atom->avec->clear_bonus();
   bigint natoms_previous = atom->natoms;
   int nlocal_previous = atom->nlocal;
-  if (style == SINGLE)
-    add_single();
-  else if (style == RANDOM)
+  if (style == RANDOM)
     add_random();
   bigint nblocal = atom->nlocal;
   MPI_Allreduce(&nblocal, &atom->natoms, 1, MPI_LMP_BIGINT, MPI_SUM, world);
@@ -227,28 +225,6 @@ void CreateAtoms::command(int narg, char **arg)
     else
       domain->print_box("  using box units in ");
     utils::logmesg(lmp, "  create_atoms CPU = {:.3f} seconds\n", platform::walltime() - time1);
-  }
-}
-void CreateAtoms::add_single()
-{
-  if (remapflag) {
-    imageint imagetmp = ((imageint) IMGMAX << IMG2BITS) | ((imageint) IMGMAX << IMGBITS) | IMGMAX;
-    domain->remap(xone, imagetmp);
-  }
-  double lamda[3], *coord;
-  if (triclinic) {
-    domain->x2lamda(xone, lamda);
-    if (remapflag) {
-      if (domain->xperiodic && (lamda[0] < 0.0 || lamda[0] >= 1.0)) lamda[0] = 0.0;
-      if (domain->yperiodic && (lamda[1] < 0.0 || lamda[1] >= 1.0)) lamda[1] = 0.0;
-      if (domain->zperiodic && (lamda[2] < 0.0 || lamda[2] >= 1.0)) lamda[2] = 0.0;
-    }
-    coord = lamda;
-  } else
-    coord = xone;
-  if (coord[0] >= sublo[0] && coord[0] < subhi[0] && coord[1] >= sublo[1] && coord[1] < subhi[1] &&
-      coord[2] >= sublo[2] && coord[2] < subhi[2]) {
-      atom->avec->create_atom(ntype, xone);
   }
 }
 void CreateAtoms::add_random()
