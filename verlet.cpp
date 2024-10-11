@@ -144,20 +144,5 @@ void Verlet::force_clear()
       if (torqueflag) memset(&atom->torque[0][0],0,3*nbytes);
       if (extraflag) atom->avec->force_clear(0,nbytes);
     }
-  } else {
-    nbytes = sizeof(double) * atom->nfirst;
-    if (nbytes) {
-      memset(&atom->f[0][0],0,3*nbytes);
-      if (torqueflag) memset(&atom->torque[0][0],0,3*nbytes);
-      if (extraflag) atom->avec->force_clear(0,nbytes);
-    }
-    if (force->newton) {
-      nbytes = sizeof(double) * atom->nghost;
-      if (nbytes) {
-        memset(&atom->f[nlocal][0],0,3*nbytes);
-        if (torqueflag) memset(&atom->torque[nlocal][0],0,3*nbytes);
-        if (extraflag) atom->avec->force_clear(nlocal,nbytes);
-      }
-    }
   }
 }
