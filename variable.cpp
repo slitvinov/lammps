@@ -108,23 +108,15 @@ void Variable::set(int narg, char **arg)
   if (strcmp(arg[1],"equal") == 0) {
     if (narg != 3) error->all(FLERR,"Illegal variable command: expected 3 arguments but found {}", narg);
     int ivar = find(arg[0]);
-    if (ivar >= 0) {
-      if (style[ivar] != EQUAL)
-        error->all(FLERR,"Cannot redefine variable as a different style");
-      delete[] data[ivar][0];
-      data[ivar][0] = utils::strdup(arg[2]);
-      replaceflag = 1;
-    } else {
-      if (nvar == maxvar) grow();
-      style[nvar] = EQUAL;
-      num[nvar] = 2;
-      which[nvar] = 0;
-      pad[nvar] = 0;
-      data[nvar] = new char*[num[nvar]];
-      data[nvar][0] = utils::strdup(arg[2]);
-      data[nvar][1] = new char[VALUELENGTH];
-      strcpy(data[nvar][1],"(undefined)");
-    }
+    if (nvar == maxvar) grow();
+    style[nvar] = EQUAL;
+    num[nvar] = 2;
+    which[nvar] = 0;
+    pad[nvar] = 0;
+    data[nvar] = new char*[num[nvar]];
+    data[nvar][0] = utils::strdup(arg[2]);
+    data[nvar][1] = new char[VALUELENGTH];
+    strcpy(data[nvar][1],"(undefined)");
   } else error->all(FLERR,"Unknown variable keyword: {}", arg[1]);
   if (replaceflag) return;
   if (!utils::is_id(arg[0]))
