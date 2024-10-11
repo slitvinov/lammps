@@ -47,7 +47,6 @@ class Input : protected Pointers {
   int execute_command();
   int meta(const std::string &);
   void log();
-  void next_command();
   void partition();
   void print();
   void quit();

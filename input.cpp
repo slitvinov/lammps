@@ -375,7 +375,6 @@ int Input::execute_command()
   int flag = 1;
   std::string mycmd = command;
   if (mycmd == "log") log();
-  else if (mycmd == "next") next_command();
   else if (mycmd == "partition") partition();
   else if (mycmd == "print") print();
   else if (mycmd == "quit") quit();
@@ -441,10 +440,6 @@ void Input::log()
     }
     if (universe->nworlds == 1) universe->ulogfile = logfile;
   }
-}
-void Input::next_command()
-{
-  if (variable->next(narg,arg)) jump_skip = 1;
 }
 void Input::partition()
 {
