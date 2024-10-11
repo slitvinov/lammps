@@ -408,28 +408,6 @@ void Group::write_restart(FILE *fp)
     if (count == ngroup) break;
   }
 }
-void Group::read_restart(FILE *fp)
-{
-  int i,n;
-  for (i = 0; i < MAX_GROUP; i++) delete [] names[i];
-  if (me == 0) utils::sfread(FLERR,&ngroup,sizeof(int),1,fp,nullptr,error);
-  MPI_Bcast(&ngroup,1,MPI_INT,0,world);
-  int count = 0;
-  for (i = 0; i < MAX_GROUP; i++) {
-    if (count == ngroup) {
-      names[i] = nullptr;
-      continue;
-    }
-    if (me == 0) utils::sfread(FLERR,&n,sizeof(int),1,fp,nullptr,error);
-    MPI_Bcast(&n,1,MPI_INT,0,world);
-    if (n) {
-      names[i] = new char[n];
-      if (me == 0) utils::sfread(FLERR,names[i],sizeof(char),n,fp,nullptr,error);
-      MPI_Bcast(names[i],n,MPI_CHAR,0,world);
-      count++;
-    } else names[i] = nullptr;
-  }
-}
 bigint Group::count_all()
 {
   bigint nme = atom->nlocal;

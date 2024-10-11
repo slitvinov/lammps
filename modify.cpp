@@ -113,14 +113,12 @@ Modify::~Modify()
   delete[] list_min_energy;
   delete[] end_of_step_every;
   delete[] list_timeflag;
-  restart_deallocate(0);
   delete compute_map;
   delete fix_map;
 }
 void Modify::init()
 {
   int i, j;
-  restart_deallocate(1);
   for (i = 0; i < ncompute; i++) {
     compute[i]->init();
     compute[i]->invoked_scalar = -1;
@@ -759,159 +757,6 @@ void Modify::addstep_compute_all(bigint newstep)
 {
   for (int icompute = 0; icompute < ncompute; icompute++)
     if (compute[icompute]->timeflag) compute[icompute]->addstep(newstep);
-}
-void Modify::write_restart(FILE *fp)
-{
-  int me = comm->me;
-  int count = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->restart_global) count++;
-  if (me == 0) fwrite(&count, sizeof(int), 1, fp);
-  int n;
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->restart_global) {
-      if (me == 0) {
-        n = strlen(fix[i]->id) + 1;
-        fwrite(&n, sizeof(int), 1, fp);
-        fwrite(fix[i]->id, sizeof(char), n, fp);
-        auto fix_style = utils::strip_style_suffix(fix[i]->style, lmp);
-        n = fix_style.size() + 1;
-        fwrite(&n, sizeof(int), 1, fp);
-        fwrite(fix_style.c_str(), sizeof(char), n, fp);
-      }
-      fix[i]->write_restart(fp);
-    }
-  count = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->restart_peratom) count++;
-  if (me == 0) fwrite(&count, sizeof(int), 1, fp);
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->restart_peratom) {
-      int maxsize_restart = fix[i]->maxsize_restart();
-      if (me == 0) {
-        n = strlen(fix[i]->id) + 1;
-        fwrite(&n, sizeof(int), 1, fp);
-        fwrite(fix[i]->id, sizeof(char), n, fp);
-        n = strlen(fix[i]->style) + 1;
-        fwrite(&n, sizeof(int), 1, fp);
-        fwrite(fix[i]->style, sizeof(char), n, fp);
-        fwrite(&maxsize_restart, sizeof(int), 1, fp);
-      }
-    }
-}
-int Modify::read_restart(FILE *fp)
-{
-  int me = comm->me;
-  if (me == 0) utils::sfread(FLERR, &nfix_restart_global, sizeof(int), 1, fp, nullptr, error);
-  MPI_Bcast(&nfix_restart_global, 1, MPI_INT, 0, world);
-  if (nfix_restart_global) {
-    id_restart_global = new char *[nfix_restart_global];
-    style_restart_global = new char *[nfix_restart_global];
-    state_restart_global = new char *[nfix_restart_global];
-    used_restart_global = new int[nfix_restart_global];
-  }
-  int n;
-  for (int i = 0; i < nfix_restart_global; i++) {
-    if (me == 0) utils::sfread(FLERR, &n, sizeof(int), 1, fp, nullptr, error);
-    MPI_Bcast(&n, 1, MPI_INT, 0, world);
-    id_restart_global[i] = new char[n];
-    if (me == 0) utils::sfread(FLERR, id_restart_global[i], sizeof(char), n, fp, nullptr, error);
-    MPI_Bcast(id_restart_global[i], n, MPI_CHAR, 0, world);
-    if (me == 0) utils::sfread(FLERR, &n, sizeof(int), 1, fp, nullptr, error);
-    MPI_Bcast(&n, 1, MPI_INT, 0, world);
-    style_restart_global[i] = new char[n];
-    if (me == 0) utils::sfread(FLERR, style_restart_global[i], sizeof(char), n, fp, nullptr, error);
-    MPI_Bcast(style_restart_global[i], n, MPI_CHAR, 0, world);
-    if (me == 0) utils::sfread(FLERR, &n, sizeof(int), 1, fp, nullptr, error);
-    MPI_Bcast(&n, 1, MPI_INT, 0, world);
-    state_restart_global[i] = new char[n];
-    if (me == 0) utils::sfread(FLERR, state_restart_global[i], sizeof(char), n, fp, nullptr, error);
-    MPI_Bcast(state_restart_global[i], n, MPI_CHAR, 0, world);
-    used_restart_global[i] = 0;
-  }
-  int maxsize = 0;
-  if (me == 0) utils::sfread(FLERR, &nfix_restart_peratom, sizeof(int), 1, fp, nullptr, error);
-  MPI_Bcast(&nfix_restart_peratom, 1, MPI_INT, 0, world);
-  if (nfix_restart_peratom) {
-    id_restart_peratom = new char *[nfix_restart_peratom];
-    style_restart_peratom = new char *[nfix_restart_peratom];
-    index_restart_peratom = new int[nfix_restart_peratom];
-    used_restart_peratom = new int[nfix_restart_peratom];
-  }
-  for (int i = 0; i < nfix_restart_peratom; i++) {
-    if (me == 0) utils::sfread(FLERR, &n, sizeof(int), 1, fp, nullptr, error);
-    MPI_Bcast(&n, 1, MPI_INT, 0, world);
-    id_restart_peratom[i] = new char[n];
-    if (me == 0) utils::sfread(FLERR, id_restart_peratom[i], sizeof(char), n, fp, nullptr, error);
-    MPI_Bcast(id_restart_peratom[i], n, MPI_CHAR, 0, world);
-    if (me == 0) utils::sfread(FLERR, &n, sizeof(int), 1, fp, nullptr, error);
-    MPI_Bcast(&n, 1, MPI_INT, 0, world);
-    style_restart_peratom[i] = new char[n];
-    if (me == 0)
-      utils::sfread(FLERR, style_restart_peratom[i], sizeof(char), n, fp, nullptr, error);
-    MPI_Bcast(style_restart_peratom[i], n, MPI_CHAR, 0, world);
-    if (me == 0) utils::sfread(FLERR, &n, sizeof(int), 1, fp, nullptr, error);
-    MPI_Bcast(&n, 1, MPI_INT, 0, world);
-    maxsize += n;
-    index_restart_peratom[i] = i;
-    used_restart_peratom[i] = 0;
-  }
-  return maxsize;
-}
-void Modify::restart_deallocate(int flag)
-{
-  if (nfix_restart_global) {
-    if (flag && comm->me == 0) {
-      int i;
-      for (i = 0; i < nfix_restart_global; i++)
-        if (used_restart_global[i] == 0) break;
-      if (i == nfix_restart_global) {
-        utils::logmesg(lmp, "All restart file global fix info was re-assigned\n");
-      } else {
-        utils::logmesg(lmp, "Unused restart file global fix info:\n");
-        for (i = 0; i < nfix_restart_global; i++) {
-          if (used_restart_global[i]) continue;
-          utils::logmesg(lmp, "  fix style: {}, fix ID: {}\n", style_restart_global[i],
-                         id_restart_global[i]);
-        }
-      }
-    }
-    for (int i = 0; i < nfix_restart_global; i++) {
-      delete[] id_restart_global[i];
-      delete[] style_restart_global[i];
-      delete[] state_restart_global[i];
-    }
-    delete[] id_restart_global;
-    delete[] style_restart_global;
-    delete[] state_restart_global;
-    delete[] used_restart_global;
-  }
-  if (nfix_restart_peratom) {
-    if (flag && comm->me == 0) {
-      int i;
-      for (i = 0; i < nfix_restart_peratom; i++)
-        if (used_restart_peratom[i] == 0) break;
-      if (i == nfix_restart_peratom) {
-        utils::logmesg(lmp, "All restart file peratom fix info was re-assigned\n");
-      } else {
-        utils::logmesg(lmp, "Unused restart file peratom fix info:\n");
-        for (i = 0; i < nfix_restart_peratom; i++) {
-          if (used_restart_peratom[i]) continue;
-          utils::logmesg(lmp, "  fix style: {}, fix ID: {}\n", style_restart_peratom[i],
-                         id_restart_peratom[i]);
-        }
-      }
-    }
-    for (int i = 0; i < nfix_restart_peratom; i++) {
-      delete[] id_restart_peratom[i];
-      delete[] style_restart_peratom[i];
-    }
-    delete[] id_restart_peratom;
-    delete[] style_restart_peratom;
-    delete[] index_restart_peratom;
-    delete[] used_restart_peratom;
-  }
-  nfix_restart_global = nfix_restart_peratom = 0;
 }
 void Modify::list_init(int mask, int &n, int *&list)
 {

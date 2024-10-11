@@ -39,7 +39,6 @@ class Force : protected Pointers {
   int newton, newton_pair;
   Pair *pair;
   char *pair_style;
-  char *pair_restart;
   typedef Pair *(*PairCreator)(LAMMPS *);
   typedef std::map<std::string, PairCreator> PairCreatorMap;
   PairCreatorMap *pair_map;

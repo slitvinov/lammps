@@ -3,6 +3,5 @@
 #include "fix_nve.h"
 #include "fix_pair.h"
 #include "fix_rbc.h"
-#include "fix_read_restart.h"
 #include "fix_sdf_bounceback.h"
 #include "fix_sdf_repforce.h"

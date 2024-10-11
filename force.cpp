@@ -17,7 +17,6 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp)
   qqr2e_charmm_real = 332.0716;
   pair = nullptr;
   pair_style = utils::strdup("none");
-  pair_restart = nullptr;
   create_factories();
 }
 void _noopt Force::create_factories()
@@ -32,7 +31,6 @@ void _noopt Force::create_factories()
 Force::~Force()
 {
   delete[] pair_style;
-  delete[] pair_restart;
   if (pair) delete pair;
   pair = nullptr;
   delete pair_map;
@@ -40,11 +38,6 @@ Force::~Force()
 void Force::init()
 {
   qqrd2e = qqr2e / dielectric;
-  if (pair_restart) {
-    if (!pair)
-      error->all(FLERR, "Must re-specify non-restarted pair style ({}) after read_restart",
-                 pair_restart);
-  }
   if (pair) pair->init();
 }
 void Force::setup()
@@ -55,10 +48,8 @@ void Force::create_pair(const std::string &style, int trysuffix)
 {
   delete[] pair_style;
   if (pair) delete pair;
-  delete[] pair_restart;
   pair_style = nullptr;
   pair = nullptr;
-  pair_restart = nullptr;
   int sflag;
   pair = new_pair(style, trysuffix, sflag);
   pair_style = store_style(style, sflag);

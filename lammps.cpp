@@ -48,12 +48,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   logfile = nullptr;
   infile = nullptr;
   initclock = platform::walltime();
-#if defined(LMP_PYTHON) && defined(_WIN32)
-  const char *lmpenv = getenv("LAMMPSHOME");
-  if (lmpenv) {
-    platform::putenv(fmt::format("PYTHONHOME={}",lmpenv));
-  }
-#endif
   int iarg = 1;
   if (narg-iarg >= 2 && (strcmp(arg[iarg],"-mpicolor") == 0 ||
                          strcmp(arg[iarg],"-m") == 0)) {
@@ -73,9 +67,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   int logflag = 0;
   int partscreenflag = 0;
   int partlogflag = 0;
-  int restart2data = 0;
-  int restart2dump = 0;
-  int restartremap = 0;
   int helpflag = 0;
   int nonbufflag = 0;
   pair_only_flag = 0;
@@ -162,44 +153,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
         error->universe_all(FLERR,"Cannot use -reorder after -partition");
       universe->reorder(arg[iarg+1],arg[iarg+2]);
       iarg += 3;
-    } else if (strcmp(arg[iarg],"-restart2data") == 0 ||
-               strcmp(arg[iarg],"-r2data") == 0) {
-      if (iarg+3 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      if (restart2dump)
-        error->universe_all(FLERR,
-                            "Cannot use both -restart2data and -restart2dump");
-      restart2data = 1;
-      restartfile = arg[iarg+1];
-      if (strcmp(arg[iarg+2],"remap") == 0) {
-        if (iarg+4 > narg)
-          error->universe_all(FLERR,"Invalid command-line argument");
-        restartremap = 1;
-        iarg++;
-      }
-      iarg += 2;
-      wfirst = iarg;
-      while (iarg < narg && arg[iarg][0] != '-') iarg++;
-      wlast = iarg;
-    } else if (strcmp(arg[iarg],"-restart2dump") == 0 ||
-               strcmp(arg[iarg],"-r2dump") == 0) {
-      if (iarg+3 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      if (restart2data)
-        error->universe_all(FLERR,
-                            "Cannot use both -restart2data and -restart2dump");
-      restart2dump = 1;
-      restartfile = arg[iarg+1];
-      if (strcmp(arg[iarg+2],"remap") == 0) {
-        if (iarg+4 > narg)
-          error->universe_all(FLERR,"Invalid command-line argument");
-        restartremap = 1;
-        iarg++;
-      }
-      iarg += 2;
-      wfirst = iarg;
-      while (iarg < narg && arg[iarg][0] != '-') iarg++;
-      wlast = iarg;
     } else if (strcmp(arg[iarg],"-screen") == 0 ||
                strcmp(arg[iarg],"-sc") == 0) {
       if (iarg+2 > narg)
@@ -401,18 +354,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   } else {
     create();
     post_create();
-  }
-  if (restart2data || restart2dump) {
-    std::string cmd = fmt::format("read_restart {}",restartfile);
-    if (restartremap) cmd += " remap\n";
-    input->one(cmd);
-    if (restart2data) cmd = "write_data ";
-    else cmd = "write_dump";
-    for (iarg = wfirst; iarg < wlast; iarg++)
-       cmd += fmt::format(" {}", arg[iarg]);
-    if (restart2data) cmd += " noinit";
-    input->one(cmd);
-    error->done(0);
   }
 }
 LAMMPS::~LAMMPS()

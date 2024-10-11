@@ -173,55 +173,6 @@ bool LabelMap::is_complete(int mode) const
   }
   return false;
 }
-void LabelMap::write_data(FILE *fp)
-{
-  if (is_complete(Atom::ATOM)) {
-    fmt::print(fp, "\nAtom Type Labels\n\n");
-    for (int i = 0; i < natomtypes; i++) fmt::print(fp, "{} {}\n", i + 1, typelabel[i]);
-  }
-}
-void LabelMap::read_restart(FILE *fp)
-{
-  char *charlabel;
-  for (int i = 0; i < natomtypes; i++) {
-    charlabel = read_string(fp);
-    typelabel[i] = charlabel;
-    typelabel_map[charlabel] = i + 1;
-    delete[] charlabel;
-  }
-  for (int i = 0; i < nbondtypes; i++) {
-    charlabel = read_string(fp);
-    btypelabel[i] = charlabel;
-    btypelabel_map[charlabel] = i + 1;
-    delete[] charlabel;
-  }
-  for (int i = 0; i < nangletypes; i++) {
-    charlabel = read_string(fp);
-    atypelabel[i] = charlabel;
-    atypelabel_map[charlabel] = i + 1;
-    delete[] charlabel;
-  }
-  for (int i = 0; i < ndihedraltypes; i++) {
-    charlabel = read_string(fp);
-    dtypelabel[i] = charlabel;
-    dtypelabel_map[charlabel] = i + 1;
-    delete[] charlabel;
-  }
-  for (int i = 0; i < nimpropertypes; i++) {
-    charlabel = read_string(fp);
-    itypelabel[i] = charlabel;
-    itypelabel_map[charlabel] = i + 1;
-    delete[] charlabel;
-  }
-}
-void LabelMap::write_restart(FILE *fp)
-{
-  for (int i = 0; i < natomtypes; i++) write_string(typelabel[i], fp);
-  for (int i = 0; i < nbondtypes; i++) write_string(btypelabel[i], fp);
-  for (int i = 0; i < nangletypes; i++) write_string(atypelabel[i], fp);
-  for (int i = 0; i < ndihedraltypes; i++) write_string(dtypelabel[i], fp);
-  for (int i = 0; i < nimpropertypes; i++) write_string(itypelabel[i], fp);
-}
 char *LabelMap::read_string(FILE *fp)
 {
   int n = read_int(fp);

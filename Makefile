@@ -34,7 +34,6 @@ fix_nve.o \
 fix.o \
 fix_pair.o \
 fix_rbc.o \
-fix_read_restart.o \
 fix_sdf_bounceback.o \
 fix_sdf_repforce.o \
 fmtlib_format.o \
@@ -87,7 +86,6 @@ procmap.o \
 random_mars.o \
 random_park.o \
 rcb.o \
-read_restart.o\
 region_block.o \
 region.o \
 region_prism.o \

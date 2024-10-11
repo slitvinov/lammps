@@ -105,9 +105,6 @@ class Modify : protected Pointers {
   int check_rigid_group_overlap(int);
   int check_rigid_region_overlap(int, class Region *);
   int check_rigid_list_overlap(int *);
-  void write_restart(FILE *);
-  int read_restart(FILE *);
-  void restart_deallocate(int);
   double memory_usage();
  protected:
   int n_post_force, n_post_force_group, n_post_force_respa;

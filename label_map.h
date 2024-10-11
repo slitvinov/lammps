@@ -14,9 +14,6 @@ class LabelMap : protected Pointers {
   void create_lmap2lmap(LabelMap *, int);
   int find(const std::string &, int) const;
   bool is_complete(int) const;
-  void write_data(FILE *);
-  void read_restart(FILE *fp);
-  void write_restart(FILE *);
  protected:
   int natomtypes, nbondtypes, nangletypes, ndihedraltypes, nimpropertypes;
   std::vector<std::string> typelabel, btypelabel, atypelabel;
