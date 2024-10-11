@@ -61,7 +61,6 @@ random_park.o \
 rcb.o \
 region_block.o \
 region.o \
-region_prism.o \
 run.o \
 text_file_reader.o \
 tokenizer.o \

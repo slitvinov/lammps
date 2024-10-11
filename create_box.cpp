@@ -6,7 +6,6 @@
 #include "error.h"
 #include "force.h"
 #include "region.h"
-#include "region_prism.h"
 #include "update.h"
 #include <cstring>
 using namespace LAMMPS_NS;
@@ -30,18 +29,6 @@ void CreateBox::command(int narg, char **arg)
     domain->boxhi[1] = region->extent_yhi;
     domain->boxlo[2] = region->extent_zlo;
     domain->boxhi[2] = region->extent_zhi;
-  } else {
-    domain->triclinic = 1;
-    auto prism = dynamic_cast<RegPrism *>(region);
-    domain->boxlo[0] = prism->xlo;
-    domain->boxhi[0] = prism->xhi;
-    domain->boxlo[1] = prism->ylo;
-    domain->boxhi[1] = prism->yhi;
-    domain->boxlo[2] = prism->zlo;
-    domain->boxhi[2] = prism->zhi;
-    domain->xy = prism->xy;
-    domain->xz = prism->xz;
-    domain->yz = prism->yz;
   }
   atom->ntypes = utils::inumeric(FLERR, arg[0], false, lmp);
   int iarg = 2;
