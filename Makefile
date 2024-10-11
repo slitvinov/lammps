@@ -21,9 +21,7 @@ comm.o \
 comm_tiled.o \
 compute.o \
 compute_pe_atom.o \
-compute_pe.o \
 compute_pressure.o \
-compute_temp.o \
 create_atoms.o \
 create_box.o \
 domain.o \
