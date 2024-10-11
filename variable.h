@@ -21,7 +21,6 @@ class Variable : protected Pointers {
   int compute_vector(int, double **);
   void internal_set(int, double);
   tagint int_between_brackets(char *&, int);
-  double evaluate_boolean(char *);
  public:
   int nvar;
   char **names;
