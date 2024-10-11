@@ -50,7 +50,6 @@ class Variable : protected Pointers {
   int *num;
   int *which;
   int *pad;
-  class VarReader **reader;
   char ***data;
   double *dvalue;
   struct VecVar {
@@ -105,18 +104,6 @@ class Variable : protected Pointers {
   char *find_next_comma(char *);
   void print_var_error(const std::string &, int, const std::string &, int, int global = 1);
   void print_tree(Tree *, int);
-};
-class VarReader : protected Pointers {
- public:
-  class FixStoreAtom *fixstore;
-  char *id_fix;
-  VarReader(class LAMMPS *, char *, char *, int);
-  ~VarReader() override;
-  int read_scalar(char *);
- private:
-  int me, style;
-  FILE *fp;
-  char *buffer;
 };
 }
 #endif

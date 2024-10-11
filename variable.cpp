@@ -63,7 +63,6 @@ Variable::Variable(LAMMPS *lmp) : Pointers(lmp)
   num = nullptr;
   which = nullptr;
   pad = nullptr;
-  reader = nullptr;
   data = nullptr;
   dvalue = nullptr;
   vecs = nullptr;
@@ -85,7 +84,6 @@ Variable::~Variable()
 {
   for (int i = 0; i < nvar; i++) {
     delete[] names[i];
-    delete reader[i];
     if (style[i] == LOOP || style[i] == ULOOP) delete[] data[i][0];
     else for (int j = 0; j < num[i]; j++) delete[] data[i][j];
     delete[] data[i];
@@ -96,7 +94,6 @@ Variable::~Variable()
   memory->destroy(num);
   memory->destroy(which);
   memory->destroy(pad);
-  memory->sfree(reader);
   memory->sfree(data);
   memory->sfree(dvalue);
   memory->sfree(vecs);
@@ -325,20 +322,17 @@ void Variable::remove(int n)
   if (style[n] == LOOP || style[n] == ULOOP) delete[] data[n][0];
   else for (int i = 0; i < num[n]; i++) delete[] data[n][i];
   delete[] data[n];
-  delete reader[n];
   for (int i = n+1; i < nvar; i++) {
     names[i-1] = names[i];
     style[i-1] = style[i];
     num[i-1] = num[i];
     which[i-1] = which[i];
     pad[i-1] = pad[i];
-    reader[i-1] = reader[i];
     data[i-1] = data[i];
     dvalue[i-1] = dvalue[i];
   }
   nvar--;
   data[nvar] = nullptr;
-  reader[nvar] = nullptr;
   names[nvar] = nullptr;
 }
 void Variable::grow()
@@ -350,9 +344,6 @@ void Variable::grow()
   memory->grow(num,maxvar,"var:num");
   memory->grow(which,maxvar,"var:which");
   memory->grow(pad,maxvar,"var:pad");
-  reader = (VarReader **)
-    memory->srealloc(reader,maxvar*sizeof(VarReader *),"var:reader");
-  for (int i = old; i < maxvar; i++) reader[i] = nullptr;
   data = (char ***) memory->srealloc(data,maxvar*sizeof(char **),"var:data");
   memory->grow(dvalue,maxvar,"var:dvalue");
   vecs = (VecVar *) memory->srealloc(vecs,maxvar*sizeof(VecVar),"var:vecvar");
@@ -2837,53 +2828,4 @@ double Variable::evaluate_boolean(char *str)
   if (argstack[0].flag == 1)
     error->all(FLERR,"If command boolean cannot be single string");
   return argstack[0].value;
-}
-VarReader::VarReader(LAMMPS *lmp, char *name, char *file, int flag) :
-  Pointers(lmp)
-{
-  me = comm->me;
-  style = flag;
-  fp = nullptr;
-  if (me == 0) {
-    fp = fopen(file,"r");
-    if (fp == nullptr)
-      error->one(FLERR,"Cannot open file variable file {}: {}", file, utils::getsyserror());
-  }
-  fixstore = nullptr;
-  id_fix = nullptr;
-  buffer = nullptr;
-}
-VarReader::~VarReader()
-{
-  if (me == 0) {
-    fclose(fp);
-    fp = nullptr;
-  }
-  if (fixstore) {
-    if (modify) modify->delete_fix(id_fix);
-    delete[] id_fix;
-    delete[] buffer;
-  }
-}
-int VarReader::read_scalar(char *str)
-{
-  int n;
-  char *ptr;
-  if (me == 0) {
-    while (true) {
-      ptr = fgets(str,MAXLINE,fp);
-      if (!ptr) { n=0; break; }
-      ptr[strcspn(ptr,"#")] = '\0';
-      ptr += strspn(ptr," \t\n\r\f");
-      ptr[strcspn(ptr," \t\n\r\f")] = '\0';
-      n = strlen(ptr) + 1;
-      if (n == 1) continue;
-      break;
-    }
-    if (n > 0) memmove(str,ptr,n);
-  }
-  MPI_Bcast(&n,1,MPI_INT,0,world);
-  if (n == 0) return 1;
-  MPI_Bcast(str,n,MPI_CHAR,0,world);
-  return 0;
 }
