@@ -16,7 +16,6 @@ class FixABF : public Fix {
   void initial_integrate(int) override;
   void post_force(int) override;
   void final_integrate() override;
-  void write_restart_file(const char *) override;
   double compute_scalar() override;
   double memory_usage() override;
   void grow_arrays(int) override;

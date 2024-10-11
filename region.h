@@ -47,7 +47,6 @@ class Region : protected Pointers {
   int match(double, double, double);
   virtual void set_velocity();
   void velocity_contact(double *, double *, int);
-  virtual void write_restart(FILE *);
   virtual int restart(char *, int &);
   virtual void length_restart_string(int &);
   virtual void reset_vel();

@@ -180,20 +180,6 @@ double PairDPD::init_one(int i, int j)
   sigma[j][i] = sigma[i][j];
   return cut[i][j];
 }
-void PairDPD::write_restart(FILE *fp)
-{
-  write_restart_settings(fp);
-  int i,j;
-  for (i = 1; i <= atom->ntypes; i++)
-    for (j = i; j <= atom->ntypes; j++) {
-      fwrite(&setflag[i][j],sizeof(int),1,fp);
-      if (setflag[i][j]) {
-        fwrite(&a0[i][j],sizeof(double),1,fp);
-        fwrite(&gamma[i][j],sizeof(double),1,fp);
-        fwrite(&cut[i][j],sizeof(double),1,fp);
-      }
-    }
-}
 void PairDPD::read_restart(FILE *fp)
 {
   read_restart_settings(fp);
@@ -215,13 +201,6 @@ void PairDPD::read_restart(FILE *fp)
         MPI_Bcast(&cut[i][j],1,MPI_DOUBLE,0,world);
       }
     }
-}
-void PairDPD::write_restart_settings(FILE *fp)
-{
-  fwrite(&temperature,sizeof(double),1,fp);
-  fwrite(&cut_global,sizeof(double),1,fp);
-  fwrite(&seed,sizeof(int),1,fp);
-  fwrite(&mix_flag,sizeof(int),1,fp);
 }
 void PairDPD::read_restart_settings(FILE *fp)
 {

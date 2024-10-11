@@ -392,22 +392,6 @@ int Group::find_unused()
     if (names[igroup] == nullptr) return igroup;
   return -1;
 }
-void Group::write_restart(FILE *fp)
-{
-  fwrite(&ngroup,sizeof(int),1,fp);
-  int n;
-  int count = 0;
-  for (int i = 0; i < MAX_GROUP; i++) {
-    if (names[i]) n = strlen(names[i]) + 1;
-    else n = 0;
-    fwrite(&n,sizeof(int),1,fp);
-    if (n) {
-      fwrite(names[i],sizeof(char),n,fp);
-      count++;
-    }
-    if (count == ngroup) break;
-  }
-}
 bigint Group::count_all()
 {
   bigint nme = atom->nlocal;
