@@ -135,26 +135,6 @@ void Variable::set(int narg, char **arg)
   names[nvar] = utils::strdup(arg[0]);
   nvar++;
 }
-void Variable::set(const std::string &setcmd)
-{
-  std::vector<std::string> args = utils::split_words(setcmd);
-  auto newarg = new char*[args.size()];
-  int i=0;
-  for (const auto &arg : args) {
-    newarg[i++] = (char *)arg.c_str();
-  }
-  set(args.size(),newarg);
-  delete[] newarg;
-}
-void Variable::set(char *name, int narg, char **arg)
-{
-  auto newarg = new char*[2+narg];
-  newarg[0] = name;
-  newarg[1] = (char *) "index";
-  for (int i = 0; i < narg; i++) newarg[2+i] = arg[i];
-  set(2+narg,newarg);
-  delete[] newarg;
-}
 int Variable::set_string(const char *name, const char *str)
 {
   int ivar = find(name);

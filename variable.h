@@ -9,8 +9,6 @@ class Variable : protected Pointers {
   Variable(class LAMMPS *);
   ~Variable() override;
   void set(int, char **);
-  void set(const std::string &);
-  void set(char *, int, char **);
   int set_string(const char *, const char *);
   int next(int, char **);
   int find(const char *);

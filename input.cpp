@@ -58,22 +58,6 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp)
 #include "style_command.h"
 #undef CommandStyle
 #undef COMMAND_CLASS
-  int iarg = 1;
-  while (iarg < argc) {
-    if (strcmp(argv[iarg],"-var") == 0 || strcmp(argv[iarg],"-v") == 0) {
-      int jarg = iarg+3;
-      while (jarg < argc && argv[jarg][0] != '-') jarg++;
-      variable->set(argv[iarg+1],jarg-iarg-2,&argv[iarg+2]);
-      iarg = jarg;
-    } else if (strcmp(argv[iarg],"-echo") == 0 ||
-               strcmp(argv[iarg],"-e") == 0) {
-      narg = 1;
-      char **tmp = arg;
-      arg = &argv[iarg+1];
-      arg = tmp;
-      iarg += 2;
-     } else iarg++;
-  }
 }
 Input::~Input()
 {
