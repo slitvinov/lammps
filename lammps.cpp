@@ -20,9 +20,6 @@
 #include "update.h"
 #include "variable.h"
 #include "version.h"
-#if defined(LMP_PLUGIN)
-#include "plugin.h"
-#endif
 #include <cctype>
 #include <cmath>
 #include <cstring>
@@ -475,9 +472,6 @@ void LAMMPS::create()
   force = new Force(this);
   modify = new Modify(this);
   update = new Update(this);
-#if defined(LMP_PLUGIN)
-  plugin_auto_load(this);
-#endif
 }
 void LAMMPS::post_create()
 {
@@ -513,9 +507,6 @@ void LAMMPS::init()
 }
 void LAMMPS::destroy()
 {
-#if defined(LMP_PLUGIN)
-  plugin_clear(this);
-#endif
   delete update;
   update = nullptr;
   delete neighbor;
