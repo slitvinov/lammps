@@ -180,17 +180,6 @@ double PairDPD::init_one(int i, int j)
   sigma[j][i] = sigma[i][j];
   return cut[i][j];
 }
-void PairDPD::write_data(FILE *fp)
-{
-  for (int i = 1; i <= atom->ntypes; i++)
-    fprintf(fp,"%d %g %g\n",i,a0[i][i],gamma[i][i]);
-}
-void PairDPD::write_data_all(FILE *fp)
-{
-  for (int i = 1; i <= atom->ntypes; i++)
-    for (int j = i; j <= atom->ntypes; j++)
-      fprintf(fp,"%d %d %g %g %g\n",i,j,a0[i][j],gamma[i][j],cut[i][j]);
-}
 double PairDPD::single(int , int , int itype, int jtype, double rsq,
                        double , double factor_dpd, double &fforce)
 {
