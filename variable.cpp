@@ -161,40 +161,11 @@ char *Variable::retrieve(const char *name)
     print_var_error(FLERR,"has a circular dependency",ivar);
   eval_in_progress[ivar] = 1;
   char *str = nullptr;
-  if (style[ivar] == INDEX || style[ivar] == WORLD ||
-      style[ivar] == UNIVERSE || style[ivar] == STRING ||
-      style[ivar] == SCALARFILE) {
-    str = data[ivar][which[ivar]];
-  } else if (style[ivar] == LOOP || style[ivar] == ULOOP) {
-    std::string result;
-    if (pad[ivar] == 0) result = std::to_string(which[ivar]+1);
-    else result = fmt::format("{:0>{}d}",which[ivar]+1, pad[ivar]);
-    delete[] data[ivar][0];
-    str = data[ivar][0] = utils::strdup(result);
-  } else if (style[ivar] == EQUAL) {
+  if (style[ivar] == EQUAL) {
     double answer = evaluate(data[ivar][0],nullptr,ivar);
     delete[] data[ivar][1];
     data[ivar][1] = utils::strdup(fmt::format("{:.15g}",answer));
     str = data[ivar][1];
-  } else if (style[ivar] == FORMAT) {
-    int jvar = find(data[ivar][0]);
-    if (jvar < 0)
-      error->all(FLERR, "Variable {}: format variable {} does not exist", names[ivar],data[ivar][0]);
-    if (!equalstyle(jvar))
-      error->all(FLERR, "Variable {}: format variable {} has incompatible style",
-                 names[ivar],data[ivar][0]);
-    double answer = compute_equal(jvar);
-    sprintf(data[ivar][2],data[ivar][1],answer);
-    str = data[ivar][2];
-  } else if (style[ivar] == GETENV) {
-    const char *result = getenv(data[ivar][0]);
-    if (result == nullptr) result = (const char *) "";
-    delete[] data[ivar][1];
-    str = data[ivar][1] = utils::strdup(result);
-  } else if (style[ivar] == TIMER || style[ivar] == INTERNAL) {
-    delete[] data[ivar][0];
-    data[ivar][0] = utils::strdup(fmt::format("{:.15g}",dvalue[ivar]));
-    str = data[ivar][0];
   } else if (style[ivar] == ATOM ||
              style[ivar] == VECTOR) return nullptr;
   eval_in_progress[ivar] = 0;
