@@ -56,11 +56,8 @@ npair_full_bin.o \
 npair_half_bin_atomonly_newton.o \
 npair_half_bin_newtoff.o \
 npair_half_bin_newton.o \
-npair_half_bin_newton_tri.o \
 npair_halffull_newtoff.o \
-npair_halffull_newtoff_trim.o \
 npair_halffull_newton.o \
-npair_halffull_newton_trim.o \
 npair_half_size_bin_newtoff.o \
 npair_half_size_bin_newton.o \
 npair_half_size_bin_newton_tri.o \

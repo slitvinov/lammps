@@ -9,6 +9,4 @@
 #include "npair_half_size_bin_newton.h"
 #include "npair_half_size_bin_newton_tri.h"
 #include "npair_halffull_newtoff.h"
-#include "npair_halffull_newtoff_trim.h"
 #include "npair_halffull_newton.h"
-#include "npair_halffull_newton_trim.h"
