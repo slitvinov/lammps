@@ -8,7 +8,6 @@ class Integrate : protected Pointers {
   ~Integrate() override;
   virtual void init();
   virtual void setup(int flag) = 0;
-  virtual void setup_minimal(int) = 0;
   virtual void run(int) = 0;
   virtual void force_clear() = 0;
   virtual void cleanup() {}

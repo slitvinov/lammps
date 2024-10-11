@@ -63,34 +63,6 @@ void Verlet::setup(int flag)
   modify->setup(vflag);
   update->setupflag = 0;
 }
-void Verlet::setup_minimal(int flag)
-{
-  update->setupflag = 1;
-  if (flag) {
-    modify->setup_pre_exchange();
-    if (triclinic) domain->x2lamda(atom->nlocal);
-    domain->pbc();
-    domain->reset_box();
-    comm->setup();
-    if (neighbor->style) neighbor->setup_bins();
-    comm->exchange();
-    comm->borders();
-    if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
-    modify->setup_pre_neighbor();
-    neighbor->build(1);
-    modify->setup_post_neighbor();
-    neighbor->ncalls = 0;
-  }
-  ev_set(update->ntimestep);
-  force_clear();
-  modify->setup_pre_force(vflag);
-  if (pair_compute_flag) force->pair->compute(eflag,vflag);
-  else if (force->pair) force->pair->compute_dummy(eflag,vflag);
-  modify->setup_pre_reverse(eflag,vflag);
-  if (force->newton) comm->reverse_comm();
-  modify->setup(vflag);
-  update->setupflag = 0;
-}
 void Verlet::run(int n)
 {
   bigint ntimestep;
