@@ -18,7 +18,6 @@ class Group : protected Pointers {
   void create(const std::string &, int *);
   int find(const std::string &);
   int find_or_create(const char *);
-  void read_restart(FILE *);
   bigint count_all();
   bigint count(int);
   bigint count(int, Region *);

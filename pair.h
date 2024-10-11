@@ -123,8 +123,6 @@ class Pair : protected Pointers {
   virtual void init_style();
   virtual void init_list(int, class NeighList *);
   virtual double init_one(int, int) { return 0.0; }
-  virtual void read_restart(FILE *);
-  virtual void read_restart_settings(FILE *) {}
   virtual void write_data(FILE *) {}
   virtual void write_data_all(FILE *) {}
   virtual int pack_forward_comm(int, int *, double *, int, int *) { return 0; }

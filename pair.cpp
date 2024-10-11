@@ -249,11 +249,6 @@ void Pair::compute_dummy(int eflag, int vflag)
 {
   ev_init(eflag,vflag);
 }
-void Pair::read_restart(FILE *)
-{
-  if (comm->me == 0)
-    error->warning(FLERR,"Pair style restartinfo set but has no restart support");
-}
 void Pair::add_tally_callback(Compute *ptr)
 {
   int i,found=-1;

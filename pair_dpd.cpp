@@ -180,43 +180,6 @@ double PairDPD::init_one(int i, int j)
   sigma[j][i] = sigma[i][j];
   return cut[i][j];
 }
-void PairDPD::read_restart(FILE *fp)
-{
-  read_restart_settings(fp);
-  allocate();
-  int i,j;
-  int me = comm->me;
-  for (i = 1; i <= atom->ntypes; i++)
-    for (j = i; j <= atom->ntypes; j++) {
-      if (me == 0) utils::sfread(FLERR,&setflag[i][j],sizeof(int),1,fp,nullptr,error);
-      MPI_Bcast(&setflag[i][j],1,MPI_INT,0,world);
-      if (setflag[i][j]) {
-        if (me == 0) {
-          utils::sfread(FLERR,&a0[i][j],sizeof(double),1,fp,nullptr,error);
-          utils::sfread(FLERR,&gamma[i][j],sizeof(double),1,fp,nullptr,error);
-          utils::sfread(FLERR,&cut[i][j],sizeof(double),1,fp,nullptr,error);
-        }
-        MPI_Bcast(&a0[i][j],1,MPI_DOUBLE,0,world);
-        MPI_Bcast(&gamma[i][j],1,MPI_DOUBLE,0,world);
-        MPI_Bcast(&cut[i][j],1,MPI_DOUBLE,0,world);
-      }
-    }
-}
-void PairDPD::read_restart_settings(FILE *fp)
-{
-  if (comm->me == 0) {
-    utils::sfread(FLERR,&temperature,sizeof(double),1,fp,nullptr,error);
-    utils::sfread(FLERR,&cut_global,sizeof(double),1,fp,nullptr,error);
-    utils::sfread(FLERR,&seed,sizeof(int),1,fp,nullptr,error);
-    utils::sfread(FLERR,&mix_flag,sizeof(int),1,fp,nullptr,error);
-  }
-  MPI_Bcast(&temperature,1,MPI_DOUBLE,0,world);
-  MPI_Bcast(&cut_global,1,MPI_DOUBLE,0,world);
-  MPI_Bcast(&seed,1,MPI_INT,0,world);
-  MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
-  if (random) delete random;
-  random = new RanMars(lmp,seed + comm->me);
-}
 void PairDPD::write_data(FILE *fp)
 {
   for (int i = 1; i <= atom->ntypes; i++)
