@@ -348,47 +348,6 @@ void CreateAtoms::add_random()
     error->warning(FLERR, "Only inserted {} particles out of {}", ninsert, nrandom);
   delete random;
 }
-void CreateAtoms::loop_lattice(int action)
-{
-  int i, j, k, m;
-  const double *const *const basis = domain->lattice->basis;
-  nlatt = 0;
-  for (k = klo; k <= khi; k++) {
-    for (j = jlo; j <= jhi; j++) {
-      for (i = ilo; i <= ihi; i++) {
-        for (m = 0; m < nbasis; m++) {
-          double *coord;
-          double x[3], lamda[3];
-          x[0] = i + basis[m][0];
-          x[1] = j + basis[m][1];
-          x[2] = k + basis[m][2];
-          domain->lattice->lattice2box(x[0], x[1], x[2]);
-          if (style == REGION)
-            if (!region->match(x[0], x[1], x[2])) continue;
-          if (varflag && vartest(x) == 0) continue;
-          if (triclinic) {
-            domain->x2lamda(x, lamda);
-            coord = lamda;
-          } else
-            coord = x;
-          if (coord[0] < sublo[0] || coord[0] >= subhi[0] || coord[1] < sublo[1] ||
-              coord[1] >= subhi[1] || coord[2] < sublo[2] || coord[2] >= subhi[2])
-            continue;
-          if (action == INSERT) {
-            if (mode == ATOM) {
-              atom->avec->create_atom(basistype[m], x);
-            }
-          } else if (action == COUNT) {
-            if (nlatt == MAXSMALLINT) nlatt_overflow = 1;
-          } else if (action == INSERT_SELECTED && flag[nlatt]) {
-     atom->avec->create_atom(basistype[m], x);
-          }
-          nlatt++;
-        }
-      }
-    }
-  }
-}
 int CreateAtoms::vartest(double *x)
 {
   if (xstr) input->variable->internal_set(xvar, x[0]);

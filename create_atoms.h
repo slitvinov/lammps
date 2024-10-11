@@ -39,7 +39,6 @@ class CreateAtoms : public Command {
   double sublo[3], subhi[3];
   void add_single();
   void add_random();
-  void loop_lattice(int);
   int vartest(double *);
 };
 }
