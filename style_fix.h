@@ -1,7 +1,1 @@
-#include "fix_abf.h"
-#include "fix_fileforce.h"
 #include "fix_nve.h"
-#include "fix_pair.h"
-#include "fix_rbc.h"
-#include "fix_sdf_bounceback.h"
-#include "fix_sdf_repforce.h"
