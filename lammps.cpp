@@ -49,19 +49,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   infile = nullptr;
   initclock = platform::walltime();
   int iarg = 1;
-  if (narg-iarg >= 2 && (strcmp(arg[iarg],"-mpicolor") == 0 ||
-                         strcmp(arg[iarg],"-m") == 0)) {
-    int me,nprocs;
-    MPI_Comm_rank(communicator,&me);
-    MPI_Comm_size(communicator,&nprocs);
-    int color = atoi(arg[iarg+1]);
-    MPI_Comm subcomm;
-    MPI_Comm_split(communicator,color,me,&subcomm);
-    external_comm = communicator;
-    communicator = subcomm;
-    delete universe;
-    universe = new Universe(this,communicator);
-  }
   int inflag = 0;
   int screenflag = 0;
   int logflag = 0;
@@ -93,76 +80,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
         error->universe_all(FLERR,"Invalid command-line argument");
       inflag = iarg + 1;
       iarg += 2;
-    } else if (strcmp(arg[iarg],"-log") == 0 ||
-               strcmp(arg[iarg],"-l") == 0) {
-      if (iarg+2 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      logflag = iarg + 1;
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"-mpicolor") == 0 ||
-               strcmp(arg[iarg],"-m") == 0) {
-      if (iarg+2 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      if (iarg != 1) error->universe_all(FLERR,"Invalid command-line argument");
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"-nonbuf") == 0 ||
-               strcmp(arg[iarg],"-nb") == 0) {
-      nonbufflag = 1;
-      iarg++;
-    } else if (strcmp(arg[iarg],"-package") == 0 ||
-               strcmp(arg[iarg],"-pk") == 0) {
-      if (iarg+2 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      memory->grow(pfirst,npack+1,"lammps:pfirst");
-      memory->grow(plast,npack+1,"lammps:plast");
-      iarg++;
-      pfirst[npack] = iarg;
-      while (iarg < narg) {
-        if (arg[iarg][0] != '-') iarg++;
-        else if (isdigit(arg[iarg][1])) iarg++;
-        else break;
-      }
-      plast[npack++] = iarg;
-    } else if (strcmp(arg[iarg],"-partition") == 0 ||
-        strcmp(arg[iarg],"-p") == 0) {
-      universe->existflag = 1;
-      if (iarg+2 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      iarg++;
-      while (iarg < narg && arg[iarg][0] != '-') {
-        universe->add_world(arg[iarg]);
-        iarg++;
-      }
-    } else if (strcmp(arg[iarg],"-plog") == 0 ||
-               strcmp(arg[iarg],"-pl") == 0) {
-      if (iarg+2 > narg)
-       error->universe_all(FLERR,"Invalid command-line argument");
-      partlogflag = iarg + 1;
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"-pscreen") == 0 ||
-               strcmp(arg[iarg],"-ps") == 0) {
-      if (iarg+2 > narg)
-       error->universe_all(FLERR,"Invalid command-line argument");
-      partscreenflag = iarg + 1;
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"-reorder") == 0 ||
-               strcmp(arg[iarg],"-ro") == 0) {
-      if (iarg+3 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      if (universe->existflag)
-        error->universe_all(FLERR,"Cannot use -reorder after -partition");
-      universe->reorder(arg[iarg+1],arg[iarg+2]);
-      iarg += 3;
-    } else if (strcmp(arg[iarg],"-screen") == 0 ||
-               strcmp(arg[iarg],"-sc") == 0) {
-      if (iarg+2 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      screenflag = iarg + 1;
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"-skiprun") == 0 ||
-               strcmp(arg[iarg],"-sr") == 0) {
-      skiprunflag = 1;
-      ++iarg;
     } else if (strcmp(arg[iarg],"-var") == 0 ||
                strcmp(arg[iarg],"-v") == 0) {
       if (iarg+3 > narg)
