@@ -25,11 +25,6 @@
 
 using namespace LAMMPS_NS;
 
-// for convenience
-static void finalize()
-{
-}
-
 /* ----------------------------------------------------------------------
    main program to drive LAMMPS
 ------------------------------------------------------------------------- */
@@ -46,11 +41,9 @@ int main(int argc, char **argv)
     delete lammps;
   } catch (fmt::format_error &fe) {
     fprintf(stderr, "fmt::format_error: %s\n", fe.what());
-    finalize();
     MPI_Abort(MPI_COMM_WORLD, 1);
     exit(1);
   }
-  finalize();
   MPI_Barrier(lammps_comm);
   MPI_Finalize();
 }
