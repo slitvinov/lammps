@@ -148,79 +148,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
                        "Better to use the -in switch to read input files.");
       utils::flush_buffers(this);
     }
-  } else {
-    int me;
-    MPI_Comm_split(universe->uworld,universe->iworld,0,&world);
-    MPI_Comm_rank(world,&me);
-    screen = logfile = infile = nullptr;
-    if (me == 0) {
-      std::string str;
-      if (partscreenflag == 0) {
-        if (screenflag == 0) {
-          str = fmt::format("screen.{}",universe->iworld);
-          screen = fopen(str.c_str(),"w");
-          if (screen == nullptr)
-            error->one(FLERR,"Cannot open screen file {}: {}",str,utils::getsyserror());
-        } else if (strcmp(arg[screenflag],"none") == 0) {
-          screen = nullptr;
-        } else {
-          str = fmt::format("{}.{}",arg[screenflag],universe->iworld);
-          screen = fopen(str.c_str(),"w");
-          if (screen == nullptr)
-            error->one(FLERR,"Cannot open screen file {}: {}",arg[screenflag],utils::getsyserror());
-        }
-      } else if (strcmp(arg[partscreenflag],"none") == 0) {
-        screen = nullptr;
-      } else {
-        str = fmt::format("{}.{}",arg[partscreenflag],universe->iworld);
-        screen = fopen(str.c_str(),"w");
-        if (screen == nullptr)
-          error->one(FLERR,"Cannot open screen file {}: {}",str,utils::getsyserror());
-      }
-      if (partlogflag == 0) {
-        if (logflag == 0) {
-          str = fmt::format("log.lammps.{}",universe->iworld);
-          logfile = fopen(str.c_str(),"w");
-          if (logfile == nullptr)
-            error->one(FLERR,"Cannot open logfile {}: {}",str, utils::getsyserror());
-        } else if (strcmp(arg[logflag],"none") == 0) {
-          logfile = nullptr;
-        } else {
-          str = fmt::format("{}.{}",arg[logflag],universe->iworld);
-          logfile = fopen(str.c_str(),"w");
-          if (logfile == nullptr)
-            error->one(FLERR,"Cannot open logfile {}: {}",str, utils::getsyserror());
-        }
-      } else if (strcmp(arg[partlogflag],"none") == 0) {
-        logfile = nullptr;
-      } else {
-        str = fmt::format("{}.{}",arg[partlogflag],universe->iworld);
-        logfile = fopen(str.c_str(),"w");
-        if (logfile == nullptr)
-          error->one(FLERR,"Cannot open logfile {}: {}",str, utils::getsyserror());
-      }
-      if (strcmp(arg[inflag], "none") != 0) {
-        infile = fopen(arg[inflag],"r");
-        if (infile == nullptr)
-          error->one(FLERR,"Cannot open input script {}: {}",arg[inflag], utils::getsyserror());
-      }
-    }
-    if (nonbufflag) {
-      if (universe->uscreen) setbuf(universe->uscreen, nullptr);
-      if (universe->ulogfile) setbuf(universe->ulogfile, nullptr);
-      if (screen) setbuf(screen, nullptr);
-      if (logfile) setbuf(logfile, nullptr);
-    }
-    if ((universe->me == 0) && (!helpflag)) {
-      const char fmt[] = "LAMMPS ({})\nRunning on {} partitions of processors\n";
-      if (universe->uscreen)
-        fmt::print(universe->uscreen,fmt,version,universe->nworlds);
-      if (universe->ulogfile)
-        fmt::print(universe->ulogfile,fmt,version,universe->nworlds);
-    }
-    if ((me == 0) && (!helpflag))
-      utils::logmesg(this,fmt::format("LAMMPS ({})\nProcessor partition = {}\n",
-                                      version, universe->iworld));
   }
   if (sizeof(smallint) != sizeof(int))
     error->all(FLERR,"Smallint setting in lmptype.h is invalid");
@@ -253,19 +180,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
     error->all(FLERR,"Small to big integers are not sized correctly");
 #endif
   input = new Input(this,narg,arg);
-  if (npack > 0) {
-    num_package = npack;
-    packargs = new char**[npack];
-    for (int i=0; i < npack; ++i) {
-      int n = plast[i] - pfirst[i];
-      packargs[i] = new char*[n+1];
-      for (int j=0; j < n; ++j)
-        packargs[i][j] = utils::strdup(arg[pfirst[i]+j]);
-      packargs[i][n] = nullptr;
-    }
-    memory->destroy(pfirst);
-    memory->destroy(plast);
-  }
   if (helpflag) {
     error->done(0);
   } else {
@@ -277,14 +191,6 @@ LAMMPS::~LAMMPS()
 {
   const int me = comm->me;
   destroy();
-  if (num_package) {
-    for (int i = 0; i < num_package; i++) {
-      for (char **ptr = packargs[i]; *ptr != nullptr; ++ptr)
-        delete[] *ptr;
-      delete[] packargs[i];
-    }
-    delete[] packargs;
-  }
   num_package = 0;
   packargs = nullptr;
   double totalclock = platform::walltime() - initclock;
