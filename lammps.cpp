@@ -69,23 +69,12 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
   int *plast = nullptr;
   iarg = 1;
   while (iarg < narg) {
-    if (strcmp(arg[iarg],"-echo") == 0 ||
-               strcmp(arg[iarg],"-e") == 0) {
-      if (iarg+2 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"-in") == 0 ||
+    if (strcmp(arg[iarg],"-in") == 0 ||
                strcmp(arg[iarg],"-i") == 0) {
       if (iarg+2 > narg)
         error->universe_all(FLERR,"Invalid command-line argument");
       inflag = iarg + 1;
       iarg += 2;
-    } else if (strcmp(arg[iarg],"-var") == 0 ||
-               strcmp(arg[iarg],"-v") == 0) {
-      if (iarg+3 > narg)
-        error->universe_all(FLERR,"Invalid command-line argument");
-      iarg += 3;
-      while (iarg < narg && arg[iarg][0] != '-') iarg++;
     } else {
       error->universe_all(FLERR, fmt::format("Invalid command-line argument: {}", arg[iarg]) );
     }
