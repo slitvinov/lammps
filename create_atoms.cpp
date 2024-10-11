@@ -54,26 +54,7 @@ void CreateAtoms::command(int narg, char **arg)
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
   const char *meshfile;
   int iarg;
-  if (strcmp(arg[1], "box") == 0) {
-    style = BOX;
-    iarg = 2;
-    region = nullptr;
-  } else if (strcmp(arg[1], "region") == 0) {
-    style = REGION;
-    if (narg < 3) utils::missing_cmd_args(FLERR, "create_atoms region", error);
-    region = domain->get_region_by_id(arg[2]);
-    if (!region) error->all(FLERR, "Create_atoms region {} does not exist", arg[2]);
-    region->init();
-    region->prematch();
-    iarg = 3;
-  } else if (strcmp(arg[1], "single") == 0) {
-    style = SINGLE;
-    if (narg < 5) utils::missing_cmd_args(FLERR, "create_atoms single", error);
-    xone[0] = utils::numeric(FLERR, arg[2], false, lmp);
-    xone[1] = utils::numeric(FLERR, arg[3], false, lmp);
-    xone[2] = utils::numeric(FLERR, arg[4], false, lmp);
-    iarg = 5;
-  } else if (strcmp(arg[1], "random") == 0) {
+  if (strcmp(arg[1], "random") == 0) {
     style = RANDOM;
     if (narg < 5) utils::missing_cmd_args(FLERR, "create_atoms random", error);
     nrandom = utils::bnumeric(FLERR, arg[2], false, lmp);
@@ -89,11 +70,6 @@ void CreateAtoms::command(int narg, char **arg)
       region->prematch();
     }
     iarg = 5;
-  } else if (strcmp(arg[1], "mesh") == 0) {
-    style = MESH;
-    if (narg < 3) utils::missing_cmd_args(FLERR, "create_atoms mesh", error);
-    meshfile = arg[2];
-    iarg = 3;
   } else
     error->all(FLERR, "Unknown create_atoms command option {}", arg[1]);
   int scaleflag = 1;
