@@ -54,7 +54,6 @@ platform.o \
 procmap.o \
 random_mars.o \
 random_park.o \
-rcb.o \
 region_block.o \
 region.o \
 run.o \
