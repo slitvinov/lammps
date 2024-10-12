@@ -175,7 +175,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator) :
     error->done(0);
   } else {
     create();
-    post_create();
   }
 }
 LAMMPS::~LAMMPS()
@@ -220,10 +219,6 @@ void LAMMPS::create()
   force = new Force(this);
   modify = new Modify(this);
   update = new Update(this);
-}
-void LAMMPS::post_create()
-{
-  if (skiprunflag) input->one("timer timeout 0 every 1");
 }
 void LAMMPS::init()
 {

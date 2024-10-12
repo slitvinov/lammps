@@ -100,29 +100,6 @@ Variable::~Variable()
   delete randomequal;
   delete randomatom;
 }
-void Variable::set(int narg, char **arg)
-{
-  if (narg < 2) utils::missing_cmd_args(FLERR, "variable", error);
-  int replaceflag = 0;
-  if (strcmp(arg[1],"equal") == 0) {
-    if (narg != 3) error->all(FLERR,"Illegal variable command: expected 3 arguments but found {}", narg);
-    int ivar = find(arg[0]);
-    if (nvar == maxvar) grow();
-    style[nvar] = EQUAL;
-    num[nvar] = 2;
-    which[nvar] = 0;
-    pad[nvar] = 0;
-    data[nvar] = new char*[num[nvar]];
-    data[nvar][0] = utils::strdup(arg[2]);
-    data[nvar][1] = new char[VALUELENGTH];
-    strcpy(data[nvar][1],"(undefined)");
-  } else error->all(FLERR,"Unknown variable keyword: {}", arg[1]);
-  if (replaceflag) return;
-  if (!utils::is_id(arg[0]))
-    error->all(FLERR,"Variable name '{}' must have only letters, numbers, or underscores",arg[0]);
-  names[nvar] = utils::strdup(arg[0]);
-  nvar++;
-}
 int Variable::find(const char *name)
 {
   if (name == nullptr) return -1;

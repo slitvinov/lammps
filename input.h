@@ -16,8 +16,6 @@ class Input : protected Pointers {
   Input(class LAMMPS *, int, char **);
   ~Input() override;
   void file();
-  void file(const char *);
-  char *one(const std::string &);
   void substitute(char *&, char *&, int &, int &, int);
   void write_echo(const std::string &);
  protected:
@@ -50,7 +48,6 @@ class Input : protected Pointers {
   void partition();
   void print();
   void quit();
-  void variable_command();
   void atom_modify();
   void atom_style();
   void boundary();

@@ -32,7 +32,6 @@ class LAMMPS {
   LAMMPS(int, char **, MPI_Comm);
   ~LAMMPS();
   void create();
-  void post_create();
   void init();
   void destroy();
  private:

@@ -8,7 +8,6 @@ class Variable : protected Pointers {
  public:
   Variable(class LAMMPS *);
   ~Variable() override;
-  void set(int, char **);
   int find(const char *);
   int equalstyle(int);
   int atomstyle(int);

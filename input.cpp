@@ -128,42 +128,6 @@ void Input::file()
       error->all(FLERR,"Unknown command: {}",line);
   }
 }
-void Input::file(const char *filename)
-{
-  if (me == 0) {
-    if (nfile == maxfile) error->one(FLERR,"Too many nested levels of input scripts");
-    if (filename) {
-      infile = fopen(filename,"r");
-      if (infile == nullptr)
-        error->one(FLERR,"Cannot open input script {}: {}", filename, utils::getsyserror());
-      infiles[nfile++] = infile;
-    }
-  }
-  file();
-  if (me == 0) {
-    if (filename) {
-      fclose(infile);
-      nfile--;
-      infile = infiles[nfile-1];
-    }
-  }
-}
-char *Input::one(const std::string &single)
-{
-  int n = single.size() + 1;
-  if (n > maxline) reallocate(line,maxline,n);
-  strcpy(line,single.c_str());
-  if (me == 0 && label_active == 0) {
-    if (echo_screen && screen) fprintf(screen,"%s\n",line);
-    if (echo_log && logfile) fprintf(logfile,"%s\n",line);
-  }
-  parse();
-  if (command == nullptr) return nullptr;
-  if (label_active && strcmp(command,"label") != 0) return nullptr;
-  if (execute_command())
-    error->all(FLERR,"Unknown command: {}",line);
-  return command;
-}
 void Input::write_echo(const std::string &txt)
 {
   if (me == 0) {
@@ -374,10 +338,8 @@ int Input::execute_command()
   int flag = 1;
   std::string mycmd = command;
   if (mycmd == "log") log();
-  else if (mycmd == "partition") partition();
   else if (mycmd == "print") print();
   else if (mycmd == "quit") quit();
-  else if (mycmd == "variable") variable_command();
   else if (mycmd == "atom_modify") atom_modify();
   else if (mycmd == "atom_style") atom_style();
   else if (mycmd == "boundary") boundary();
@@ -440,20 +402,6 @@ void Input::log()
     if (universe->nworlds == 1) universe->ulogfile = logfile;
   }
 }
-void Input::partition()
-{
-  if (narg < 3) utils::missing_cmd_args(FLERR, "partition", error);
-  int ilo,ihi;
-  int yesflag = utils::logical(FLERR,arg[0],false,lmp);
-  utils::bounds(FLERR,arg[1],1,universe->nworlds,ilo,ihi,error);
-  if (strcmp(arg[2],"partition") == 0) error->all(FLERR,"Illegal partition command");
-  char *cmd = strstr(line,arg[2]);
-  if (yesflag) {
-    if (universe->iworld+1 >= ilo && universe->iworld+1 <= ihi) one(cmd);
-  } else {
-    if (universe->iworld+1 < ilo || universe->iworld+1 > ihi) one(cmd);
-  }
-}
 void Input::print()
 {
   if (narg < 1) utils::missing_cmd_args(FLERR, "print", error);
@@ -504,10 +452,6 @@ void Input::quit()
   if (narg == 0) error->done(0);
   if (narg == 1) error->done(utils::inumeric(FLERR,arg[0],false,lmp));
   error->all(FLERR,"Illegal quit command: expected 0 or 1 argument but found {}", narg);
-}
-void Input::variable_command()
-{
-  variable->set(narg,arg);
 }
 void Input::atom_modify()
 {
