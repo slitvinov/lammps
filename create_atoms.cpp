@@ -42,14 +42,8 @@ void CreateAtoms::command(int narg, char **arg)
   if (modify->nfix_restart_peratom)
     error->all(FLERR, "Cannot create_atoms after reading restart file with per-atom info");
   int latsty = domain->lattice->style;
-  if (domain->dimension == 2) {
-    if (latsty == Lattice::SC || latsty == Lattice::BCC || latsty == Lattice::FCC ||
-        latsty == Lattice::HCP || latsty == Lattice::DIAMOND)
-      error->all(FLERR, "Lattice style incompatible with simulation dimension");
-  } else {
-    if (latsty == Lattice::SQ || latsty == Lattice::SQ2 || latsty == Lattice::HEX)
-      error->all(FLERR, "Lattice style incompatible with simulation dimension");
-  }
+  if (latsty == Lattice::SQ || latsty == Lattice::SQ2 || latsty == Lattice::HEX)
+    error->all(FLERR, "Lattice style incompatible with simulation dimension");
   if (narg < 2) utils::missing_cmd_args(FLERR, "create_atoms", error);
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
   const char *meshfile;
@@ -96,102 +90,27 @@ void CreateAtoms::command(int narg, char **arg)
     if ((ntype <= 0) || (ntype > atom->ntypes))
       error->all(FLERR, "Invalid atom type in create_atoms command");
   }
-  if (style == MESH) {
-    if (mode == MOLECULE)
-      error->all(FLERR, "Create_atoms mesh is not compatible with the 'mol' option");
-    if (scaleflag) error->all(FLERR, "Create_atoms mesh must use 'units box' option");
-  }
   ranlatt = nullptr;
   if (subsetflag != NONE) ranlatt = new RanMars(lmp, subsetseed + comm->me);
   if (!vstr && (xstr || ystr || zstr))
     error->all(FLERR, "Incomplete use of variables in create_atoms command");
   if (vstr && (!xstr && !ystr && !zstr))
     error->all(FLERR, "Incomplete use of variables in create_atoms command");
-  if (varflag) {
-    vvar = input->variable->find(vstr);
-    if (vvar < 0) error->all(FLERR, "Variable {} for create_atoms does not exist", vstr);
-    if (!input->variable->equalstyle(vvar))
-      error->all(FLERR, "Variable for create_atoms is invalid style");
-    if (xstr) {
-      xvar = input->variable->find(xstr);
-      if (xvar < 0) error->all(FLERR, "Variable {} for create_atoms does not exist", xstr);
-      if (!input->variable->internalstyle(xvar))
-        error->all(FLERR, "Variable for create_atoms is invalid style");
-    }
-    if (ystr) {
-      yvar = input->variable->find(ystr);
-      if (yvar < 0) error->all(FLERR, "Variable {} for create_atoms does not exist", ystr);
-      if (!input->variable->internalstyle(yvar))
-        error->all(FLERR, "Variable for create_atoms is invalid style");
-    }
-    if (zstr) {
-      zvar = input->variable->find(zstr);
-      if (zvar < 0) error->all(FLERR, "Variable {} for create_atoms does not exist", zstr);
-      if (!input->variable->internalstyle(zvar))
-        error->all(FLERR, "Variable for create_atoms is invalid style");
-    }
-  }
-  if ((style == BOX) || (style == REGION) || (style == MESH)) {
-    if (nbasis == 0) error->all(FLERR, "Cannot create atoms with undefined lattice");
-  } else if (scaleflag == 1) {
-    xone[0] *= domain->lattice->xlattice;
-    xone[1] *= domain->lattice->ylattice;
-    xone[2] *= domain->lattice->zlattice;
-    overlap *= domain->lattice->xlattice;
-  }
+  xone[0] *= domain->lattice->xlattice;
+  xone[1] *= domain->lattice->ylattice;
+  xone[2] *= domain->lattice->zlattice;
+  overlap *= domain->lattice->xlattice;
   triclinic = domain->triclinic;
   double epsilon[3];
-  if (triclinic)
-    epsilon[0] = epsilon[1] = epsilon[2] = EPSILON;
-  else {
-    epsilon[0] = domain->prd[0] * EPSILON;
-    epsilon[1] = domain->prd[1] * EPSILON;
-    epsilon[2] = domain->prd[2] * EPSILON;
-  }
-  if (triclinic == 0) {
-    sublo[0] = domain->sublo[0];
-    subhi[0] = domain->subhi[0];
-    sublo[1] = domain->sublo[1];
-    subhi[1] = domain->subhi[1];
-    sublo[2] = domain->sublo[2];
-    subhi[2] = domain->subhi[2];
-  } else {
-    sublo[0] = domain->sublo_lamda[0];
-    subhi[0] = domain->subhi_lamda[0];
-    sublo[1] = domain->sublo_lamda[1];
-    subhi[1] = domain->subhi_lamda[1];
-    sublo[2] = domain->sublo_lamda[2];
-    subhi[2] = domain->subhi_lamda[2];
-  }
-  if (style == BOX || style == REGION) {
-    if (comm->layout != Comm::LAYOUT_TILED) {
-      if (domain->xperiodic) {
-        if (comm->myloc[0] == 0) sublo[0] -= epsilon[0];
-        if (comm->myloc[0] == comm->procgrid[0] - 1) subhi[0] -= 2.0 * epsilon[0];
-      }
-      if (domain->yperiodic) {
-        if (comm->myloc[1] == 0) sublo[1] -= epsilon[1];
-        if (comm->myloc[1] == comm->procgrid[1] - 1) subhi[1] -= 2.0 * epsilon[1];
-      }
-      if (domain->zperiodic) {
-        if (comm->myloc[2] == 0) sublo[2] -= epsilon[2];
-        if (comm->myloc[2] == comm->procgrid[2] - 1) subhi[2] -= 2.0 * epsilon[2];
-      }
-    } else {
-      if (domain->xperiodic) {
-        if (comm->mysplit[0][0] == 0.0) sublo[0] -= epsilon[0];
-        if (comm->mysplit[0][1] == 1.0) subhi[0] -= 2.0 * epsilon[0];
-      }
-      if (domain->yperiodic) {
-        if (comm->mysplit[1][0] == 0.0) sublo[1] -= epsilon[1];
-        if (comm->mysplit[1][1] == 1.0) subhi[1] -= 2.0 * epsilon[1];
-      }
-      if (domain->zperiodic) {
-        if (comm->mysplit[2][0] == 0.0) sublo[2] -= epsilon[2];
-        if (comm->mysplit[2][1] == 1.0) subhi[2] -= 2.0 * epsilon[2];
-      }
-    }
-  }
+  epsilon[0] = domain->prd[0] * EPSILON;
+  epsilon[1] = domain->prd[1] * EPSILON;
+  epsilon[2] = domain->prd[2] * EPSILON;
+  sublo[0] = domain->sublo[0];
+  subhi[0] = domain->subhi[0];
+  sublo[1] = domain->sublo[1];
+  subhi[1] = domain->subhi[1];
+  sublo[2] = domain->sublo[2];
+  subhi[2] = domain->subhi[2];
   MPI_Barrier(world);
   double time1 = platform::walltime();
   if (atom->map_style != Atom::MAP_NONE) atom->map_clear();
@@ -239,25 +158,13 @@ void CreateAtoms::add_random()
   }
   auto random = new RanPark(lmp, seed);
   for (int ii = 0; ii < 30; ii++) random->uniform();
-  if (triclinic == 0) {
-    xlo = domain->boxlo[0];
-    xhi = domain->boxhi[0];
-    ylo = domain->boxlo[1];
-    yhi = domain->boxhi[1];
-    zlo = domain->boxlo[2];
-    zhi = domain->boxhi[2];
-    zmid = zlo + 0.5 * (zhi - zlo);
-  } else {
-    xlo = domain->boxlo_bound[0];
-    xhi = domain->boxhi_bound[0];
-    ylo = domain->boxlo_bound[1];
-    yhi = domain->boxhi_bound[1];
-    zlo = domain->boxlo_bound[2];
-    zhi = domain->boxhi_bound[2];
-    zmid = zlo + 0.5 * (zhi - zlo);
-    boxlo = domain->boxlo_lamda;
-    boxhi = domain->boxhi_lamda;
-  }
+  xlo = domain->boxlo[0];
+  xhi = domain->boxhi[0];
+  ylo = domain->boxlo[1];
+  yhi = domain->boxhi[1];
+  zlo = domain->boxlo[2];
+  zhi = domain->boxhi[2];
+  zmid = zlo + 0.5 * (zhi - zlo);
   if (region && region->bboxflag) {
     xlo = MAX(xlo, region->extent_xlo);
     xhi = MIN(xhi, region->extent_xhi);
@@ -281,15 +188,7 @@ void CreateAtoms::add_random()
       if (domain->dimension == 2) xone[2] = zmid;
       if (region && (region->match(xone[0], xone[1], xone[2]) == 0)) continue;
       if (varflag && vartest(xone) == 0) continue;
-      if (triclinic) {
-        domain->x2lamda(xone, lamda);
-        coord = lamda;
-        if (coord[0] < boxlo[0] || coord[0] >= boxhi[0] || coord[1] < boxlo[1] ||
-            coord[1] >= boxhi[1] || coord[2] < boxlo[2] || coord[2] >= boxhi[2])
-          continue;
-      } else {
-        coord = xone;
-      }
+      coord = xone;
       if (overlapflag) {
         double **x = atom->x;
         int nlocal = atom->nlocal;
