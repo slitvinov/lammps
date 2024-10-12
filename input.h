@@ -73,9 +73,6 @@ class Input : protected Pointers {
   void region();
   void run_style();
   void timestep();
-  void uncompute();
-  void unfix();
-  void units();
 };
 }
 #endif

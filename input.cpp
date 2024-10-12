@@ -365,9 +365,6 @@ int Input::execute_command()
   else if (mycmd == "region") region();
   else if (mycmd == "run_style") run_style();
   else if (mycmd == "timestep") timestep();
-  else if (mycmd == "uncompute") uncompute();
-  else if (mycmd == "unfix") unfix();
-  else if (mycmd == "units") units();
   else flag = 0;
   if (flag) return 0;
   if (mycmd == "reset_atoms") flag = meta(mycmd);
@@ -626,23 +623,6 @@ void Input::timestep()
   if (respaflag) update->integrate->reset_dt();
   if (force->pair) force->pair->reset_dt();
   for (auto &ifix : modify->get_fix_list()) ifix->reset_dt();
-}
-void Input::uncompute()
-{
-  if (narg != 1) error->all(FLERR,"Illegal uncompute command");
-  modify->delete_compute(arg[0]);
-}
-void Input::unfix()
-{
-  if (narg != 1) error->all(FLERR,"Illegal unfix command");
-  modify->delete_fix(arg[0]);
-}
-void Input::units()
-{
-  if (narg != 1) error->all(FLERR,"Illegal units command: expected 1 argument but found {}", narg);
-  if (domain->box_exist)
-    error->all(FLERR,"Units command after simulation box is defined");
-  update->set_units(arg[0]);
 }
 int Input::meta(const std::string &prefix)
 {
