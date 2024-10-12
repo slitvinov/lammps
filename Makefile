@@ -32,7 +32,6 @@ hashlittle.o \
 input.o \
 integrate.o \
 label_map.o \
-lammps.o \
 lattice.o \
 main.o \
 math_eigen.o \

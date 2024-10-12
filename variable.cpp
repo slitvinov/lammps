@@ -69,7 +69,6 @@ Variable::Variable(LAMMPS *lmp) : Pointers(lmp)
   eval_in_progress = nullptr;
   randomequal = nullptr;
   randomatom = nullptr;
-  constants["version"] = lmp->num_ver;
   precedence[DONE] = 0;
   precedence[OR] = precedence[XOR] = 1;
   precedence[AND] = 2;

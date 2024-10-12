@@ -17,8 +17,6 @@ class LAMMPS {
   class Force *force;
   class Modify *modify;
   class Group *group;
-  const char *version;
-  int num_ver;
   int restart_ver;
   MPI_Comm world;
   FILE *infile;
@@ -31,10 +29,6 @@ class LAMMPS {
   char ***packargs;
   int num_package;
   MPI_Comm external_comm;
-  static bool has_git_info();
-  static const char *git_commit();
-  static const char *git_branch();
-  static const char *git_descriptor();
   LAMMPS(int, char **, MPI_Comm);
   ~LAMMPS();
   void create();
