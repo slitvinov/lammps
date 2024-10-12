@@ -47,7 +47,6 @@ class Input : protected Pointers {
   void log();
   void partition();
   void print();
-  void quit();
   void atom_modify();
   void atom_style();
   void boundary();

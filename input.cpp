@@ -339,7 +339,6 @@ int Input::execute_command()
   std::string mycmd = command;
   if (mycmd == "log") log();
   else if (mycmd == "print") print();
-  else if (mycmd == "quit") quit();
   else if (mycmd == "atom_modify") atom_modify();
   else if (mycmd == "atom_style") atom_style();
   else if (mycmd == "boundary") boundary();
@@ -443,12 +442,6 @@ void Input::print()
     if (universe->uscreen) fprintf(universe->uscreen, "%s\n",line);
     if (universe->ulogfile) fprintf(universe->ulogfile,"%s\n",line);
   }
-}
-void Input::quit()
-{
-  if (narg == 0) error->done(0);
-  if (narg == 1) error->done(utils::inumeric(FLERR,arg[0],false,lmp));
-  error->all(FLERR,"Illegal quit command: expected 0 or 1 argument but found {}", narg);
 }
 void Input::atom_modify()
 {
