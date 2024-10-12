@@ -338,19 +338,13 @@ int Input::execute_command()
   int flag = 1;
   std::string mycmd = command;
   if (mycmd == "log") log();
-  else if (mycmd == "print") print();
   else if (mycmd == "atom_modify") atom_modify();
   else if (mycmd == "atom_style") atom_style();
   else if (mycmd == "boundary") boundary();
   else if (mycmd == "comm_modify") comm_modify();
   else if (mycmd == "comm_style") comm_style();
-  else if (mycmd == "compute") compute();
-  else if (mycmd == "compute_modify") compute_modify();
-  else if (mycmd == "dielectric") dielectric();
-  else if (mycmd == "dimension") dimension();
   else if (mycmd == "fix") fix();
   else if (mycmd == "fix_modify") fix_modify();
-  else if (mycmd == "group") group_command();
   else if (mycmd == "lattice") lattice();
   else if (mycmd == "mass") mass();
   else if (mycmd == "neigh_modify") neigh_modify();
@@ -398,51 +392,6 @@ void Input::log()
     if (universe->nworlds == 1) universe->ulogfile = logfile;
   }
 }
-void Input::print()
-{
-  if (narg < 1) utils::missing_cmd_args(FLERR, "print", error);
-  int n = strlen(arg[0]) + 1;
-  if (n > maxline) reallocate(line,maxline,n);
-  strcpy(line,arg[0]);
-  substitute(line,work,maxline,maxwork,0);
-  FILE *fp = nullptr;
-  int screenflag = 1;
-  int universeflag = 0;
-  int iarg = 1;
-  while (iarg < narg) {
-    if (strcmp(arg[iarg],"file") == 0 || strcmp(arg[iarg],"append") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal print {} command: missing argument(s)", arg[iarg]);
-      if (me == 0) {
-        if (fp != nullptr) fclose(fp);
-        if (strcmp(arg[iarg],"file") == 0) fp = fopen(arg[iarg+1],"w");
-        else fp = fopen(arg[iarg+1],"a");
-        if (fp == nullptr)
-          error->one(FLERR,"Cannot open print file {}: {}", arg[iarg+1], utils::getsyserror());
-      }
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"screen") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "print screen", error);
-      screenflag = utils::logical(FLERR,arg[iarg+1],false,lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"universe") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "print universe", error);
-      universeflag = utils::logical(FLERR,arg[iarg+1],false,lmp);
-      iarg += 2;
-    } else error->all(FLERR,"Unknown print keyword: {}", arg[iarg]);
-  }
-  if (me == 0) {
-    if (screenflag && screen) fprintf(screen,"%s\n",line);
-    if (screenflag && logfile) fprintf(logfile,"%s\n",line);
-    if (fp) {
-      fprintf(fp,"%s\n",line);
-      fclose(fp);
-    }
-  }
-  if (universeflag && (universe->me == 0)) {
-    if (universe->uscreen) fprintf(universe->uscreen, "%s\n",line);
-    if (universe->ulogfile) fprintf(universe->ulogfile,"%s\n",line);
-  }
-}
 void Input::atom_modify()
 {
   atom->modify_params(narg,arg);
@@ -474,29 +423,6 @@ void Input::comm_style()
     delete oldcomm;
   } else error->all(FLERR,"Unknown comm_style argument: {}", arg[0]);
 }
-void Input::compute()
-{
-  modify->add_compute(narg,arg);
-}
-void Input::compute_modify()
-{
-  modify->modify_compute(narg,arg);
-}
-void Input::dielectric()
-{
-  if (narg != 1) error->all(FLERR,"Illegal dielectric command");
-  force->dielectric = utils::numeric(FLERR,arg[0],false,lmp);
-}
-void Input::dimension()
-{
-  if (narg != 1) error->all(FLERR, "Dimension command expects exactly 1 argument");
-  if (domain->box_exist)
-    error->all(FLERR,"Dimension command after simulation box is defined");
-  domain->dimension = utils::inumeric(FLERR,arg[0],false,lmp);
-  if (domain->dimension != 2 && domain->dimension != 3)
-    error->all(FLERR, "Invalid dimension argument: {}", arg[0]);
-  for (auto &c : modify->get_compute_list()) c->reset_extra_dof();
-}
 void Input::fix()
 {
   modify->add_fix(narg,arg);
@@ -504,10 +430,6 @@ void Input::fix()
 void Input::fix_modify()
 {
   modify->modify_fix(narg,arg);
-}
-void Input::group_command()
-{
-  group->assign(narg,arg);
 }
 void Input::lattice()
 {
