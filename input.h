@@ -56,12 +56,8 @@ class Input : protected Pointers {
   void mass();
   void neigh_modify();
   void neighbor_command();
-  void newton();
   void pair_coeff();
-  void pair_modify();
   void pair_style();
-  void pair_write();
-  void processors();
   void region();
   void run_style();
   void timestep();

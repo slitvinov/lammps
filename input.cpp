@@ -349,12 +349,8 @@ int Input::execute_command()
   else if (mycmd == "mass") mass();
   else if (mycmd == "neigh_modify") neigh_modify();
   else if (mycmd == "neighbor") neighbor_command();
-  else if (mycmd == "newton") newton();
   else if (mycmd == "pair_coeff") pair_coeff();
-  else if (mycmd == "pair_modify") pair_modify();
   else if (mycmd == "pair_style") pair_style();
-  else if (mycmd == "pair_write") pair_write();
-  else if (mycmd == "processors") processors();
   else if (mycmd == "region") region();
   else if (mycmd == "run_style") run_style();
   else if (mycmd == "timestep") timestep();
@@ -450,19 +446,6 @@ void Input::neighbor_command()
 {
   neighbor->set(narg,arg);
 }
-void Input::newton()
-{
-  int newton_pair=1,newton_bond=1;
-  if (narg == 1) {
-    newton_pair = newton_bond = utils::logical(FLERR,arg[0],false,lmp);
-  } else if (narg == 2) {
-    newton_pair = utils::logical(FLERR,arg[0],false,lmp);
-    newton_bond = utils::logical(FLERR,arg[1],false,lmp);
-  } else error->all(FLERR,"Illegal newton command");
-  force->newton_pair = newton_pair;
-  if (newton_pair || newton_bond) force->newton = 1;
-  else force->newton = 0;
-}
 void Input::pair_coeff()
 {
   if (domain->box_exist == 0)
@@ -483,12 +466,6 @@ void Input::pair_coeff()
   }
   force->pair->coeff(narg,arg);
 }
-void Input::pair_modify()
-{
-  if (force->pair == nullptr)
-    error->all(FLERR,"Pair_modify command before pair_style is defined");
-  force->pair->modify_params(narg,arg);
-}
 void Input::pair_style()
 {
   if (narg < 1) utils::missing_cmd_args(FLERR, "pair_style", error);
@@ -503,18 +480,6 @@ void Input::pair_style()
   }
   force->create_pair(arg[0],1);
   if (force->pair) force->pair->settings(narg-1,&arg[1]);
-}
-void Input::pair_write()
-{
-  if (force->pair == nullptr)
-    error->all(FLERR,"Pair_write command before pair_style is defined");
-  force->pair->write_file(narg,arg);
-}
-void Input::processors()
-{
-  if (domain->box_exist)
-    error->all(FLERR,"Processors command after simulation box is defined");
-  comm->set_processors(narg,arg);
 }
 void Input::region()
 {
