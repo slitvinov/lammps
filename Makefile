@@ -18,7 +18,6 @@ atom_vec.o \
 comm_brick.o \
 comm.o \
 compute.o \
-compute_pe_atom.o \
 compute_pressure.o \
 create_atoms.o \
 create_box.o \
