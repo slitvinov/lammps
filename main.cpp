@@ -198,12 +198,6 @@ LAMMPS::~LAMMPS()
     if (logfile) fclose(logfile);
     logfile = nullptr;
     if (screen != stdout) screen = nullptr;
-  } else {
-    if (screen && screen != stdout) fclose(screen);
-    if (logfile) fclose(logfile);
-    if (universe->ulogfile) fclose(universe->ulogfile);
-    logfile = nullptr;
-    if (screen != stdout) screen = nullptr;
   }
   if (infile && infile != stdin) fclose(infile);
   if (world != universe->uworld) MPI_Comm_free(&world);
