@@ -1,5 +1,4 @@
 #include "modify.h"
-#include "style_compute.h"
 #include "style_fix.h"
 #include "atom.h"
 #include "comm.h"
@@ -72,11 +71,6 @@ void _noopt Modify::create_factories()
 #undef FixStyle
 #undef FIX_CLASS
   compute_map = new ComputeCreatorMap();
-#define COMPUTE_CLASS 
-#define ComputeStyle(key,Class) (*compute_map)[#key] = &style_creator<Compute, Class>;
-#include "style_compute.h"
-#undef ComputeStyle
-#undef COMPUTE_CLASS
 }
 Modify::~Modify()
 {
