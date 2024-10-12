@@ -1,13 +1,6 @@
-variable        number_density equal 10
-variable        Lx equal 10
-variable        Ly equal 10
-variable        Lz equal 10
-
-region region   block 0 ${Lx} 0 ${Ly} 0 ${Lz} units box
+region region   block 0 10 0 10 0 10 units box
 create_box 1    region
-
-variable        Np equal ${number_density}*${Lx}*${Ly}*${Lz}
-create_atoms    1 random ${Np} 123456 region
+create_atoms    1 random 10000 123456 region
 mass            1 1
 
 neighbor        0.0 bin
