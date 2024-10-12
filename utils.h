@@ -41,8 +41,6 @@ namespace utils {
               TYPE &nlo, TYPE &nhi, Error *error);
   int expand_args(const char *file, int line, int narg, char **arg, int mode, char **&earg,
                   LAMMPS *lmp);
-  int check_grid_reference(char *errstr, char *ref, int nevery,
-                           char *&id, int &igrid, int &idata, int &index, LAMMPS *lmp);
   std::vector<std::string> parse_grid_id(const char *file, int line, const std::string &name,
                                          Error *error);
   char *strdup(const std::string &text);
