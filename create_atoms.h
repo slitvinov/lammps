@@ -38,7 +38,6 @@ class CreateAtoms : public Command {
   int triclinic;
   double sublo[3], subhi[3];
   void add_random();
-  int vartest(double *);
 };
 }
 #endif

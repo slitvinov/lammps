@@ -71,7 +71,6 @@ void CreateAtoms::command(int narg, char **arg)
   mode = ATOM;
   int molseed;
   ranmol = nullptr;
-  varflag = 0;
   vstr = xstr = ystr = zstr = nullptr;
   quat_user = 0;
   quatone[0] = quatone[1] = quatone[2] = quatone[3] = 0.0;
@@ -187,7 +186,6 @@ void CreateAtoms::add_random()
       xone[2] = zlo + random->uniform() * (zhi - zlo);
       if (domain->dimension == 2) xone[2] = zmid;
       if (region && (region->match(xone[0], xone[1], xone[2]) == 0)) continue;
-      if (varflag && vartest(xone) == 0) continue;
       coord = xone;
       if (overlapflag) {
         double **x = atom->x;
@@ -222,13 +220,4 @@ void CreateAtoms::add_random()
   if (ninsert < nrandom && comm->me == 0)
     error->warning(FLERR, "Only inserted {} particles out of {}", ninsert, nrandom);
   delete random;
-}
-int CreateAtoms::vartest(double *x)
-{
-  if (xstr) input->variable->internal_set(xvar, x[0]);
-  if (ystr) input->variable->internal_set(yvar, x[1]);
-  if (zstr) input->variable->internal_set(zvar, x[2]);
-  double value = input->variable->compute_equal(vvar);
-  if (value == 0.0) return 0;
-  return 1;
 }
