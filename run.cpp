@@ -52,8 +52,4 @@ void Run::command(int narg, char **arg)
   update->whichflag = 0;
   update->firststep = update->laststep = 0;
   update->beginstep = update->endstep = 0;
-  if (commands) {
-    for (int i = 0; i < ncommands; i++) delete [] commands[i];
-    delete [] commands;
-  }
 }
