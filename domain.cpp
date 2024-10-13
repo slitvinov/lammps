@@ -1184,30 +1184,3 @@ void Domain::bbox(double *lo, double *hi, double *bboxlo, double *bboxhi)
   bboxlo[1] = MIN(bboxlo[1],x[1]); bboxhi[1] = MAX(bboxhi[1],x[1]);
   bboxlo[2] = MIN(bboxlo[2],x[2]); bboxhi[2] = MAX(bboxhi[2],x[2]);
 }
-void Domain::box_corners()
-{
-  lamda_box_corners(boxlo_lamda,boxhi_lamda);
-}
-void Domain::subbox_corners()
-{
-  lamda_box_corners(sublo_lamda,subhi_lamda);
-}
-void Domain::lamda_box_corners(double *lo, double *hi)
-{
-  corners[0][0] = lo[0]; corners[0][1] = lo[1]; corners[0][2] = lo[2];
-  lamda2x(corners[0],corners[0]);
-  corners[1][0] = hi[0]; corners[1][1] = lo[1]; corners[1][2] = lo[2];
-  lamda2x(corners[1],corners[1]);
-  corners[2][0] = lo[0]; corners[2][1] = hi[1]; corners[2][2] = lo[2];
-  lamda2x(corners[2],corners[2]);
-  corners[3][0] = hi[0]; corners[3][1] = hi[1]; corners[3][2] = lo[2];
-  lamda2x(corners[3],corners[3]);
-  corners[4][0] = lo[0]; corners[4][1] = lo[1]; corners[4][2] = hi[2];
-  lamda2x(corners[4],corners[4]);
-  corners[5][0] = hi[0]; corners[5][1] = lo[1]; corners[5][2] = hi[2];
-  lamda2x(corners[5],corners[5]);
-  corners[6][0] = lo[0]; corners[6][1] = hi[1]; corners[6][2] = hi[2];
-  lamda2x(corners[6],corners[6]);
-  corners[7][0] = hi[0]; corners[7][1] = hi[1]; corners[7][2] = hi[2];
-  lamda2x(corners[7],corners[7]);
-}

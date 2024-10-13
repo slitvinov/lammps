@@ -85,8 +85,6 @@ class Domain : protected Pointers {
   void x2lamda(double *, double *, double *, double *);
   void bbox(double *, double *, double *, double *);
   void box_corners();
-  void subbox_corners();
-  void lamda_box_corners(double *, double *);
   inline int minimum_image_check(double dx, double dy, double dz)
   {
     if (xperiodic && fabs(dx) > xprd_half) return 1;
