@@ -19,7 +19,6 @@
 #include "neighbor.h"
 #include "universe.h"
 #include "update.h"
-#include "variable.h"
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
