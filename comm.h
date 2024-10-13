@@ -37,7 +37,6 @@ class Comm : protected Pointers {
   void copy_arrays(class Comm *);
   virtual void init();
   void modify_params(int, char **);
-  void set_processors(int, char **);
   virtual void set_proc_grid(int outflag = 1);
   double get_comm_cutoff();
   virtual void setup() = 0;
