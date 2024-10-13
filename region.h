@@ -50,7 +50,6 @@ class Region : protected Pointers {
   virtual void reset_vel();
   virtual int inside(double, double, double) = 0;
   virtual void shape_update() {}
-  virtual void pretransform();
   virtual void set_velocity_shape() {}
  protected:
   void options(int, char **);

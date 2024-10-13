@@ -45,22 +45,12 @@ int Region::dynamic_check()
 void Region::prematch()
 {
   if (varshape) shape_update();
-  if (dynamic) pretransform();
 }
 int Region::match(double x, double y, double z)
 {
   if (dynamic) inverse_transform(x, y, z);
   if (openflag) return 1;
   return !(inside(x, y, z) ^ interior);
-}
-void Region::pretransform()
-{
-  if (moveflag) {
-    if (xstr) dx = input->variable->compute_equal(xvar);
-    if (ystr) dy = input->variable->compute_equal(yvar);
-    if (zstr) dz = input->variable->compute_equal(zvar);
-  }
-  if (rotateflag) theta = input->variable->compute_equal(tvar);
 }
 void Region::forward_transform(double &x, double &y, double &z)
 {
