@@ -62,7 +62,6 @@ tokenizer.o \
 universe.o \
 update.o \
 utils.o \
-variable.o \
 verlet.o \
 
 main: $(S:.cpp=.o)
