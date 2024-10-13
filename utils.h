@@ -39,10 +39,6 @@ namespace utils {
   template <typename TYPE>
   void bounds(const char *file, int line, const std::string &str, bigint nmin, bigint nmax,
               TYPE &nlo, TYPE &nhi, Error *error);
-  int expand_args(const char *file, int line, int narg, char **arg, int mode, char **&earg,
-                  LAMMPS *lmp);
-  std::vector<std::string> parse_grid_id(const char *file, int line, const std::string &name,
-                                         Error *error);
   char *strdup(const std::string &text);
   std::string lowercase(const std::string &line);
   std::string uppercase(const std::string &line);

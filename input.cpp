@@ -19,7 +19,6 @@
 #include "style_command.h"
 #include "universe.h"
 #include "update.h"
-#include "variable.h"
 #include <cstring>
 #include <cerrno>
 #include <cctype>
@@ -49,7 +48,6 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp)
     infiles = new FILE *[maxfile];
     infiles[0] = infile;
   } else infiles = nullptr;
-  variable = new Variable(lmp);
   command_map = new CommandCreatorMap();
 #define COMMAND_CLASS 
 #define CommandStyle(key,Class) \
@@ -66,7 +64,6 @@ Input::~Input()
   delete[] labelstr;
   memory->sfree(arg);
   delete[] infiles;
-  delete variable;
   delete command_map;
 }
 void Input::file()

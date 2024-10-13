@@ -12,7 +12,6 @@ class Input : protected Pointers {
  public:
   int narg;
   char **arg;
-  class Variable *variable;
   Input(class LAMMPS *, int, char **);
   ~Input() override;
   void file();
