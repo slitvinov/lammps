@@ -114,53 +114,6 @@ void Region::options(int narg, char **arg)
       else
         error->all(FLERR, "Illegal region units: {}", arg[iarg + 1]);
       iarg += 2;
-    } else if (strcmp(arg[iarg], "side") == 0) {
-      if (iarg + 2 > narg) utils::missing_cmd_args(FLERR, "region side", error);
-      if (strcmp(arg[iarg + 1], "in") == 0)
-        interior = 1;
-      else if (strcmp(arg[iarg + 1], "out") == 0)
-        interior = 0;
-      else
-        error->all(FLERR, "Illegal region side: {}", arg[iarg + 1]);
-      iarg += 2;
-    } else if (strcmp(arg[iarg], "move") == 0) {
-      if (iarg + 4 > narg) utils::missing_cmd_args(FLERR, "region move", error);
-      if (strcmp(arg[iarg + 1], "NULL") != 0) {
-        if (strstr(arg[iarg + 1], "v_") != arg[iarg + 1])
-          error->all(FLERR, "Illegal region move x displacement variable: {}", arg[iarg + 1]);
-        xstr = utils::strdup(&arg[iarg + 1][2]);
-      }
-      if (strcmp(arg[iarg + 2], "NULL") != 0) {
-        if (strstr(arg[iarg + 2], "v_") != arg[iarg + 2])
-          error->all(FLERR, "Illegal region move y displacement variable: {}", arg[iarg + 2]);
-        ystr = utils::strdup(&arg[iarg + 2][2]);
-      }
-      if (strcmp(arg[iarg + 3], "NULL") != 0) {
-        if (strstr(arg[iarg + 3], "v_") != arg[iarg + 3])
-          error->all(FLERR, "Illegal region move z displacement variable: {}", arg[iarg + 3]);
-        zstr = utils::strdup(&arg[iarg + 3][2]);
-      }
-      moveflag = 1;
-      iarg += 4;
-    } else if (strcmp(arg[iarg], "rotate") == 0) {
-      if (iarg + 8 > narg) utils::missing_cmd_args(FLERR, "region rotate", error);
-      if (strstr(arg[iarg + 1], "v_") != arg[iarg + 1]) error->all(FLERR, "Illegal region command");
-      tstr = utils::strdup(&arg[iarg + 1][2]);
-      point[0] = utils::numeric(FLERR, arg[iarg + 2], false, lmp);
-      point[1] = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
-      point[2] = utils::numeric(FLERR, arg[iarg + 4], false, lmp);
-      axis[0] = utils::numeric(FLERR, arg[iarg + 5], false, lmp);
-      axis[1] = utils::numeric(FLERR, arg[iarg + 6], false, lmp);
-      axis[2] = utils::numeric(FLERR, arg[iarg + 7], false, lmp);
-      rotateflag = 1;
-      iarg += 8;
-    } else if (strcmp(arg[iarg], "open") == 0) {
-      if (iarg + 2 > narg) utils::missing_cmd_args(FLERR, "region open", error);
-      int iface = utils::inumeric(FLERR, arg[iarg + 1], false, lmp);
-      if (iface < 1 || iface > 6) error->all(FLERR, "Illegal region open face index: {}", iface);
-      open_faces[iface - 1] = 1;
-      openflag = 1;
-      iarg += 2;
     } else
       error->all(FLERR, "Illegal region command argument: {}", arg[iarg]);
   }
