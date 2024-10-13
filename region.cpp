@@ -53,17 +53,6 @@ int Region::match(double x, double y, double z)
   if (openflag) return 1;
   return !(inside(x, y, z) ^ interior);
 }
-void Region::add_contact(int n, double *x, double xp, double yp, double zp)
-{
-  double delx = x[0] - xp;
-  double dely = x[1] - yp;
-  double delz = x[2] - zp;
-  contact[n].r = sqrt(delx * delx + dely * dely + delz * delz);
-  contact[n].radius = 0;
-  contact[n].delx = delx;
-  contact[n].dely = dely;
-  contact[n].delz = delz;
-}
 void Region::pretransform()
 {
   if (moveflag) {

@@ -53,7 +53,6 @@ class Region : protected Pointers {
   virtual void pretransform();
   virtual void set_velocity_shape() {}
  protected:
-  void add_contact(int, double *, double, double, double);
   void options(int, char **);
   void forward_transform(double &, double &, double &);
   double point[3], runit[3];
