@@ -1046,33 +1046,17 @@ int Neighbor::check_distance()
   double delx,dely,delz,rsq;
   double delta,deltasq,delta1,delta2;
   if (boxcheck) {
-    if (triclinic == 0) {
-      delx = bboxlo[0] - boxlo_hold[0];
-      dely = bboxlo[1] - boxlo_hold[1];
-      delz = bboxlo[2] - boxlo_hold[2];
-      delta1 = sqrt(delx*delx + dely*dely + delz*delz);
-      delx = bboxhi[0] - boxhi_hold[0];
-      dely = bboxhi[1] - boxhi_hold[1];
-      delz = bboxhi[2] - boxhi_hold[2];
-      delta2 = sqrt(delx*delx + dely*dely + delz*delz);
-      delta = 0.5 * (skin - (delta1+delta2));
-      if (delta < 0.0) delta = 0.0;
-      deltasq = delta*delta;
-    } else {
-      domain->box_corners();
-      delta1 = delta2 = 0.0;
-      for (int i = 0; i < 8; i++) {
-        delx = corners[i][0] - corners_hold[i][0];
-        dely = corners[i][1] - corners_hold[i][1];
-        delz = corners[i][2] - corners_hold[i][2];
-        delta = sqrt(delx*delx + dely*dely + delz*delz);
-        if (delta > delta1) delta1 = delta;
-        else if (delta > delta2) delta2 = delta;
-      }
-      delta = 0.5 * (skin - (delta1+delta2));
-      if (delta < 0.0) delta = 0.0;
-      deltasq = delta*delta;
-    }
+    delx = bboxlo[0] - boxlo_hold[0];
+    dely = bboxlo[1] - boxlo_hold[1];
+    delz = bboxlo[2] - boxlo_hold[2];
+    delta1 = sqrt(delx*delx + dely*dely + delz*delz);
+    delx = bboxhi[0] - boxhi_hold[0];
+    dely = bboxhi[1] - boxhi_hold[1];
+    delz = bboxhi[2] - boxhi_hold[2];
+    delta2 = sqrt(delx*delx + dely*dely + delz*delz);
+    delta = 0.5 * (skin - (delta1+delta2));
+    if (delta < 0.0) delta = 0.0;
+    deltasq = delta*delta;
   } else deltasq = triggersq;
   double **x = atom->x;
   int nlocal = atom->nlocal;
@@ -1115,22 +1099,12 @@ void Neighbor::build(int topoflag)
       xhold[i][2] = x[i][2];
     }
     if (boxcheck) {
-      if (triclinic == 0) {
-        boxlo_hold[0] = bboxlo[0];
-        boxlo_hold[1] = bboxlo[1];
-        boxlo_hold[2] = bboxlo[2];
-        boxhi_hold[0] = bboxhi[0];
-        boxhi_hold[1] = bboxhi[1];
-        boxhi_hold[2] = bboxhi[2];
-      } else {
-        domain->box_corners();
-        corners = domain->corners;
-        for (i = 0; i < 8; i++) {
-          corners_hold[i][0] = corners[i][0];
-          corners_hold[i][1] = corners[i][1];
-          corners_hold[i][2] = corners[i][2];
-        }
-      }
+      boxlo_hold[0] = bboxlo[0];
+      boxlo_hold[1] = bboxlo[1];
+      boxlo_hold[2] = bboxlo[2];
+      boxhi_hold[0] = bboxhi[0];
+      boxhi_hold[1] = bboxhi[1];
+      boxhi_hold[2] = bboxhi[2];
     }
   }
   if (style != Neighbor::NSQ) {
