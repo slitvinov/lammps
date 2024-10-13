@@ -38,7 +38,6 @@ Pair::Pair(LAMMPS *lmp) :
   comm_forward = comm_reverse = comm_reverse_off = 0;
   single_enable = 1;
   born_matrix_enable = 0;
-  single_hessian_enable = 0;
   restartinfo = 1;
   respa_enable = 0;
   one_coeff = 0;
@@ -876,63 +875,6 @@ void Pair::v_tally4(int i, int j, int k, int m,
     vatom[m][3] += v[3]; vatom[m][4] += v[4]; vatom[m][5] += v[5];
   }
 }
-void Pair::v_tally_tensor(int i, int j, int nlocal, int newton_pair,
-                          double vxx, double vyy, double vzz,
-                          double vxy, double vxz, double vyz)
-{
-  double v[6];
-  v[0] = vxx;
-  v[1] = vyy;
-  v[2] = vzz;
-  v[3] = vxy;
-  v[4] = vxz;
-  v[5] = vyz;
-  if (vflag_global) {
-    if (newton_pair) {
-      virial[0] += v[0];
-      virial[1] += v[1];
-      virial[2] += v[2];
-      virial[3] += v[3];
-      virial[4] += v[4];
-      virial[5] += v[5];
-    } else {
-      if (i < nlocal) {
-        virial[0] += 0.5*v[0];
-        virial[1] += 0.5*v[1];
-        virial[2] += 0.5*v[2];
-        virial[3] += 0.5*v[3];
-        virial[4] += 0.5*v[4];
-        virial[5] += 0.5*v[5];
-      }
-      if (j < nlocal) {
-        virial[0] += 0.5*v[0];
-        virial[1] += 0.5*v[1];
-        virial[2] += 0.5*v[2];
-        virial[3] += 0.5*v[3];
-        virial[4] += 0.5*v[4];
-        virial[5] += 0.5*v[5];
-      }
-    }
-  }
-  if (vflag_atom) {
-    if (newton_pair || i < nlocal) {
-      vatom[i][0] += 0.5*v[0];
-      vatom[i][1] += 0.5*v[1];
-      vatom[i][2] += 0.5*v[2];
-      vatom[i][3] += 0.5*v[3];
-      vatom[i][4] += 0.5*v[4];
-      vatom[i][5] += 0.5*v[5];
-    }
-    if (newton_pair || j < nlocal) {
-      vatom[j][0] += 0.5*v[0];
-      vatom[j][1] += 0.5*v[1];
-      vatom[j][2] += 0.5*v[2];
-      vatom[j][3] += 0.5*v[3];
-      vatom[j][4] += 0.5*v[4];
-      vatom[j][5] += 0.5*v[5];
-    }
-  }
-}
 void Pair::virial_fdotr_compute()
 {
   double **x = atom->x;
@@ -969,51 +911,3 @@ void Pair::virial_fdotr_compute()
   }
   vflag_fdotr = 0;
 }
-void Pair::init_bitmap(double inner, double outer, int ntablebits,
-             int &masklo, int &maskhi, int &nmask, int &nshiftbits)
-{
-  if (sizeof(int) != sizeof(float))
-    error->all(FLERR,"Bitmapped lookup tables require int/float be same size");
-  if (ntablebits > (int)sizeof(float)*CHAR_BIT)
-    error->all(FLERR,"Too many total bits for bitmapped lookup table");
-  if (inner >= outer)
-    error->warning(FLERR,"Table inner cutoff >= outer cutoff");
-  int nlowermin = 1;
-  while ((powint(2.0, nlowermin) > inner*inner) || (powint(2.0, nlowermin+1) <= inner*inner)) {
-    if (powint(2.0, nlowermin) <= inner*inner) nlowermin++;
-    else nlowermin--;
-  }
-  int nexpbits = 0;
-  double required_range = outer*outer / powint(2.0, nlowermin);
-  double available_range = 2.0;
-  while (available_range < required_range) {
-    nexpbits++;
-    available_range = pow(2.0, powint(2.0, nexpbits));
-  }
-  int nmantbits = ntablebits - nexpbits;
-  if (nexpbits > (int)sizeof(float)*CHAR_BIT - FLT_MANT_DIG)
-    error->all(FLERR,"Too many exponent bits for lookup table");
-  if (nmantbits+1 > FLT_MANT_DIG)
-    error->all(FLERR,"Too many mantissa bits for lookup table");
-  if (nmantbits < 3) error->all(FLERR,"Too few bits for lookup table");
-  nshiftbits = FLT_MANT_DIG - (nmantbits+1);
-  nmask = 1;
-  for (int j = 0; j < ntablebits+nshiftbits; j++) nmask *= 2;
-  nmask -= 1;
-  union_int_float_t rsq_lookup;
-  rsq_lookup.f = outer*outer;
-  maskhi = rsq_lookup.i & ~(nmask);
-  rsq_lookup.f = inner*inner;
-  masklo = rsq_lookup.i & ~(nmask);
-}
-void Pair::hessian_twobody(double fforce, double dfac, double delr[3], double phiTensor[6]) {
-  int m = 0;
-  for (int k=0; k<3; k++) {
-    phiTensor[m] = fforce;
-    for (int l=k; l<3; l++) {
-      if (l>k) phiTensor[m] = 0;
-      phiTensor[m++] += delr[k]*delr[l] * dfac;
-    }
-  }
-}
-

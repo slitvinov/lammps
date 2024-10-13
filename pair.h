@@ -26,7 +26,6 @@ class Pair : protected Pointers {
   int comm_reverse_off;
   int single_enable;
   int born_matrix_enable;
-  int single_hessian_enable;
   int restartinfo;
   int respa_enable;
   int one_coeff;
@@ -85,7 +84,6 @@ class Pair : protected Pointers {
   virtual void setup() {}
   double mix_energy(double, double, double, double);
   double mix_distance(double, double);
-  void init_bitmap(double, double, int, int &, int &, int &, int &);
   void compute_dummy(int, int);
   void ev_tally(int, int, int, int, double, double, double, double, double, double);
   void ev_tally3(int, int, int, double, double, double *, double *, double *, double *);
@@ -99,14 +97,6 @@ class Pair : protected Pointers {
   virtual double single(int, int, int, int, double, double, double, double &fforce)
   {
     fforce = 0.0;
-    return 0.0;
-  }
-  void hessian_twobody(double fforce, double dfac, double delr[3], double phiTensor[6]);
-  virtual double single_hessian(int, int, int, int, double, double[3], double, double,
-                                double &fforce, double d2u[6])
-  {
-    fforce = 0.0;
-    for (int i = 0; i < 6; i++) d2u[i] = 0;
     return 0.0;
   }
   virtual void born_matrix(int , int , int , int , double ,
@@ -188,7 +178,6 @@ class Pair : protected Pointers {
   void ev_tally_xyz(int, int, int, int, double, double, double, double, double, double, double,
                     double);
   void v_tally2(int, int, double, double *);
-  void v_tally_tensor(int, int, int, int, double, double, double, double, double, double);
   void virial_fdotr_compute();
   inline int sbmask(int j) const { return j >> SBBITS & 3; }
 };
