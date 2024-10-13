@@ -249,8 +249,6 @@ void LAMMPS::destroy()
   atom = nullptr;
   restart_ver = -1;
 }
-
-using namespace LAMMPS_NS;
 int main(int argc, char **argv)
 {
   MPI_Init(&argc, &argv);
