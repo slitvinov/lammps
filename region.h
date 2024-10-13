@@ -49,15 +49,12 @@ class Region : protected Pointers {
   virtual int restart(char *, int &);
   virtual void reset_vel();
   virtual int inside(double, double, double) = 0;
-  virtual int surface_interior(double *, double) = 0;
-  virtual int surface_exterior(double *, double) = 0;
   virtual void shape_update() {}
   virtual void pretransform();
   virtual void set_velocity_shape() {}
  protected:
   void add_contact(int, double *, double, double, double);
   void options(int, char **);
-  void point_on_line_segment(double *, double *, double *, double *);
   void forward_transform(double &, double &, double &);
   double point[3], runit[3];
  private:

@@ -210,26 +210,6 @@ void Region::options(int narg, char **arg)
   else
     dynamic = 0;
 }
-void Region::point_on_line_segment(double *a, double *b, double *c, double *d)
-{
-  double ba[3], ca[3];
-  MathExtra::sub3(b, a, ba);
-  MathExtra::sub3(c, a, ca);
-  double t = MathExtra::dot3(ca, ba) / MathExtra::dot3(ba, ba);
-  if (t <= 0.0) {
-    d[0] = a[0];
-    d[1] = a[1];
-    d[2] = a[2];
-  } else if (t >= 1.0) {
-    d[0] = b[0];
-    d[1] = b[1];
-    d[2] = b[2];
-  } else {
-    d[0] = a[0] + t * ba[0];
-    d[1] = a[1] + t * ba[1];
-    d[2] = a[2] + t * ba[2];
-  }
-}
 void Region::set_velocity()
 {
   if (vel_timestep == update->ntimestep) return;
