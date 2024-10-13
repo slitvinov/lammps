@@ -43,13 +43,8 @@ class Input : protected Pointers {
   int numtriple(char *);
   void reallocate(char *&, int &, int);
   int execute_command();
-  int meta(const std::string &);
   void log();
-  void atom_modify();
-  void atom_style();
-  void boundary();
   void comm_modify();
-  void comm_style();
   void fix();
   void fix_modify();
   void lattice();
@@ -59,7 +54,6 @@ class Input : protected Pointers {
   void pair_coeff();
   void pair_style();
   void region();
-  void run_style();
   void timestep();
 };
 }

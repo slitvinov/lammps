@@ -166,15 +166,6 @@ void Input::parse()
       }
     } else ptr++;
   }
-  if (utils::has_utf8(copy)) {
-    std::string buf = utils::utf8_subst(copy);
-    strcpy(copy,buf.c_str());
-    if (utf8_warn && (comm->me == 0))
-      error->warning(FLERR,"Detected non-ASCII characters in input. "
-                     "Will try to continue by replacing with ASCII "
-                     "equivalents where known.");
-    utf8_warn = false;
-  }
   if (!label_active) substitute(copy,work,maxcopy,maxwork,1);
   char *next;
   command = nextword(copy,&next);
@@ -197,25 +188,9 @@ char *Input::nextword(char *str, char **next)
   char *start,*stop;
   start = &str[strspn(str," \t\n\v\f\r")];
   if (*start == '\0') return nullptr;
-  if (strstr(start,"\"\"\"") == start) {
-    stop = strstr(&start[3],"\"\"\"");
-    if (!stop) error->all(FLERR,"Unbalanced quotes in input line");
-    start += 3;
-    *next = stop+3;
-    if (**next && !isspace(**next))
-      error->all(FLERR,"Input line quote not followed by white-space");
-  } else if (*start == '"' || *start == '\'') {
-    stop = strchr(&start[1],*start);
-    if (!stop) error->all(FLERR,"Unbalanced quotes in input line");
-    start++;
-    *next = stop+1;
-    if (**next && !isspace(**next))
-      error->all(FLERR,"Input line quote not followed by white-space");
-  } else {
-    stop = &start[strcspn(start," \t\n\v\f\r")];
-    if (*stop == '\0') *next = stop;
-    else *next = stop+1;
-  }
+  stop = &start[strcspn(start," \t\n\v\f\r")];
+  if (*stop == '\0') *next = stop;
+  else *next = stop+1;
   *stop = '\0';
   return start;
 }
@@ -242,10 +217,6 @@ int Input::numtriple(char *line)
 {
   int count = 0;
   char *ptr = line;
-  while ((ptr = strstr(ptr,"\"\"\""))) {
-    ptr += 3;
-    count++;
-  }
   return count;
 }
 void Input::reallocate(char *&str, int &max, int n)
@@ -260,11 +231,7 @@ int Input::execute_command()
   int flag = 1;
   std::string mycmd = command;
   if (mycmd == "log") log();
-  else if (mycmd == "atom_modify") atom_modify();
-  else if (mycmd == "atom_style") atom_style();
-  else if (mycmd == "boundary") boundary();
   else if (mycmd == "comm_modify") comm_modify();
-  else if (mycmd == "comm_style") comm_style();
   else if (mycmd == "fix") fix();
   else if (mycmd == "fix_modify") fix_modify();
   else if (mycmd == "lattice") lattice();
@@ -274,11 +241,8 @@ int Input::execute_command()
   else if (mycmd == "pair_coeff") pair_coeff();
   else if (mycmd == "pair_style") pair_style();
   else if (mycmd == "region") region();
-  else if (mycmd == "run_style") run_style();
   else if (mycmd == "timestep") timestep();
   else flag = 0;
-  if (flag) return 0;
-  if (mycmd == "reset_atoms") flag = meta(mycmd);
   if (flag) return 0;
   if (command_map->find(mycmd) != command_map->end()) {
     CommandCreator &command_creator = (*command_map)[mycmd];
@@ -310,36 +274,9 @@ void Input::log()
     if (universe->nworlds == 1) universe->ulogfile = logfile;
   }
 }
-void Input::atom_modify()
-{
-  atom->modify_params(narg,arg);
-}
-void Input::atom_style()
-{
-  if (narg < 1) utils::missing_cmd_args(FLERR, "atom_style", error);
-  if (domain->box_exist)
-    error->all(FLERR,"Atom_style command after simulation box is defined");
-  atom->create_avec(arg[0],narg-1,&arg[1],1);
-}
-void Input::boundary()
-{
-  if (domain->box_exist)
-    error->all(FLERR,"Boundary command after simulation box is defined");
-  domain->set_boundary(narg,arg,0);
-}
 void Input::comm_modify()
 {
   comm->modify_params(narg,arg);
-}
-void Input::comm_style()
-{
-  if (narg < 1) utils::missing_cmd_args(FLERR, "comm_style", error);
-  if (strcmp(arg[0],"brick") == 0) {
-    if (comm->style == Comm::BRICK) return;
-    Comm *oldcomm = comm;
-    comm = new CommBrick(lmp,oldcomm);
-    delete oldcomm;
-  } else error->all(FLERR,"Unknown comm_style argument: {}", arg[0]);
 }
 void Input::fix()
 {
@@ -407,12 +344,6 @@ void Input::region()
 {
   domain->add_region(narg,arg);
 }
-void Input::run_style()
-{
-  if (domain->box_exist == 0)
-    error->all(FLERR,"Run_style command before simulation box is defined");
-  update->create_integrate(narg,arg,1);
-}
 void Input::timestep()
 {
   if (narg != 1) error->all(FLERR,"Illegal timestep command");
@@ -425,15 +356,4 @@ void Input::timestep()
   if (respaflag) update->integrate->reset_dt();
   if (force->pair) force->pair->reset_dt();
   for (auto &ifix : modify->get_fix_list()) ifix->reset_dt();
-}
-int Input::meta(const std::string &prefix)
-{
-  auto mycmd = fmt::format("{}_{}", utils::uppercase(prefix), utils::uppercase(arg[0]));
-  if (command_map->find(mycmd) != command_map->end()) {
-    CommandCreator &command_creator = (*command_map)[mycmd];
-    Command *cmd = command_creator(lmp);
-    cmd->command(narg-1,arg+1);
-    delete cmd;
-    return 1;
-  } else return 0;
 }
