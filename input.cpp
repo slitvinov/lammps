@@ -143,28 +143,7 @@ void Input::parse()
   char *ptrmatch;
   char *ptr = copy;
   while (*ptr) {
-    if (*ptr == '#') {
-      *ptr = '\0';
-      break;
-    }
-    if (*ptr == '\'') {
-      ptrmatch = strchr(ptr+1,'\'');
-      if (ptrmatch == nullptr)
-        error->all(FLERR,"Unmatched single quote in command");
-      ptr = ptrmatch + 1;
-    } else if (*ptr == '"') {
-      if (strstr(ptr,"\"\"\"") == ptr) {
-        ptrmatch = strstr(ptr+3,"\"\"\"");
-        if (ptrmatch == nullptr)
-          error->all(FLERR,"Unmatched triple quote in command");
-        ptr = ptrmatch + 3;
-      } else {
-        ptrmatch = strchr(ptr+1,'"');
-        if (ptrmatch == nullptr)
-          error->all(FLERR,"Unmatched double quote in command");
-        ptr = ptrmatch + 1;
-      }
-    } else ptr++;
+    ptr++;
   }
   if (!label_active) substitute(copy,work,maxcopy,maxwork,1);
   char *next;
