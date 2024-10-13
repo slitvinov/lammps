@@ -1,7 +1,6 @@
 #include "comm_brick.h"
 #include "atom.h"
 #include "atom_vec.h"
-#include "compute.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
@@ -772,45 +771,6 @@ void CommBrick::reverse_comm_variable(Fix *fix)
       buf = buf_recv;
     } else buf = buf_send;
     fix->unpack_reverse_comm(sendnum[iswap],sendlist[iswap],buf);
-  }
-}
-void CommBrick::forward_comm(Compute *compute)
-{
-  int iswap,n;
-  double *buf;
-  MPI_Request request;
-  int nsize = compute->comm_forward;
-  for (iswap = 0; iswap < nswap; iswap++) {
-    n = compute->pack_forward_comm(sendnum[iswap],sendlist[iswap],
-                                   buf_send,pbc_flag[iswap],pbc[iswap]);
-    if (sendproc[iswap] != me) {
-      if (recvnum[iswap])
-        MPI_Irecv(buf_recv,nsize*recvnum[iswap],MPI_DOUBLE,recvproc[iswap],0,world,&request);
-      if (sendnum[iswap])
-        MPI_Send(buf_send,n,MPI_DOUBLE,sendproc[iswap],0,world);
-      if (recvnum[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
-      buf = buf_recv;
-    } else buf = buf_send;
-    compute->unpack_forward_comm(recvnum[iswap],firstrecv[iswap],buf);
-  }
-}
-void CommBrick::reverse_comm(Compute *compute)
-{
-  int iswap,n;
-  double *buf;
-  MPI_Request request;
-  int nsize = compute->comm_reverse;
-  for (iswap = nswap-1; iswap >= 0; iswap--) {
-    n = compute->pack_reverse_comm(recvnum[iswap],firstrecv[iswap],buf_send);
-    if (sendproc[iswap] != me) {
-      if (sendnum[iswap])
-        MPI_Irecv(buf_recv,nsize*sendnum[iswap],MPI_DOUBLE,sendproc[iswap],0,world,&request);
-      if (recvnum[iswap])
-        MPI_Send(buf_send,n,MPI_DOUBLE,recvproc[iswap],0,world);
-      if (sendnum[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
-      buf = buf_recv;
-    } else buf = buf_send;
-    compute->unpack_reverse_comm(sendnum[iswap],sendlist[iswap],buf);
   }
 }
 void CommBrick::forward_comm_array(int nsize, double **array)

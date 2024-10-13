@@ -18,8 +18,6 @@ class CommBrick : public Comm {
   void forward_comm(class Fix *, int size = 0) override;
   void reverse_comm(class Fix *, int size = 0) override;
   void reverse_comm_variable(class Fix *) override;
-  void forward_comm(class Compute *) override;
-  void reverse_comm(class Compute *) override;
   void forward_comm_array(int, double **) override;
   int exchange_variable(int, double *, double *&) override;
   int exchange_variable_all2all(int, double *, double *&) override;

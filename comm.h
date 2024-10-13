@@ -49,8 +49,6 @@ class Comm : protected Pointers {
   virtual void forward_comm(class Fix *, int size = 0) = 0;
   virtual void reverse_comm(class Fix *, int size = 0) = 0;
   virtual void reverse_comm_variable(class Fix *) = 0;
-  virtual void forward_comm(class Compute *) = 0;
-  virtual void reverse_comm(class Compute *) = 0;
   virtual void forward_comm_array(int, double **) = 0;
   virtual int exchange_variable(int, double *, double *&) = 0;
   virtual int exchange_variable_all2all(int, double *, double *&) = 0;
