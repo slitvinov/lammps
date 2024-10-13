@@ -143,7 +143,6 @@ class Atom : protected Pointers {
   inline int get_max_same() { return max_same; };
   inline int get_map_maxarray() { return map_maxarray + 1; };
   int memcheck(const char *) { return 1; }
-  double memory_usage();
   inline int map(tagint global)
   {
     if (map_style == 1)

@@ -89,7 +89,6 @@ class Neighbor : protected Pointers {
   void build_collection(int);
   bigint get_nneigh_full();
   bigint get_nneigh_half();
-  double memory_usage();
   bigint last_setup_bins;
  protected:
   int me, nprocs;

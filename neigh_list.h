@@ -56,7 +56,6 @@ class NeighList : protected Pointers {
   void grow(int, int);
   void print_attributes();
   int get_maxlocal() { return maxatom; }
-  double memory_usage();
 };
 }
 #endif

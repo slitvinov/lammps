@@ -13,7 +13,6 @@ class NBinStandard : public NBin {
   void bin_atoms_setup(int) override;
   void setup_bins(int) override;
   void bin_atoms() override;
-  double memory_usage() override;
 };
 }
 #endif

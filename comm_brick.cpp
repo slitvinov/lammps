@@ -1025,13 +1025,3 @@ void *CommBrick::extract(const char *str, int &dim)
   }
   return nullptr;
 }
-double CommBrick::memory_usage()
-{
-  double bytes = 0;
-  bytes += (double)nprocs * sizeof(int);
-  for (int i = 0; i < nswap; i++)
-    bytes += memory->usage(sendlist[i],maxsendlist[i]);
-  bytes += memory->usage(buf_send,maxsend+bufextra);
-  bytes += memory->usage(buf_recv,maxrecv);
-  return bytes;
-}

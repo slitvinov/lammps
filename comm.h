@@ -57,7 +57,6 @@ class Comm : protected Pointers {
   virtual int exchange_variable_all2all(int, double *, double *&) = 0;
   virtual void coord2proc_setup() {}
   virtual int coord2proc(double *, int &, int &, int &);
-  virtual double memory_usage() = 0;
   void ring(int, int, void *, int, void (*)(int, char *, void *), void *, void *, int self = 1);
   int rendezvous(int, int, char *, int, int, int *,
                  int (*)(int, char *, int &, int *&, char *&, void *), int, char *&, int, void *,

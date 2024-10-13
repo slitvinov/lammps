@@ -132,7 +132,6 @@ class Pair : protected Pointers {
   virtual void unpack_forward_grid(int, void *, int, int *) {}
   virtual void pack_reverse_grid(int, void *, int, int *) {}
   virtual void unpack_reverse_grid(int, void *, int, int *) {}
-  virtual double memory_usage();
   void set_copymode(int value) { copymode = value; }
   virtual void *extract(const char *, int &) { return nullptr; }
   virtual void *extract_peratom(const char *, int &) { return nullptr; }

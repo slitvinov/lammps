@@ -144,10 +144,3 @@ void NBinStandard::bin_atoms()
     }
   }
 }
-double NBinStandard::memory_usage()
-{
-  double bytes = 0;
-  bytes += (double)maxbin*sizeof(int);
-  bytes += (double)2*maxatom*sizeof(int);
-  return bytes;
-}

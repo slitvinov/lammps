@@ -17,7 +17,6 @@
 #include "neighbor.h"
 #include "tokenizer.h"
 #include "update.h"
-#include "variable.h"
 #include <algorithm>
 #include <cstring>
 using namespace LAMMPS_NS;
@@ -917,19 +916,4 @@ int Atom::extract_datatype(const char *name)
   }
   return -1;
 }
-double Atom::memory_usage()
-{
-  double bytes = avec->memory_usage();
-  bytes += (double)max_same*sizeof(int);
-  if (map_style == MAP_ARRAY)
-    bytes += memory->usage(map_array,map_maxarray);
-  else if (map_style == MAP_HASH) {
-    bytes += (double)map_nbucket*sizeof(int);
-    bytes += (double)map_nhash*sizeof(HashElem);
-  }
-  if (maxnext) {
-    bytes += memory->usage(next,maxnext);
-    bytes += memory->usage(permute,maxnext);
-  }
-  return bytes;
-}
+

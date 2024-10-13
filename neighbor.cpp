@@ -1451,13 +1451,4 @@ bigint Neighbor::get_nneigh_half()
   }
   return nneighhalf;
 }
-double Neighbor::memory_usage()
-{
-  double bytes = 0;
-  bytes += memory->usage(xhold,maxhold,3);
-  for (int i = 0; i < nlist; i++)
-    if (lists[i]) bytes += lists[i]->memory_usage();
-  for (int i = 0; i < nbin; i++)
-    bytes += neigh_bin[i]->memory_usage();
-  return bytes;
-}
+

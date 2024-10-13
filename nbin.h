@@ -30,7 +30,6 @@ class NBin : protected Pointers {
   virtual void bin_atoms_setup(int) = 0;
   virtual void setup_bins(int) = 0;
   virtual void bin_atoms() = 0;
-  virtual double memory_usage() { return 0.0; }
  protected:
   int includegroup;
   double cutneighmin;

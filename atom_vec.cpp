@@ -1588,55 +1588,6 @@ void AtomVec::pack_vel(double **buf)
     }
   }
 }
-double AtomVec::memory_usage()
-{
-  int datatype, cols, maxcols;
-  void *pdata;
-  double bytes = 0;
-  bytes += memory->usage(tag, nmax);
-  bytes += memory->usage(type, nmax);
-  bytes += memory->usage(mask, nmax);
-  bytes += memory->usage(image, nmax);
-  bytes += memory->usage(x, nmax, 3);
-  bytes += memory->usage(v, nmax, 3);
-  bytes += memory->usage(f, nmax * comm->nthreads, 3);
-  for (int i = 0; i < ngrow; i++) {
-    pdata = mgrow.pdata[i];
-    datatype = mgrow.datatype[i];
-    cols = mgrow.cols[i];
-    const int nthreads = threads[i] ? comm->nthreads : 1;
-    if (datatype == Atom::DOUBLE) {
-      if (cols == 0) {
-        bytes += memory->usage(*((double **) pdata), nmax * nthreads);
-      } else if (cols > 0) {
-        bytes += memory->usage(*((double ***) pdata), nmax * nthreads, cols);
-      } else {
-        maxcols = *(mgrow.maxcols[i]);
-        bytes += memory->usage(*((double ***) pdata), nmax * nthreads, maxcols);
-      }
-    } else if (datatype == Atom::INT) {
-      if (cols == 0) {
-        bytes += memory->usage(*((int **) pdata), nmax * nthreads);
-      } else if (cols > 0) {
-        bytes += memory->usage(*((int ***) pdata), nmax * nthreads, cols);
-      } else {
-        maxcols = *(mgrow.maxcols[i]);
-        bytes += memory->usage(*((int ***) pdata), nmax * nthreads, maxcols);
-      }
-    } else if (datatype == Atom::BIGINT) {
-      if (cols == 0) {
-        bytes += memory->usage(*((bigint **) pdata), nmax * nthreads);
-      } else if (cols > 0) {
-        bytes += memory->usage(*((bigint ***) pdata), nmax * nthreads, cols);
-      } else {
-        maxcols = *(mgrow.maxcols[i]);
-        bytes += memory->usage(*((bigint ***) pdata), nmax * nthreads, maxcols);
-      }
-    }
-  }
-  if (bonus_flag) bytes += memory_usage_bonus();
-  return bytes;
-}
 void AtomVec::setup_fields()
 {
   int n, cols;

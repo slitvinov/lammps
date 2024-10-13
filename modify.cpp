@@ -834,10 +834,4 @@ void Modify::list_init_compute()
   for (int i = 0; i < ncompute; i++)
     if (compute[i]->timeflag) list_timeflag[n_timeflag++] = i;
 }
-double Modify::memory_usage()
-{
-  double bytes = 0;
-  for (int i = 0; i < nfix; i++) bytes += fix[i]->memory_usage();
-  for (int i = 0; i < ncompute; i++) bytes += compute[i]->memory_usage();
-  return bytes;
-}
+

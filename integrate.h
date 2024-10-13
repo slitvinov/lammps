@@ -12,7 +12,6 @@ class Integrate : protected Pointers {
   virtual void force_clear() = 0;
   virtual void cleanup() {}
   virtual void reset_dt() {}
-  virtual double memory_usage() { return 0; }
  protected:
   int eflag, vflag;
   int virial_style;

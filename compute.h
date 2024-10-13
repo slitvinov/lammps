@@ -109,7 +109,6 @@ class Compute : protected Pointers {
   void addstep(bigint);
   int matchstep(bigint);
   void clearstep();
-  virtual double memory_usage() { return 0.0; }
   virtual void pair_setup_callback(int, int) {}
   virtual void pair_tally_callback(int, int, int, int, double, double, double, double, double,
                                    double)

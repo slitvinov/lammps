@@ -192,34 +192,4 @@ void NeighList::print_attributes()
   printf("  %d = half/full\n",rq->halffull);
   printf("\n");
 }
-double NeighList::memory_usage()
-{
-  double bytes = 0;
-  bytes += memory->usage(ilist,maxatom);
-  bytes += memory->usage(numneigh,maxatom);
-  bytes += (double)maxatom * sizeof(int *);
-  int nmypage = comm->nthreads;
-  if (ipage) {
-    for (int i = 0; i < nmypage; i++)
-      bytes += ipage[i].size();
-  }
-  if (respainner) {
-    bytes += memory->usage(ilist_inner,maxatom);
-    bytes += memory->usage(numneigh_inner,maxatom);
-    bytes += (double)maxatom * sizeof(int *);
-    if (ipage_inner) {
-      for (int i = 0; i < nmypage; i++)
-        bytes += ipage_inner[i].size();
-    }
-  }
-  if (respamiddle) {
-    bytes += memory->usage(ilist_middle,maxatom);
-    bytes += memory->usage(numneigh_middle,maxatom);
-    bytes += (double)maxatom * sizeof(int *);
-    if (ipage_middle) {
-      for (int i = 0; i < nmypage; i++)
-        bytes += ipage_middle[i].size();
-    }
-  }
-  return bytes;
-}
+

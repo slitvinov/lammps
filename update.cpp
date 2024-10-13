@@ -117,10 +117,4 @@ void Update::update_time()
   atime += (ntimestep - atimestep) * dt;
   atimestep = ntimestep;
 }
-double Update::memory_usage()
-{
-  double bytes = 0;
-  if (whichflag == 1)
-    bytes += integrate->memory_usage();
-  return bytes;
-}
+

@@ -24,7 +24,6 @@ class CommBrick : public Comm {
   int exchange_variable(int, double *, double *&) override;
   int exchange_variable_all2all(int, double *, double *&) override;
   void *extract(const char *, int &) override;
-  double memory_usage() override;
  protected:
   int nswap;
   int recvneed[3][2];

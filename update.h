@@ -34,7 +34,6 @@ class Update : protected Pointers {
   void set_units(const char *);
   void create_integrate(int, char **, int);
   void update_time();
-  double memory_usage();
  private:
   void new_integrate(char *, int, char **);
 };

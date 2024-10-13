@@ -83,9 +83,3 @@ char *Force::store_style(const std::string &style, int sflag)
   std::string estyle = style;
   return utils::strdup(estyle);
 }
-double Force::memory_usage()
-{
-  double bytes = 0;
-  if (pair) bytes += pair->memory_usage();
-  return bytes;
-}

@@ -86,8 +86,6 @@ class AtomVec : protected Pointers {
   virtual int pack_data_bonus(double *, int) { return 0; }
   virtual int property_atom(const std::string &) { return -1; }
   virtual void pack_property_atom(int, double *, int, int) {}
-  virtual double memory_usage();
-  virtual double memory_usage_bonus() { return 0; }
  protected:
   int nmax;
   int deform_vremap;

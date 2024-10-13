@@ -13,11 +13,7 @@ class Group : protected Pointers {
   int *dynamic;
   Group(class LAMMPS *);
   ~Group() override;
-  void assign(int, char **);
-  void assign(const std::string &);
-  void create(const std::string &, int *);
   int find(const std::string &);
-  int find_or_create(const char *);
   bigint count_all();
   bigint count(int);
   bigint count(int, Region *);

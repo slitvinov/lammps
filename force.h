@@ -51,7 +51,6 @@ class Force : protected Pointers {
   Pair *pair_match(const std::string &, int, int nsub = 0);
   char *pair_match_ptr(Pair *);
   char *store_style(const std::string &, int);
-  double memory_usage();
  private:
   void create_factories();
 };
