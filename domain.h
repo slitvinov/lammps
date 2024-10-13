@@ -70,8 +70,6 @@ class Domain : protected Pointers {
   int ownatom(int, double *, imageint *, int);
   void set_lattice(int, char **);
   void add_region(int, char **);
-  void delete_region(Region *);
-  void delete_region(const std::string &);
   Region *get_region_by_id(const std::string &) const;
   const std::vector<Region *> get_region_by_style(const std::string &) const;
   const std::vector<Region *> get_region_list();

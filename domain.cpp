@@ -968,10 +968,6 @@ void Domain::set_lattice(int narg, char **arg)
 void Domain::add_region(int narg, char **arg)
 {
   if (narg < 2) utils::missing_cmd_args(FLERR, "region", error);
-  if (strcmp(arg[1],"delete") == 0) {
-    delete_region(arg[0]);
-    return;
-  }
   if (strcmp(arg[1],"none") == 0)
     error->all(FLERR,"Unrecognized region style 'none'");
   if (get_region_by_id(arg[0])) error->all(FLERR,"Reuse of region ID {}", arg[0]);
@@ -982,18 +978,6 @@ void Domain::add_region(int narg, char **arg)
   }
   newregion->init();
   regions.insert(newregion);
-}
-void Domain::delete_region(Region *reg)
-{
-  if (!reg) return;
-  regions.erase(reg);
-  delete reg;
-}
-void Domain::delete_region(const std::string &id)
-{
-  auto reg = get_region_by_id(id);
-  if (!reg) error->all(FLERR,"Delete region {} does not exist", id);
-  delete_region(reg);
 }
 Region *Domain::get_region_by_id(const std::string &name) const
 {
