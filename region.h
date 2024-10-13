@@ -45,12 +45,10 @@ class Region : protected Pointers {
   int dynamic_check();
   void prematch();
   int match(double, double, double);
-  virtual void set_velocity();
   virtual int restart(char *, int &);
   virtual void reset_vel();
   virtual int inside(double, double, double) = 0;
   virtual void shape_update() {}
-  virtual void set_velocity_shape() {}
  protected:
   void options(int, char **);
   void forward_transform(double &, double &, double &);

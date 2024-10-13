@@ -5,7 +5,6 @@
 #include "lattice.h"
 #include "math_extra.h"
 #include "update.h"
-#include "variable.h"
 #include <cmath>
 #include <cstring>
 using namespace LAMMPS_NS;
@@ -141,36 +140,6 @@ void Region::options(int narg, char **arg)
     dynamic = 1;
   else
     dynamic = 0;
-}
-void Region::set_velocity()
-{
-  if (vel_timestep == update->ntimestep) return;
-  vel_timestep = update->ntimestep;
-  if (moveflag) {
-    if (update->ntimestep > 0) {
-      v[0] = (dx - prev[0]) / update->dt;
-      v[1] = (dy - prev[1]) / update->dt;
-      v[2] = (dz - prev[2]) / update->dt;
-    } else
-      v[0] = v[1] = v[2] = 0.0;
-    prev[0] = dx;
-    prev[1] = dy;
-    prev[2] = dz;
-  }
-  if (rotateflag) {
-    rpoint[0] = point[0] + dx;
-    rpoint[1] = point[1] + dy;
-    rpoint[2] = point[2] + dz;
-    if (update->ntimestep > 0) {
-      double angvel = (theta - prev[3]) / update->dt;
-      omega[0] = angvel * axis[0];
-      omega[1] = angvel * axis[1];
-      omega[2] = angvel * axis[2];
-    } else
-      omega[0] = omega[1] = omega[2] = 0.0;
-    prev[3] = theta;
-  }
-  if (varshape) { set_velocity_shape(); }
 }
 int Region::restart(char *buf, int &n)
 {
