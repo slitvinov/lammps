@@ -91,60 +91,6 @@ Pair::~Pair()
   memory->destroy(vatom);
   memory->destroy(cvatom);
 }
-void Pair::modify_params(int narg, char **arg)
-{
-  if (narg == 0) utils::missing_cmd_args(FLERR, "pair_modify", error);
-  int iarg = 0;
-  while (iarg < narg) {
-    if (strcmp(arg[iarg],"mix") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "pair_modify mix", error);
-      if (strcmp(arg[iarg+1],"geometric") == 0) mix_flag = GEOMETRIC;
-      else if (strcmp(arg[iarg+1],"arithmetic") == 0) mix_flag = ARITHMETIC;
-      else if (strcmp(arg[iarg+1],"sixthpower") == 0) mix_flag = SIXTHPOWER;
-      else error->all(FLERR,"Unknown pair_modify mix argument: {}", arg[iarg+1]);
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"shift") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "pair_modify shift", error);
-      offset_flag = utils::logical(FLERR,arg[iarg+1],false,lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"table") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "pair_modify table", error);
-      ncoultablebits = utils::inumeric(FLERR,arg[iarg+1],false,lmp);
-      if (ncoultablebits > (int)sizeof(float)*CHAR_BIT)
-        error->all(FLERR,"Too many total bits for bitmapped lookup table");
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"table/disp") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "pair_modify table/disp", error);
-      ndisptablebits = utils::inumeric(FLERR,arg[iarg+1],false,lmp);
-      if (ndisptablebits > (int)sizeof(float)*CHAR_BIT)
-        error->all(FLERR,"Too many total bits for bitmapped lookup table");
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"tabinner") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "pair_modify tabinner", error);
-      tabinner = utils::numeric(FLERR,arg[iarg+1],false,lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"tabinner/disp") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "pair_modify tabinner/disp", error);
-      tabinner_disp = utils::numeric(FLERR,arg[iarg+1],false,lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"tail") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "pair_modify tail", error);
-      tail_flag = utils::logical(FLERR,arg[iarg+1],false,lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"compute") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "pair_modify compute", error);
-      compute_flag = utils::logical(FLERR,arg[iarg+1],false,lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"nofdotr") == 0) {
-      no_virial_fdotr_compute = 1;
-      ++iarg;
-    } else if (strcmp(arg[iarg],"neigh/trim") == 0) {
-      if (iarg+2 > narg) utils::missing_cmd_args(FLERR, "pair_modify neigh/trim", error);
-      trim_flag = utils::logical(FLERR,arg[iarg+1],false,lmp);
-      iarg += 2;
-    } else error->all(FLERR,"Unknown pair_modify keyword: {}", arg[iarg]);
-  }
-}
 void Pair::init()
 {
   int i,j;
@@ -195,24 +141,6 @@ void Pair::init()
       utils::logmesg(lmp,"Generated {} of {} mixed pair_coeff terms from {} mixing rule\n",
                      mixed_count, num_mixed_pairs, mixing_rule_names[mix_flag]);
   }
-}
-void Pair::reinit()
-{
-  if (!reinitflag)
-    error->all(FLERR,"Fix adapt interface to this pair style not supported");
-  etail = ptail = 0.0;
-  for (int i = 1; i <= atom->ntypes; i++)
-    for (int j = i; j <= atom->ntypes; j++) {
-      init_one(i,j);
-      if (tail_flag) {
-        etail += etail_ij;
-        ptail += ptail_ij;
-        if (i != j) {
-          etail += etail_ij;
-          ptail += ptail_ij;
-        }
-      }
-    }
 }
 void Pair::init_style()
 {
@@ -1040,113 +968,6 @@ void Pair::virial_fdotr_compute()
     }
   }
   vflag_fdotr = 0;
-}
-void Pair::write_file(int narg, char **arg)
-{
-  if (narg != 8 && narg != 10) error->all(FLERR,"Illegal pair_write command");
-  if (single_enable == 0)
-    error->all(FLERR,"Pair style does not support pair_write");
-  int itype = utils::inumeric(FLERR,arg[0],false,lmp);
-  int jtype = utils::inumeric(FLERR,arg[1],false,lmp);
-  if (itype < 1 || itype > atom->ntypes || jtype < 1 || jtype > atom->ntypes)
-    error->all(FLERR,"Invalid atom types in pair_write command");
-  int n = utils::inumeric(FLERR,arg[2],false,lmp);
-  int style = NONE;
-  if (strcmp(arg[3],"r") == 0) style = RLINEAR;
-  else if (strcmp(arg[3],"rsq") == 0) style = RSQ;
-  else if (strcmp(arg[3],"bitmap") == 0) style = BMP;
-  else error->all(FLERR,"Invalid style in pair_write command");
-  if (n < 2) error->all(FLERR, "Must have at least 2 table values");
-  double inner = utils::numeric(FLERR,arg[4],false,lmp);
-  double outer = utils::numeric(FLERR,arg[5],false,lmp);
-  if (inner <= 0.0 || inner >= outer)
-    error->all(FLERR,"Invalid cutoffs in pair_write command");
-  FILE *fp = nullptr;
-  if (comm->me == 0) {
-    std::string table_file = arg[6];
-    if (platform::file_is_readable(table_file)) {
-      std::string units = utils::get_potential_units(table_file,"table");
-      if (!units.empty() && (units != update->unit_style)) {
-        error->one(FLERR,"Trying to append to a table file "
-                                     "with UNITS: {} while units are {}",
-                                     units, update->unit_style);
-      }
-      std::string date = utils::get_potential_date(table_file,"table");
-      utils::logmesg(lmp,"Appending to table file {} with DATE: {}\n", table_file, date);
-      fp = fopen(table_file.c_str(),"a");
-    } else {
-      utils::logmesg(lmp,"Creating table file {} with DATE: {}\n",
-                     table_file, utils::current_date());
-      fp = fopen(table_file.c_str(),"w");
-      if (fp) fmt::print(fp,"# DATE: {} UNITS: {} Created by pair_write\n",
-                         utils::current_date(), update->unit_style);
-    }
-    if (fp == nullptr)
-      error->one(FLERR,"Cannot open pair_write file {}: {}",table_file, utils::getsyserror());
-    fprintf(fp,"# Pair potential %s for atom types %d %d: i,r,energy,force\n",
-            force->pair_style,itype,jtype);
-    if (style == RLINEAR)
-      fprintf(fp,"\n%s\nN %d R %.15g %.15g\n\n",arg[7],n,inner,outer);
-    if (style == RSQ)
-      fprintf(fp,"\n%s\nN %d RSQ %.15g %.15g\n\n",arg[7],n,inner,outer);
-  }
-  force->init();
-  neighbor->init();
-  double eamfp[2];
-  eamfp[0] = eamfp[1] = 0.0;
-  double *eamfp_hold;
-  Pair *epair = force->pair_match("^eam",0);
-  if (epair) epair->swap_eam(eamfp,&eamfp_hold);
-  if ((comm->me == 0) && (epair))
-    error->warning(FLERR,"EAM pair style. Table will not include embedding term");
-  double q[2];
-  q[0] = q[1] = 1.0;
-  if (narg == 10) {
-    q[0] = utils::numeric(FLERR,arg[8],false,lmp);
-    q[1] = utils::numeric(FLERR,arg[9],false,lmp);
-  }
-  double *q_hold;
-  if (atom->q) {
-    q_hold = atom->q;
-    atom->q = q;
-  }
-  int masklo,maskhi,nmask,nshiftbits;
-  if (style == BMP) {
-    init_bitmap(inner,outer,n,masklo,maskhi,nmask,nshiftbits);
-    int ntable = 1 << n;
-    if (comm->me == 0)
-      fprintf(fp,"\n%s\nN %d BITMAP %.15g %.15g\n\n",arg[7],ntable,inner,outer);
-    n = ntable;
-  }
-  double r,e,f,rsq;
-  union_int_float_t rsq_lookup;
-  for (int i = 0; i < n; i++) {
-    if (style == RLINEAR) {
-      r = inner + (outer-inner) * i/(n-1);
-      rsq = r*r;
-    } else if (style == RSQ) {
-      rsq = inner*inner + (outer*outer - inner*inner) * i/(n-1);
-      r = sqrt(rsq);
-    } else if (style == BMP) {
-      rsq_lookup.i = i << nshiftbits;
-      rsq_lookup.i |= masklo;
-      if (rsq_lookup.f < inner*inner) {
-        rsq_lookup.i = i << nshiftbits;
-        rsq_lookup.i |= maskhi;
-      }
-      rsq = rsq_lookup.f;
-      r = sqrt(rsq);
-    }
-    if (rsq < cutsq[itype][jtype]) {
-      e = single(0,1,itype,jtype,rsq,1.0,1.0,f);
-      f *= r;
-    } else e = f = 0.0;
-    if (comm->me == 0) fprintf(fp,"%8d %- 22.15g %- 22.15g %- 22.15g\n",i+1,r,e,f);
-  }
-  double *tmp;
-  if (epair) epair->swap_eam(eamfp_hold,&tmp);
-  if (atom->q) atom->q = q_hold;
-  if (comm->me == 0) fclose(fp);
 }
 void Pair::init_bitmap(double inner, double outer, int ntablebits,
              int &masklo, int &maskhi, int &nmask, int &nshiftbits)

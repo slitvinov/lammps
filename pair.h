@@ -82,13 +82,10 @@ class Pair : protected Pointers {
   Pair(class LAMMPS *);
   ~Pair() override;
   void init();
-  virtual void reinit();
   virtual void setup() {}
   double mix_energy(double, double, double, double);
   double mix_distance(double, double);
-  void write_file(int, char **);
   void init_bitmap(double, double, int, int &, int &, int &, int &);
-  virtual void modify_params(int, char **);
   void compute_dummy(int, int);
   void ev_tally(int, int, int, int, double, double, double, double, double, double);
   void ev_tally3(int, int, int, double, double, double *, double *, double *, double *);
