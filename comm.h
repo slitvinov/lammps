@@ -57,9 +57,6 @@ class Comm : protected Pointers {
   virtual void coord2proc_setup() {}
   virtual int coord2proc(double *, int &, int &, int &);
   void ring(int, int, void *, int, void (*)(int, char *, void *), void *, void *, int self = 1);
-  int rendezvous(int, int, char *, int, int, int *,
-                 int (*)(int, char *, int &, int *&, char *&, void *), int, char *&, int, void *,
-                 int statflag = 0);
   virtual void *extract(const char *, int &) { return nullptr; }
  protected:
   int bordergroup;
@@ -89,10 +86,6 @@ class Comm : protected Pointers {
   int user_coregrid[3];
   int multi_reduce;
   void init_exchange();
-  int rendezvous_all2all(int, char *, int, int, int *,
-                         int (*)(int, char *, int &, int *&, char *&, void *), int, char *&, int,
-                         void *, int);
-  void rendezvous_stats(int, int, int, int, int, int, bigint);
  public:
   enum { MULTIPLE };
 };
