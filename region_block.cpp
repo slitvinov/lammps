@@ -3,6 +3,7 @@
 #include "error.h"
 #include "input.h"
 #include "math_extra.h"
+#include "variable.h"
 #include <cstring>
 using namespace LAMMPS_NS;
 enum{CONSTANT,VARIABLE};

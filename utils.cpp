@@ -13,7 +13,6 @@
 #include "text_file_reader.h"
 #include "universe.h"
 #include "update.h"
-#include "variable.h"
 #include <cctype>
 #include <cerrno>
 #include <cstring>

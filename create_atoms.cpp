@@ -14,7 +14,6 @@
 #include "random_park.h"
 #include "region.h"
 #include "text_file_reader.h"
-#include "variable.h"
 #include <cmath>
 #include <cstring>
 #include <exception>
