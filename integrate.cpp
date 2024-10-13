@@ -36,13 +36,6 @@ void Integrate::ev_setup()
   vlist_global = vlist_atom = cvlist_atom = nullptr;
   nelist_global = nelist_atom = 0;
   nvlist_global = nvlist_atom = ncvlist_atom = 0;
-  for (int i = 0; i < modify->ncompute; i++) {
-    if (modify->compute[i]->peflag) nelist_global++;
-    if (modify->compute[i]->peatomflag) nelist_atom++;
-    if (modify->compute[i]->pressflag) nvlist_global++;
-    if (modify->compute[i]->pressatomflag & 1) nvlist_atom++;
-    if (modify->compute[i]->pressatomflag & 2) ncvlist_atom++;
-  }
   if (nelist_global) elist_global = new Compute*[nelist_global];
   if (nelist_atom) elist_atom = new Compute*[nelist_atom];
   if (nvlist_global) vlist_global = new Compute*[nvlist_global];
@@ -50,18 +43,6 @@ void Integrate::ev_setup()
   if (ncvlist_atom) cvlist_atom = new Compute*[ncvlist_atom];
   nelist_global = nelist_atom = 0;
   nvlist_global = nvlist_atom = ncvlist_atom = 0;
-  for (int i = 0; i < modify->ncompute; i++) {
-    if (modify->compute[i]->peflag)
-      elist_global[nelist_global++] = modify->compute[i];
-    if (modify->compute[i]->peatomflag)
-      elist_atom[nelist_atom++] = modify->compute[i];
-    if (modify->compute[i]->pressflag)
-      vlist_global[nvlist_global++] = modify->compute[i];
-    if (modify->compute[i]->pressatomflag & 1)
-      vlist_atom[nvlist_atom++] = modify->compute[i];
-    if (modify->compute[i]->pressatomflag & 2)
-      cvlist_atom[ncvlist_atom++] = modify->compute[i];
-  }
 }
 void Integrate::ev_set(bigint ntimestep)
 {

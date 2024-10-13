@@ -2,7 +2,6 @@
 #include "style_fix.h"
 #include "atom.h"
 #include "comm.h"
-#include "compute.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
@@ -57,8 +56,6 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
   nfix_restart_peratom = 0;
   id_restart_peratom = style_restart_peratom = nullptr;
   index_restart_peratom = used_restart_peratom = nullptr;
-  ncompute = maxcompute = 0;
-  compute = nullptr;
   create_factories();
 }
 void _noopt Modify::create_factories()
@@ -69,15 +66,12 @@ void _noopt Modify::create_factories()
 #include "style_fix.h"
 #undef FixStyle
 #undef FIX_CLASS
-  compute_map = new ComputeCreatorMap();
 }
 Modify::~Modify()
 {
   while (nfix) delete_fix(0);
   memory->sfree(fix);
   memory->destroy(fmask);
-  for (int i = 0; i < ncompute; i++) delete compute[i];
-  memory->sfree(compute);
   delete[] list_initial_integrate;
   delete[] list_post_integrate;
   delete[] list_pre_exchange;
@@ -106,21 +100,11 @@ Modify::~Modify()
   delete[] list_min_energy;
   delete[] end_of_step_every;
   delete[] list_timeflag;
-  delete compute_map;
   delete fix_map;
 }
 void Modify::init()
 {
   int i, j;
-  for (i = 0; i < ncompute; i++) {
-    compute[i]->init();
-    compute[i]->invoked_scalar = -1;
-    compute[i]->invoked_vector = -1;
-    compute[i]->invoked_array = -1;
-    compute[i]->invoked_peratom = -1;
-    compute[i]->invoked_local = -1;
-  }
-  addstep_compute_all(update->ntimestep);
   for (i = 0; i < nfix; i++) fix[i]->init();
   restart_pbc_any = 0;
   for (i = 0; i < nfix; i++)
@@ -153,13 +137,9 @@ void Modify::init()
   list_init(MIN_ENERGY, n_min_energy, list_min_energy);
   n_post_force_any = n_post_force + n_post_force_group;
   n_post_force_respa_any = n_post_force_respa + n_post_force_group;
-  list_init_compute();
   for (i = 0; i < nfix; i++)
     if (!fix[i]->dynamic_group_allow && group->dynamic[fix[i]->igroup])
       error->all(FLERR, "Fix {} does not allow use with a dynamic group", fix[i]->style);
-  for (i = 0; i < ncompute; i++)
-    if (!compute[i]->dynamic_group_allow && group->dynamic[compute[i]->igroup])
-      error->all(FLERR, "Compute {} does not allow use with a dynamic group", compute[i]->style);
   int nlocal = atom->nlocal;
   int *mask = atom->mask;
   int *flag = new int[nlocal];
@@ -184,7 +164,6 @@ void Modify::setup(int vflag)
 {
   for (int i = 0; i < nfix; i++)
     if (strcmp(fix[i]->style, "GROUP") == 0) fix[i]->setup(vflag);
-  for (int i = 0; i < ncompute; i++) compute[i]->setup();
   if (update->whichflag == 1)
     for (int i = 0; i < nfix; i++) fix[i]->setup(vflag);
   else if (update->whichflag == 2)
@@ -436,8 +415,6 @@ void Modify::reset_grid()
 {
   for (int i = 0; i < nfix; i++)
     if (fix[i]->pergrid_flag) fix[i]->reset_grid();
-  for (int i = 0; i < ncompute; i++)
-    if (compute[i]->pergrid_flag) compute[i]->reset_grid();
 }
 Fix *Modify::add_fix(int narg, char **arg, int trysuffix)
 {
@@ -656,101 +633,6 @@ int Modify::check_rigid_list_overlap(int *select)
   if (n_all > 0) return 1;
   return 0;
 }
-Compute *Modify::add_compute(int narg, char **arg, int trysuffix)
-{
-  if (narg < 3) utils::missing_cmd_args(FLERR, "compute", error);
-  if (get_compute_by_id(arg[0])) error->all(FLERR, "Reuse of compute ID '{}'", arg[0]);
-  if (ncompute == maxcompute) {
-    maxcompute += DELTA;
-    compute =
-        (Compute **) memory->srealloc(compute, maxcompute * sizeof(Compute *), "modify:compute");
-  }
-  compute[ncompute] = nullptr;
-  if (compute[ncompute] == nullptr && compute_map->find(arg[2]) != compute_map->end()) {
-    ComputeCreator &compute_creator = (*compute_map)[arg[2]];
-    compute[ncompute] = compute_creator(lmp, narg, arg);
-  }
-  compute_list = std::vector<Compute *>(compute, compute + ncompute + 1);
-  return compute[ncompute++];
-}
-Compute *Modify::add_compute(const std::string &computecmd, int trysuffix)
-{
-  auto args = utils::split_words(computecmd);
-  std::vector<char *> newarg(args.size());
-  int i = 0;
-  for (const auto &arg : args) { newarg[i++] = (char *) arg.c_str(); }
-  return add_compute(args.size(), newarg.data(), trysuffix);
-}
-void Modify::modify_compute(int narg, char **arg)
-{
-  if (narg < 2) utils::missing_cmd_args(FLERR, "compute_modify", error);
-  auto icompute = get_compute_by_id(arg[0]);
-  if (!icompute) error->all(FLERR, "Could not find compute_modify ID {}", arg[0]);
-  icompute->modify_params(narg - 1, &arg[1]);
-}
-void Modify::delete_compute(const std::string &id)
-{
-  int icompute = find_compute(id);
-  if (icompute < 0) error->all(FLERR, "Could not find compute ID {} to delete", id);
-  delete_compute(icompute);
-}
-void Modify::delete_compute(int icompute)
-{
-  if ((icompute < 0) || (icompute >= ncompute)) return;
-  delete compute[icompute];
-  for (int i = icompute + 1; i < ncompute; i++) compute[i - 1] = compute[i];
-  ncompute--;
-  compute_list = std::vector<Compute *>(compute, compute + ncompute);
-}
-int Modify::find_compute(const std::string &id)
-{
-  if (id.empty()) return -1;
-  for (int icompute = 0; icompute < ncompute; icompute++)
-    if (compute[icompute] && (id == compute[icompute]->id)) return icompute;
-  return -1;
-}
-Compute *Modify::get_compute_by_id(const std::string &id) const
-{
-  if (id.empty()) return nullptr;
-  for (int icompute = 0; icompute < ncompute; icompute++)
-    if (compute[icompute] && (id == compute[icompute]->id)) return compute[icompute];
-  return nullptr;
-}
-const std::vector<Compute *> Modify::get_compute_by_style(const std::string &style) const
-{
-  std::vector<Compute *> matches;
-  if (style.empty()) return matches;
-  for (int icompute = 0; icompute < ncompute; icompute++) {
-    if (compute[icompute] && utils::strmatch(compute[icompute]->style, style))
-      matches.push_back(compute[icompute]);
-  }
-  return matches;
-}
-const std::vector<Compute *> &Modify::get_compute_list()
-{
-  compute_list = std::vector<Compute *>(compute, compute + ncompute);
-  return compute_list;
-}
-void Modify::clearstep_compute()
-{
-  for (int icompute = 0; icompute < ncompute; icompute++)
-    compute[icompute]->invoked_flag = Compute::INVOKED_NONE;
-}
-void Modify::addstep_compute(bigint newstep)
-{
-  if (n_timeflag < 0) {
-    addstep_compute_all(newstep);
-    return;
-  }
-  for (int icompute = 0; icompute < n_timeflag; icompute++)
-    if (compute[list_timeflag[icompute]]->invoked_flag)
-      compute[list_timeflag[icompute]]->addstep(newstep);
-}
-void Modify::addstep_compute_all(bigint newstep)
-{
-  for (int icompute = 0; icompute < ncompute; icompute++)
-    if (compute[icompute]->timeflag) compute[icompute]->addstep(newstep);
-}
 void Modify::list_init(int mask, int &n, int *&list)
 {
   delete[] list;
@@ -822,15 +704,5 @@ void Modify::list_init_post_force_group(int &n, int *&list)
   for (int i = 0; i < nfix; i++)
     if (strcmp(fix[i]->style, "GROUP") == 0) list[n++] = i;
 }
-void Modify::list_init_compute()
-{
-  delete[] list_timeflag;
-  n_timeflag = 0;
-  for (int i = 0; i < ncompute; i++)
-    if (compute[i]->timeflag) n_timeflag++;
-  list_timeflag = new int[n_timeflag];
-  n_timeflag = 0;
-  for (int i = 0; i < ncompute; i++)
-    if (compute[i]->timeflag) list_timeflag[n_timeflag++] = i;
-}
+
 

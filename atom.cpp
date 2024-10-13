@@ -3,7 +3,6 @@
 #include "style_atom.h"
 #include "library.h"
 #include "comm.h"
-#include "compute.h"
 #include "domain.h"
 #include "error.h"
 #include "fix.h"

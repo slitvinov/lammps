@@ -1,7 +1,6 @@
 #include "update.h"
 #include "style_integrate.h"
 #include "comm.h"
-#include "compute.h"
 #include "error.h"
 #include "fix.h"
 #include "force.h"

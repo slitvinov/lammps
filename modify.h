@@ -3,7 +3,6 @@
 #include "pointers.h"
 #include <map>
 namespace LAMMPS_NS {
-class Compute;
 class Fix;
 class Modify : protected Pointers {
   friend class Info;
@@ -26,8 +25,6 @@ class Modify : protected Pointers {
   int nfix, maxfix;
   Fix **fix;
   int *fmask;
-  int ncompute, maxcompute;
-  Compute **compute;
   Modify(class LAMMPS *);
   ~Modify() override;
   virtual void init();
@@ -85,22 +82,6 @@ class Modify : protected Pointers {
   Fix *get_fix_by_index(int idx) const { return ((idx >= 0) && (idx < nfix)) ? fix[idx] : nullptr; }
   const std::vector<Fix *> get_fix_by_style(const std::string &) const;
   const std::vector<Fix *> &get_fix_list();
-  Compute *add_compute(int, char **, int trysuffix = 1);
-  Compute *add_compute(const std::string &, int trysuffix = 1);
-  void modify_compute(int, char **);
-  void delete_compute(const std::string &);
-  void delete_compute(int);
-  int find_compute(const std::string &);
-  Compute *get_compute_by_id(const std::string &) const;
-  Compute *get_compute_by_index(int idx) const
-  {
-    return ((idx >= 0) && (idx < ncompute)) ? compute[idx] : nullptr;
-  }
-  const std::vector<Compute *> get_compute_by_style(const std::string &) const;
-  const std::vector<Compute *> &get_compute_list();
-  void clearstep_compute();
-  void addstep_compute(bigint);
-  void addstep_compute_all(bigint);
   int check_package(const char *);
   int check_rigid_group_overlap(int);
   int check_rigid_region_overlap(int, class Region *);
@@ -132,7 +113,6 @@ class Modify : protected Pointers {
   int *used_restart_peratom;
   int index_permanent;
   std::vector<Fix *> fix_list;
-  std::vector<Compute *> compute_list;
   void list_init(int, int &, int *&);
   void list_init_end_of_step(int, int &, int *&);
   void list_init_energy_couple(int &, int *&);
@@ -141,11 +121,7 @@ class Modify : protected Pointers {
   void list_init_post_force_group(int &, int *&);
   void list_init_post_force_respa_group(int &, int *&);
   void list_init_dofflag(int &, int *&);
-  void list_init_compute();
  public:
-  typedef Compute *(*ComputeCreator)(LAMMPS *, int, char **);
-  typedef std::map<std::string, ComputeCreator> ComputeCreatorMap;
-  ComputeCreatorMap *compute_map;
   typedef Fix *(*FixCreator)(LAMMPS *, int, char **);
   typedef std::map<std::string, FixCreator> FixCreatorMap;
   FixCreatorMap *fix_map;
