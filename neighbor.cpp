@@ -28,46 +28,6 @@ using namespace NeighConst;
 #define DELTA_PERATOM 64
 #define BIG 1.0e20
 enum{NONE,ALL,PARTIAL,TEMPLATE};
-static const char cite_neigh_multi_old[] =
-  "neighbor multi/old command: doi:10.1016/j.cpc.2008.03.005\n\n"
-  "@Article{Intveld08,\n"
-  " author =  {in 't Veld, P. J. and S. J. Plimpton and G. S. Grest},\n"
-  " title =   {Accurate and Efficient Methods for Modeling Colloidal\n"
-  "            Mixtures in an Explicit Solvent using Molecular Dynamics},\n"
-  " journal = {Comput.\\ Phys.\\ Commun.},\n"
-  " year =    2008,\n"
-  " volume =  179,\n"
-  " number =  5,\n"
-  " pages =   {320--329}\n"
-  "}\n\n";
-static const char cite_neigh_multi[] =
-  "neighbor multi command: doi:10.1016/j.cpc.2008.03.005, doi:10.1007/s40571-020-00361-2\n\n"
-  "@Article{Intveld08,\n"
-  " author =  {in 't Veld, P. J. and S. J.~Plimpton and G. S. Grest},\n"
-  " title =   {Accurate and Efficient Methods for Modeling Colloidal\n"
-  "            Mixtures in an Explicit Solvent using Molecular Dynamics},\n"
-  " journal = {Comput.\\ Phys.\\ Commut.},\n"
-  " year =    2008,\n"
-  " volume =  179,\n"
-  " pages =   {320--329}\n"
-  "}\n\n"
-  "@article{Shire2020,\n"
-  " author = {Shire, Tom and Hanley, Kevin J. and Stratford, Kevin},\n"
-  " title = {{DEM} Simulations of Polydisperse Media: Efficient Contact\n"
-  "          Detection Applied to Investigate the Quasi-Static Limit},\n"
-  " journal = {Computational Particle Mechanics},\n"
-  " year = {2020}\n"
-  "@article{Monti2022,\n"
-  " author = {Monti, Joseph M. and Clemmer, Joel T. and Srivastava, \n"
-  "           Ishan and Silbert, Leonardo E. and Grest, Gary S. \n"
-  "           and Lechman, Jeremy B.},\n"
-  " title = {Large-scale frictionless jamming with power-law particle \n"
-  "          size distributions},\n"
-  " journal = {Phys. Rev. E},\n"
-  " volume = {106}\n"
-  " issue = {3}\n"
-  " year = {2022}\n"
-  "}\n\n";
 template <typename S, typename T> static S *style_creator(LAMMPS *lmp)
 {
   return new T(lmp);
