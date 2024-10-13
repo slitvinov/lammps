@@ -46,9 +46,7 @@ class Region : protected Pointers {
   void prematch();
   int match(double, double, double);
   virtual void set_velocity();
-  void velocity_contact(double *, double *, int);
   virtual int restart(char *, int &);
-  virtual void length_restart_string(int &);
   virtual void reset_vel();
   virtual int inside(double, double, double) = 0;
   virtual int surface_interior(double *, double) = 0;
@@ -56,7 +54,6 @@ class Region : protected Pointers {
   virtual void shape_update() {}
   virtual void pretransform();
   virtual void set_velocity_shape() {}
-  virtual void velocity_contact_shape(double *, double *) {}
  protected:
   void add_contact(int, double *, double, double, double);
   void options(int, char **);

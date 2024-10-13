@@ -260,30 +260,6 @@ void Region::set_velocity()
   }
   if (varshape) { set_velocity_shape(); }
 }
-void Region::velocity_contact(double *vwall, double *x, int ic)
-{
-  double xc[3];
-  vwall[0] = vwall[1] = vwall[2] = 0.0;
-  if (moveflag) {
-    vwall[0] = v[0];
-    vwall[1] = v[1];
-    vwall[2] = v[2];
-  }
-  if (rotateflag) {
-    xc[0] = x[0] - contact[ic].delx;
-    xc[1] = x[1] - contact[ic].dely;
-    xc[2] = x[2] - contact[ic].delz;
-    vwall[0] += omega[1] * (xc[2] - rpoint[2]) - omega[2] * (xc[1] - rpoint[1]);
-    vwall[1] += omega[2] * (xc[0] - rpoint[0]) - omega[0] * (xc[2] - rpoint[2]);
-    vwall[2] += omega[0] * (xc[1] - rpoint[1]) - omega[1] * (xc[0] - rpoint[0]);
-  }
-  if (varshape && contact[ic].varflag) velocity_contact_shape(vwall, xc);
-}
-void Region::length_restart_string(int &n)
-{
-  n += sizeof(int) + strlen(id) + 1 + sizeof(int) + strlen(style) + 1 + sizeof(int) +
-      size_restart * sizeof(double);
-}
 int Region::restart(char *buf, int &n)
 {
   int size = *((int *) (&buf[n]));
