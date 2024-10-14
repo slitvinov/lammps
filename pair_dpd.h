@@ -1,12 +1,12 @@
 #ifdef PAIR_CLASS
-PairStyle(dpd,PairDPD);
+PairStyle(dpd, PairDPD);
 #else
 #ifndef LMP_PAIR_DPD_H
-#define LMP_PAIR_DPD_H 
+#define LMP_PAIR_DPD_H
 #include "pair.h"
 namespace LAMMPS_NS {
 class PairDPD : public Pair {
- public:
+public:
   PairDPD(class LAMMPS *);
   ~PairDPD() override;
   void compute(int, int) override;
@@ -15,7 +15,8 @@ class PairDPD : public Pair {
   void init_style() override;
   double init_one(int, int) override;
   double single(int, int, int, int, double, double, double, double &) override;
- protected:
+
+protected:
   double cut_global, temperature;
   double special_sqrt[4];
   int seed;
@@ -25,6 +26,6 @@ class PairDPD : public Pair {
   class RanMars *random;
   virtual void allocate();
 };
-}
+} // namespace LAMMPS_NS
 #endif
 #endif

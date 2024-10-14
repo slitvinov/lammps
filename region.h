@@ -1,9 +1,9 @@
 #ifndef LMP_REGION_H
-#define LMP_REGION_H 
+#define LMP_REGION_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class Region : protected Pointers {
- public:
+public:
   char *id, *style;
   Region **reglist;
   int interior;
@@ -49,16 +49,18 @@ class Region : protected Pointers {
   virtual void reset_vel();
   virtual int inside(double, double, double) = 0;
   virtual void shape_update() {}
- protected:
+
+protected:
   void options(int, char **);
   void forward_transform(double &, double &, double &);
   double point[3], runit[3];
- private:
+
+private:
   char *xstr, *ystr, *zstr, *tstr;
   int xvar, yvar, zvar, tvar;
   double axis[3];
   void inverse_transform(double &, double &, double &);
   void rotate(double &, double &, double &, double);
 };
-}
+} // namespace LAMMPS_NS
 #endif

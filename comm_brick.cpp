@@ -13,22 +13,21 @@ using namespace LAMMPS_NS;
 #define BUFFACTOR 1.5
 #define BUFMIN 1024
 #define BIG 1.0e20
-CommBrick::CommBrick(LAMMPS *lmp) :
-  Comm(lmp),
-  sendnum(nullptr), recvnum(nullptr), sendproc(nullptr), recvproc(nullptr),
-  size_forward_recv(nullptr), size_reverse_send(nullptr), size_reverse_recv(nullptr),
-  slablo(nullptr), slabhi(nullptr), multilo(nullptr), multihi(nullptr),
-  multioldlo(nullptr), multioldhi(nullptr), cutghostmulti(nullptr), cutghostmultiold(nullptr),
-  pbc_flag(nullptr), pbc(nullptr), firstrecv(nullptr), sendlist(nullptr),
-  localsendlist(nullptr), maxsendlist(nullptr), buf_send(nullptr), buf_recv(nullptr)
-{
+CommBrick::CommBrick(LAMMPS *lmp)
+    : Comm(lmp), sendnum(nullptr), recvnum(nullptr), sendproc(nullptr),
+      recvproc(nullptr), size_forward_recv(nullptr), size_reverse_send(nullptr),
+      size_reverse_recv(nullptr), slablo(nullptr), slabhi(nullptr),
+      multilo(nullptr), multihi(nullptr), multioldlo(nullptr),
+      multioldhi(nullptr), cutghostmulti(nullptr), cutghostmultiold(nullptr),
+      pbc_flag(nullptr), pbc(nullptr), firstrecv(nullptr), sendlist(nullptr),
+      localsendlist(nullptr), maxsendlist(nullptr), buf_send(nullptr),
+      buf_recv(nullptr) {
   style = Comm::BRICK;
   layout = Comm::LAYOUT_UNIFORM;
   pbc_flag = nullptr;
   init_buffers();
 }
-CommBrick::~CommBrick()
-{
+CommBrick::~CommBrick() {
   CommBrick::free_swap();
   if (mode == Comm::MULTI) {
     CommBrick::free_multi();
@@ -38,48 +37,49 @@ CommBrick::~CommBrick()
     CommBrick::free_multiold();
     memory->destroy(cutghostmultiold);
   }
-  if (sendlist) for (int i = 0; i < maxswap; i++) memory->destroy(sendlist[i]);
-  if (localsendlist) memory->destroy(localsendlist);
+  if (sendlist)
+    for (int i = 0; i < maxswap; i++)
+      memory->destroy(sendlist[i]);
+  if (localsendlist)
+    memory->destroy(localsendlist);
   memory->sfree(sendlist);
   memory->destroy(maxsendlist);
   memory->destroy(buf_send);
   memory->destroy(buf_recv);
 }
-CommBrick::CommBrick(LAMMPS * , Comm *oldcomm) : Comm(*oldcomm)
-{
+CommBrick::CommBrick(LAMMPS *, Comm *oldcomm) : Comm(*oldcomm) {
   if (oldcomm->layout == Comm::LAYOUT_TILED)
-    error->all(FLERR,"Cannot change to comm_style brick from tiled layout");
+    error->all(FLERR, "Cannot change to comm_style brick from tiled layout");
   style = Comm::BRICK;
   layout = oldcomm->layout;
   Comm::copy_arrays(oldcomm);
   init_buffers();
 }
-void CommBrick::init_buffers()
-{
+void CommBrick::init_buffers() {
   multilo = multihi = nullptr;
   cutghostmulti = nullptr;
   multioldlo = multioldhi = nullptr;
   cutghostmultiold = nullptr;
   buf_send = buf_recv = nullptr;
   maxsend = maxrecv = BUFMIN;
-  CommBrick::grow_send(maxsend,2);
-  memory->create(buf_recv,maxrecv,"comm:buf_recv");
+  CommBrick::grow_send(maxsend, 2);
+  memory->create(buf_recv, maxrecv, "comm:buf_recv");
   nswap = 0;
   maxswap = 6;
   CommBrick::allocate_swap(maxswap);
-  sendlist = (int **) memory->smalloc(maxswap*sizeof(int *),"comm:sendlist");
-  memory->create(maxsendlist,maxswap,"comm:maxsendlist");
+  sendlist = (int **)memory->smalloc(maxswap * sizeof(int *), "comm:sendlist");
+  memory->create(maxsendlist, maxswap, "comm:maxsendlist");
   for (int i = 0; i < maxswap; i++) {
     maxsendlist[i] = BUFMIN;
-    memory->create(sendlist[i],BUFMIN,"comm:sendlist[i]");
+    memory->create(sendlist[i], BUFMIN, "comm:sendlist[i]");
   }
 }
-void CommBrick::init()
-{
+void CommBrick::init() {
   Comm::init();
   int bufextra_old = bufextra;
   init_exchange();
-  if (bufextra > bufextra_old) grow_send(maxsend+bufextra,2);
+  if (bufextra > bufextra_old)
+    grow_send(maxsend + bufextra, 2);
   if (mode == Comm::MULTI) {
     if (ncollections != neighbor->ncollections) {
       ncollections = neighbor->ncollections;
@@ -89,14 +89,15 @@ void CommBrick::init()
       }
     }
     if (cutusermulti && ncollections != ncollections_cutoff) {
-      if(me == 0) error->warning(FLERR, "cutoff/multi settings discarded, must be defined"
-                                        " after customizing collections in neigh_modify");
+      if (me == 0)
+        error->warning(FLERR, "cutoff/multi settings discarded, must be defined"
+                              " after customizing collections in neigh_modify");
       memory->destroy(cutusermulti);
       cutusermulti = nullptr;
     }
     if (multilo == nullptr) {
       allocate_multi(maxswap);
-      memory->create(cutghostmulti,ncollections,3,"comm:cutghostmulti");
+      memory->create(cutghostmulti, ncollections, 3, "comm:cutghostmulti");
     }
   }
   if ((mode == Comm::SINGLE || mode == Comm::MULTIOLD) && multilo) {
@@ -105,22 +106,22 @@ void CommBrick::init()
   }
   if (mode == Comm::MULTIOLD && multioldlo == nullptr) {
     allocate_multiold(maxswap);
-    memory->create(cutghostmultiold,atom->ntypes+1,3,"comm:cutghostmultiold");
+    memory->create(cutghostmultiold, atom->ntypes + 1, 3,
+                   "comm:cutghostmultiold");
   }
   if ((mode == Comm::SINGLE || mode == Comm::MULTI) && multioldlo) {
     free_multiold();
     memory->destroy(cutghostmultiold);
   }
 }
-void CommBrick::setup()
-{
-  int i,j;
+void CommBrick::setup() {
+  int i, j;
   int ntypes = atom->ntypes;
-  double *prd,*sublo,*subhi;
+  double *prd, *sublo, *subhi;
   double cut = get_comm_cutoff();
   if ((cut == 0.0) && (me == 0))
-    error->warning(FLERR,"Communication cutoff is 0.0. No ghost atoms "
-                   "will be generated. Atoms may get lost.");
+    error->warning(FLERR, "Communication cutoff is 0.0. No ghost atoms "
+                          "will be generated. Atoms may get lost.");
   if (mode == Comm::MULTI) {
     double **cutcollectionsq = neighbor->cutcollectionsq;
     neighbor->build_collection(0);
@@ -134,11 +135,15 @@ void CommBrick::setup()
         cutghostmulti[i][1] = 0.0;
         cutghostmulti[i][2] = 0.0;
       }
-      for (j = 0; j < ncollections; j++){
-        if (multi_reduce && (cutcollectionsq[j][j] > cutcollectionsq[i][i])) continue;
-        cutghostmulti[i][0] = MAX(cutghostmulti[i][0],sqrt(cutcollectionsq[i][j]));
-        cutghostmulti[i][1] = MAX(cutghostmulti[i][1],sqrt(cutcollectionsq[i][j]));
-        cutghostmulti[i][2] = MAX(cutghostmulti[i][2],sqrt(cutcollectionsq[i][j]));
+      for (j = 0; j < ncollections; j++) {
+        if (multi_reduce && (cutcollectionsq[j][j] > cutcollectionsq[i][i]))
+          continue;
+        cutghostmulti[i][0] =
+            MAX(cutghostmulti[i][0], sqrt(cutcollectionsq[i][j]));
+        cutghostmulti[i][1] =
+            MAX(cutghostmulti[i][1], sqrt(cutcollectionsq[i][j]));
+        cutghostmulti[i][2] =
+            MAX(cutghostmulti[i][2], sqrt(cutcollectionsq[i][j]));
       }
     }
   }
@@ -146,10 +151,11 @@ void CommBrick::setup()
     double *cuttype = neighbor->cuttype;
     for (i = 1; i <= ntypes; i++) {
       double tmp = 0.0;
-      if (cutusermultiold) tmp = cutusermultiold[i];
-      cutghostmultiold[i][0] = MAX(tmp,cuttype[i]);
-      cutghostmultiold[i][1] = MAX(tmp,cuttype[i]);
-      cutghostmultiold[i][2] = MAX(tmp,cuttype[i]);
+      if (cutusermultiold)
+        tmp = cutusermultiold[i];
+      cutghostmultiold[i][0] = MAX(tmp, cuttype[i]);
+      cutghostmultiold[i][1] = MAX(tmp, cuttype[i]);
+      cutghostmultiold[i][2] = MAX(tmp, cuttype[i]);
     }
   }
   if (triclinic == 0) {
@@ -162,10 +168,11 @@ void CommBrick::setup()
     sublo = domain->sublo_lamda;
     subhi = domain->subhi_lamda;
     double *h_inv = domain->h_inv;
-    double length0,length1,length2;
-    length0 = sqrt(h_inv[0]*h_inv[0] + h_inv[5]*h_inv[5] + h_inv[4]*h_inv[4]);
+    double length0, length1, length2;
+    length0 =
+        sqrt(h_inv[0] * h_inv[0] + h_inv[5] * h_inv[5] + h_inv[4] * h_inv[4]);
     cutghost[0] = cut * length0;
-    length1 = sqrt(h_inv[1]*h_inv[1] + h_inv[3]*h_inv[3]);
+    length1 = sqrt(h_inv[1] * h_inv[1] + h_inv[3] * h_inv[3]);
     cutghost[1] = cut * length1;
     length2 = h_inv[2];
     cutghost[2] = cut * length2;
@@ -185,108 +192,134 @@ void CommBrick::setup()
     }
   }
   int *periodicity = domain->periodicity;
-  int left,right;
+  int left, right;
   if (layout == Comm::LAYOUT_UNIFORM) {
-    maxneed[0] = static_cast<int> (cutghost[0] * procgrid[0] / prd[0]) + 1;
-    maxneed[1] = static_cast<int> (cutghost[1] * procgrid[1] / prd[1]) + 1;
-    maxneed[2] = static_cast<int> (cutghost[2] * procgrid[2] / prd[2]) + 1;
-    if (domain->dimension == 2) maxneed[2] = 0;
-    if (!periodicity[0]) maxneed[0] = MIN(maxneed[0],procgrid[0]-1);
-    if (!periodicity[1]) maxneed[1] = MIN(maxneed[1],procgrid[1]-1);
-    if (!periodicity[2]) maxneed[2] = MIN(maxneed[2],procgrid[2]-1);
+    maxneed[0] = static_cast<int>(cutghost[0] * procgrid[0] / prd[0]) + 1;
+    maxneed[1] = static_cast<int>(cutghost[1] * procgrid[1] / prd[1]) + 1;
+    maxneed[2] = static_cast<int>(cutghost[2] * procgrid[2] / prd[2]) + 1;
+    if (domain->dimension == 2)
+      maxneed[2] = 0;
+    if (!periodicity[0])
+      maxneed[0] = MIN(maxneed[0], procgrid[0] - 1);
+    if (!periodicity[1])
+      maxneed[1] = MIN(maxneed[1], procgrid[1] - 1);
+    if (!periodicity[2])
+      maxneed[2] = MIN(maxneed[2], procgrid[2] - 1);
     if (!periodicity[0]) {
-      recvneed[0][0] = MIN(maxneed[0],myloc[0]);
-      recvneed[0][1] = MIN(maxneed[0],procgrid[0]-myloc[0]-1);
+      recvneed[0][0] = MIN(maxneed[0], myloc[0]);
+      recvneed[0][1] = MIN(maxneed[0], procgrid[0] - myloc[0] - 1);
       left = myloc[0] - 1;
-      if (left < 0) left = procgrid[0] - 1;
-      sendneed[0][0] = MIN(maxneed[0],procgrid[0]-left-1);
+      if (left < 0)
+        left = procgrid[0] - 1;
+      sendneed[0][0] = MIN(maxneed[0], procgrid[0] - left - 1);
       right = myloc[0] + 1;
-      if (right == procgrid[0]) right = 0;
-      sendneed[0][1] = MIN(maxneed[0],right);
-    } else recvneed[0][0] = recvneed[0][1] =
-             sendneed[0][0] = sendneed[0][1] = maxneed[0];
+      if (right == procgrid[0])
+        right = 0;
+      sendneed[0][1] = MIN(maxneed[0], right);
+    } else
+      recvneed[0][0] = recvneed[0][1] = sendneed[0][0] = sendneed[0][1] =
+          maxneed[0];
     if (!periodicity[1]) {
-      recvneed[1][0] = MIN(maxneed[1],myloc[1]);
-      recvneed[1][1] = MIN(maxneed[1],procgrid[1]-myloc[1]-1);
+      recvneed[1][0] = MIN(maxneed[1], myloc[1]);
+      recvneed[1][1] = MIN(maxneed[1], procgrid[1] - myloc[1] - 1);
       left = myloc[1] - 1;
-      if (left < 0) left = procgrid[1] - 1;
-      sendneed[1][0] = MIN(maxneed[1],procgrid[1]-left-1);
+      if (left < 0)
+        left = procgrid[1] - 1;
+      sendneed[1][0] = MIN(maxneed[1], procgrid[1] - left - 1);
       right = myloc[1] + 1;
-      if (right == procgrid[1]) right = 0;
-      sendneed[1][1] = MIN(maxneed[1],right);
-    } else recvneed[1][0] = recvneed[1][1] =
-             sendneed[1][0] = sendneed[1][1] = maxneed[1];
+      if (right == procgrid[1])
+        right = 0;
+      sendneed[1][1] = MIN(maxneed[1], right);
+    } else
+      recvneed[1][0] = recvneed[1][1] = sendneed[1][0] = sendneed[1][1] =
+          maxneed[1];
     if (!periodicity[2]) {
-      recvneed[2][0] = MIN(maxneed[2],myloc[2]);
-      recvneed[2][1] = MIN(maxneed[2],procgrid[2]-myloc[2]-1);
+      recvneed[2][0] = MIN(maxneed[2], myloc[2]);
+      recvneed[2][1] = MIN(maxneed[2], procgrid[2] - myloc[2] - 1);
       left = myloc[2] - 1;
-      if (left < 0) left = procgrid[2] - 1;
-      sendneed[2][0] = MIN(maxneed[2],procgrid[2]-left-1);
+      if (left < 0)
+        left = procgrid[2] - 1;
+      sendneed[2][0] = MIN(maxneed[2], procgrid[2] - left - 1);
       right = myloc[2] + 1;
-      if (right == procgrid[2]) right = 0;
-      sendneed[2][1] = MIN(maxneed[2],right);
-    } else recvneed[2][0] = recvneed[2][1] =
-             sendneed[2][0] = sendneed[2][1] = maxneed[2];
+      if (right == procgrid[2])
+        right = 0;
+      sendneed[2][1] = MIN(maxneed[2], right);
+    } else
+      recvneed[2][0] = recvneed[2][1] = sendneed[2][0] = sendneed[2][1] =
+          maxneed[2];
   } else {
-    recvneed[0][0] = updown(0,0,myloc[0],prd[0],periodicity[0],xsplit);
-    recvneed[0][1] = updown(0,1,myloc[0],prd[0],periodicity[0],xsplit);
+    recvneed[0][0] = updown(0, 0, myloc[0], prd[0], periodicity[0], xsplit);
+    recvneed[0][1] = updown(0, 1, myloc[0], prd[0], periodicity[0], xsplit);
     left = myloc[0] - 1;
-    if (left < 0) left = procgrid[0] - 1;
-    sendneed[0][0] = updown(0,1,left,prd[0],periodicity[0],xsplit);
+    if (left < 0)
+      left = procgrid[0] - 1;
+    sendneed[0][0] = updown(0, 1, left, prd[0], periodicity[0], xsplit);
     right = myloc[0] + 1;
-    if (right == procgrid[0]) right = 0;
-    sendneed[0][1] = updown(0,0,right,prd[0],periodicity[0],xsplit);
-    recvneed[1][0] = updown(1,0,myloc[1],prd[1],periodicity[1],ysplit);
-    recvneed[1][1] = updown(1,1,myloc[1],prd[1],periodicity[1],ysplit);
+    if (right == procgrid[0])
+      right = 0;
+    sendneed[0][1] = updown(0, 0, right, prd[0], periodicity[0], xsplit);
+    recvneed[1][0] = updown(1, 0, myloc[1], prd[1], periodicity[1], ysplit);
+    recvneed[1][1] = updown(1, 1, myloc[1], prd[1], periodicity[1], ysplit);
     left = myloc[1] - 1;
-    if (left < 0) left = procgrid[1] - 1;
-    sendneed[1][0] = updown(1,1,left,prd[1],periodicity[1],ysplit);
+    if (left < 0)
+      left = procgrid[1] - 1;
+    sendneed[1][0] = updown(1, 1, left, prd[1], periodicity[1], ysplit);
     right = myloc[1] + 1;
-    if (right == procgrid[1]) right = 0;
-    sendneed[1][1] = updown(1,0,right,prd[1],periodicity[1],ysplit);
+    if (right == procgrid[1])
+      right = 0;
+    sendneed[1][1] = updown(1, 0, right, prd[1], periodicity[1], ysplit);
     if (domain->dimension == 3) {
-      recvneed[2][0] = updown(2,0,myloc[2],prd[2],periodicity[2],zsplit);
-      recvneed[2][1] = updown(2,1,myloc[2],prd[2],periodicity[2],zsplit);
+      recvneed[2][0] = updown(2, 0, myloc[2], prd[2], periodicity[2], zsplit);
+      recvneed[2][1] = updown(2, 1, myloc[2], prd[2], periodicity[2], zsplit);
       left = myloc[2] - 1;
-      if (left < 0) left = procgrid[2] - 1;
-      sendneed[2][0] = updown(2,1,left,prd[2],periodicity[2],zsplit);
+      if (left < 0)
+        left = procgrid[2] - 1;
+      sendneed[2][0] = updown(2, 1, left, prd[2], periodicity[2], zsplit);
       right = myloc[2] + 1;
-      if (right == procgrid[2]) right = 0;
-      sendneed[2][1] = updown(2,0,right,prd[2],periodicity[2],zsplit);
-    } else recvneed[2][0] = recvneed[2][1] =
-             sendneed[2][0] = sendneed[2][1] = 0;
+      if (right == procgrid[2])
+        right = 0;
+      sendneed[2][1] = updown(2, 0, right, prd[2], periodicity[2], zsplit);
+    } else
+      recvneed[2][0] = recvneed[2][1] = sendneed[2][0] = sendneed[2][1] = 0;
     int all[6];
-    MPI_Allreduce(&recvneed[0][0],all,6,MPI_INT,MPI_MAX,world);
-    maxneed[0] = MAX(all[0],all[1]);
-    maxneed[1] = MAX(all[2],all[3]);
-    maxneed[2] = MAX(all[4],all[5]);
+    MPI_Allreduce(&recvneed[0][0], all, 6, MPI_INT, MPI_MAX, world);
+    maxneed[0] = MAX(all[0], all[1]);
+    maxneed[1] = MAX(all[2], all[3]);
+    maxneed[2] = MAX(all[4], all[5]);
   }
-  nswap = 2 * (maxneed[0]+maxneed[1]+maxneed[2]);
-  if (nswap > maxswap) grow_swap(nswap);
-  int dim,ineed;
+  nswap = 2 * (maxneed[0] + maxneed[1] + maxneed[2]);
+  if (nswap > maxswap)
+    grow_swap(nswap);
+  int dim, ineed;
   int iswap = 0;
   for (dim = 0; dim < 3; dim++) {
-    for (ineed = 0; ineed < 2*maxneed[dim]; ineed++) {
+    for (ineed = 0; ineed < 2 * maxneed[dim]; ineed++) {
       pbc_flag[iswap] = 0;
-      pbc[iswap][0] = pbc[iswap][1] = pbc[iswap][2] =
-        pbc[iswap][3] = pbc[iswap][4] = pbc[iswap][5] = 0;
+      pbc[iswap][0] = pbc[iswap][1] = pbc[iswap][2] = pbc[iswap][3] =
+          pbc[iswap][4] = pbc[iswap][5] = 0;
       if (ineed % 2 == 0) {
         sendproc[iswap] = procneigh[dim][0];
         recvproc[iswap] = procneigh[dim][1];
         if (mode == Comm::SINGLE) {
-          if (ineed < 2) slablo[iswap] = -BIG;
-          else slablo[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
+          if (ineed < 2)
+            slablo[iswap] = -BIG;
+          else
+            slablo[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
           slabhi[iswap] = sublo[dim] + cutghost[dim];
         } else if (mode == Comm::MULTI) {
           for (i = 0; i < ncollections; i++) {
-            if (ineed < 2) multilo[iswap][i] = -BIG;
-            else multilo[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
+            if (ineed < 2)
+              multilo[iswap][i] = -BIG;
+            else
+              multilo[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
             multihi[iswap][i] = sublo[dim] + cutghostmulti[i][dim];
           }
         } else {
           for (i = 1; i <= ntypes; i++) {
-            if (ineed < 2) multioldlo[iswap][i] = -BIG;
-            else multioldlo[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
+            if (ineed < 2)
+              multioldlo[iswap][i] = -BIG;
+            else
+              multioldlo[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
             multioldhi[iswap][i] = sublo[dim] + cutghostmultiold[i][dim];
           }
         }
@@ -294,8 +327,10 @@ void CommBrick::setup()
           pbc_flag[iswap] = 1;
           pbc[iswap][dim] = 1;
           if (triclinic) {
-            if (dim == 1) pbc[iswap][5] = 1;
-            else if (dim == 2) pbc[iswap][4] = pbc[iswap][3] = 1;
+            if (dim == 1)
+              pbc[iswap][5] = 1;
+            else if (dim == 2)
+              pbc[iswap][4] = pbc[iswap][3] = 1;
           }
         }
       } else {
@@ -303,27 +338,35 @@ void CommBrick::setup()
         recvproc[iswap] = procneigh[dim][0];
         if (mode == Comm::SINGLE) {
           slablo[iswap] = subhi[dim] - cutghost[dim];
-          if (ineed < 2) slabhi[iswap] = BIG;
-          else slabhi[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
+          if (ineed < 2)
+            slabhi[iswap] = BIG;
+          else
+            slabhi[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
         } else if (mode == Comm::MULTI) {
           for (i = 0; i < ncollections; i++) {
             multilo[iswap][i] = subhi[dim] - cutghostmulti[i][dim];
-            if (ineed < 2) multihi[iswap][i] = BIG;
-            else multihi[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
+            if (ineed < 2)
+              multihi[iswap][i] = BIG;
+            else
+              multihi[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
           }
         } else {
           for (i = 1; i <= ntypes; i++) {
             multioldlo[iswap][i] = subhi[dim] - cutghostmultiold[i][dim];
-            if (ineed < 2) multioldhi[iswap][i] = BIG;
-            else multioldhi[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
+            if (ineed < 2)
+              multioldhi[iswap][i] = BIG;
+            else
+              multioldhi[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
           }
         }
-        if (myloc[dim] == procgrid[dim]-1) {
+        if (myloc[dim] == procgrid[dim] - 1) {
           pbc_flag[iswap] = 1;
           pbc[iswap][dim] = -1;
           if (triclinic) {
-            if (dim == 1) pbc[iswap][5] = -1;
-            else if (dim == 2) pbc[iswap][4] = pbc[iswap][3] = -1;
+            if (dim == 1)
+              pbc[iswap][5] = -1;
+            else if (dim == 2)
+              pbc[iswap][4] = pbc[iswap][3] = -1;
           }
         }
       }
@@ -331,43 +374,44 @@ void CommBrick::setup()
     }
   }
 }
-int CommBrick::updown(int dim, int dir, int loc, double prd, int periodicity, double *split)
-{
-  int index,count;
-  double frac,delta;
+int CommBrick::updown(int dim, int dir, int loc, double prd, int periodicity,
+                      double *split) {
+  int index, count;
+  double frac, delta;
   if (dir == 0) {
-    frac = cutghost[dim]/prd;
+    frac = cutghost[dim] / prd;
     index = loc - 1;
     delta = 0.0;
     count = 0;
     while (delta < frac) {
       if (index < 0) {
-        if (!periodicity) break;
+        if (!periodicity)
+          break;
         index = procgrid[dim] - 1;
       }
       count++;
-      delta += split[index+1] - split[index];
+      delta += split[index + 1] - split[index];
       index--;
     }
   } else {
-    frac = cutghost[dim]/prd;
+    frac = cutghost[dim] / prd;
     index = loc + 1;
     delta = 0.0;
     count = 0;
     while (delta < frac) {
       if (index >= procgrid[dim]) {
-        if (!periodicity) break;
+        if (!periodicity)
+          break;
         index = 0;
       }
       count++;
-      delta += split[index+1] - split[index];
+      delta += split[index + 1] - split[index];
       index++;
     }
   }
   return count;
 }
-void CommBrick::forward_comm(int )
-{
+void CommBrick::forward_comm(int) {
   int n;
   MPI_Request request;
   AtomVec *avec = atom->avec;
@@ -378,93 +422,113 @@ void CommBrick::forward_comm(int )
       if (comm_x_only) {
         if (size_forward_recv[iswap]) {
           buf = x[firstrecv[iswap]];
-          MPI_Irecv(buf,size_forward_recv[iswap],MPI_DOUBLE,recvproc[iswap],0,world,&request);
+          MPI_Irecv(buf, size_forward_recv[iswap], MPI_DOUBLE, recvproc[iswap],
+                    0, world, &request);
         }
-        n = avec->pack_comm(sendnum[iswap],sendlist[iswap],buf_send,pbc_flag[iswap],pbc[iswap]);
-        if (n) MPI_Send(buf_send,n,MPI_DOUBLE,sendproc[iswap],0,world);
-        if (size_forward_recv[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
+        n = avec->pack_comm(sendnum[iswap], sendlist[iswap], buf_send,
+                            pbc_flag[iswap], pbc[iswap]);
+        if (n)
+          MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap], 0, world);
+        if (size_forward_recv[iswap])
+          MPI_Wait(&request, MPI_STATUS_IGNORE);
       } else if (ghost_velocity) {
         if (size_forward_recv[iswap])
-          MPI_Irecv(buf_recv,size_forward_recv[iswap],MPI_DOUBLE,recvproc[iswap],0,world,&request);
-        n = avec->pack_comm_vel(sendnum[iswap],sendlist[iswap],buf_send,pbc_flag[iswap],pbc[iswap]);
-        if (n) MPI_Send(buf_send,n,MPI_DOUBLE,sendproc[iswap],0,world);
-        if (size_forward_recv[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
-        avec->unpack_comm_vel(recvnum[iswap],firstrecv[iswap],buf_recv);
+          MPI_Irecv(buf_recv, size_forward_recv[iswap], MPI_DOUBLE,
+                    recvproc[iswap], 0, world, &request);
+        n = avec->pack_comm_vel(sendnum[iswap], sendlist[iswap], buf_send,
+                                pbc_flag[iswap], pbc[iswap]);
+        if (n)
+          MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap], 0, world);
+        if (size_forward_recv[iswap])
+          MPI_Wait(&request, MPI_STATUS_IGNORE);
+        avec->unpack_comm_vel(recvnum[iswap], firstrecv[iswap], buf_recv);
       } else {
         if (size_forward_recv[iswap])
-          MPI_Irecv(buf_recv,size_forward_recv[iswap],MPI_DOUBLE,
-                    recvproc[iswap],0,world,&request);
-        n = avec->pack_comm(sendnum[iswap],sendlist[iswap],buf_send,pbc_flag[iswap],pbc[iswap]);
-        if (n) MPI_Send(buf_send,n,MPI_DOUBLE,sendproc[iswap],0,world);
-        if (size_forward_recv[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
-        avec->unpack_comm(recvnum[iswap],firstrecv[iswap],buf_recv);
+          MPI_Irecv(buf_recv, size_forward_recv[iswap], MPI_DOUBLE,
+                    recvproc[iswap], 0, world, &request);
+        n = avec->pack_comm(sendnum[iswap], sendlist[iswap], buf_send,
+                            pbc_flag[iswap], pbc[iswap]);
+        if (n)
+          MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap], 0, world);
+        if (size_forward_recv[iswap])
+          MPI_Wait(&request, MPI_STATUS_IGNORE);
+        avec->unpack_comm(recvnum[iswap], firstrecv[iswap], buf_recv);
       }
     } else {
       if (comm_x_only) {
         if (sendnum[iswap])
-          avec->pack_comm(sendnum[iswap],sendlist[iswap],
-                          x[firstrecv[iswap]],pbc_flag[iswap],pbc[iswap]);
+          avec->pack_comm(sendnum[iswap], sendlist[iswap], x[firstrecv[iswap]],
+                          pbc_flag[iswap], pbc[iswap]);
       } else if (ghost_velocity) {
-        avec->pack_comm_vel(sendnum[iswap],sendlist[iswap],buf_send,pbc_flag[iswap],pbc[iswap]);
-        avec->unpack_comm_vel(recvnum[iswap],firstrecv[iswap],buf_send);
+        avec->pack_comm_vel(sendnum[iswap], sendlist[iswap], buf_send,
+                            pbc_flag[iswap], pbc[iswap]);
+        avec->unpack_comm_vel(recvnum[iswap], firstrecv[iswap], buf_send);
       } else {
-        avec->pack_comm(sendnum[iswap],sendlist[iswap],buf_send,pbc_flag[iswap],pbc[iswap]);
-        avec->unpack_comm(recvnum[iswap],firstrecv[iswap],buf_send);
+        avec->pack_comm(sendnum[iswap], sendlist[iswap], buf_send,
+                        pbc_flag[iswap], pbc[iswap]);
+        avec->unpack_comm(recvnum[iswap], firstrecv[iswap], buf_send);
       }
     }
   }
 }
-void CommBrick::reverse_comm()
-{
+void CommBrick::reverse_comm() {
   int n;
   MPI_Request request;
   AtomVec *avec = atom->avec;
   double **f = atom->f;
   double *buf;
-  for (int iswap = nswap-1; iswap >= 0; iswap--) {
+  for (int iswap = nswap - 1; iswap >= 0; iswap--) {
     if (sendproc[iswap] != me) {
       if (comm_f_only) {
         if (size_reverse_recv[iswap])
-          MPI_Irecv(buf_recv,size_reverse_recv[iswap],MPI_DOUBLE,sendproc[iswap],0,world,&request);
+          MPI_Irecv(buf_recv, size_reverse_recv[iswap], MPI_DOUBLE,
+                    sendproc[iswap], 0, world, &request);
         if (size_reverse_send[iswap]) {
           buf = f[firstrecv[iswap]];
-          MPI_Send(buf,size_reverse_send[iswap],MPI_DOUBLE,recvproc[iswap],0,world);
+          MPI_Send(buf, size_reverse_send[iswap], MPI_DOUBLE, recvproc[iswap],
+                   0, world);
         }
-        if (size_reverse_recv[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
+        if (size_reverse_recv[iswap])
+          MPI_Wait(&request, MPI_STATUS_IGNORE);
       } else {
         if (size_reverse_recv[iswap])
-          MPI_Irecv(buf_recv,size_reverse_recv[iswap],MPI_DOUBLE,sendproc[iswap],0,world,&request);
-        n = avec->pack_reverse(recvnum[iswap],firstrecv[iswap],buf_send);
-        if (n) MPI_Send(buf_send,n,MPI_DOUBLE,recvproc[iswap],0,world);
-        if (size_reverse_recv[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
+          MPI_Irecv(buf_recv, size_reverse_recv[iswap], MPI_DOUBLE,
+                    sendproc[iswap], 0, world, &request);
+        n = avec->pack_reverse(recvnum[iswap], firstrecv[iswap], buf_send);
+        if (n)
+          MPI_Send(buf_send, n, MPI_DOUBLE, recvproc[iswap], 0, world);
+        if (size_reverse_recv[iswap])
+          MPI_Wait(&request, MPI_STATUS_IGNORE);
       }
-      avec->unpack_reverse(sendnum[iswap],sendlist[iswap],buf_recv);
+      avec->unpack_reverse(sendnum[iswap], sendlist[iswap], buf_recv);
     } else {
       if (comm_f_only) {
         if (sendnum[iswap])
-          avec->unpack_reverse(sendnum[iswap],sendlist[iswap],f[firstrecv[iswap]]);
+          avec->unpack_reverse(sendnum[iswap], sendlist[iswap],
+                               f[firstrecv[iswap]]);
       } else {
-        avec->pack_reverse(recvnum[iswap],firstrecv[iswap],buf_send);
-        avec->unpack_reverse(sendnum[iswap],sendlist[iswap],buf_send);
+        avec->pack_reverse(recvnum[iswap], firstrecv[iswap], buf_send);
+        avec->unpack_reverse(sendnum[iswap], sendlist[iswap], buf_send);
       }
     }
   }
 }
-void CommBrick::exchange()
-{
-  int i,m,nsend,nrecv,nrecv1,nrecv2,nlocal;
-  double lo,hi,value;
+void CommBrick::exchange() {
+  int i, m, nsend, nrecv, nrecv1, nrecv2, nlocal;
+  double lo, hi, value;
   double **x;
-  double *sublo,*subhi;
+  double *sublo, *subhi;
   MPI_Request request;
   AtomVec *avec = atom->avec;
-  if (map_style != Atom::MAP_NONE) atom->map_clear();
+  if (map_style != Atom::MAP_NONE)
+    atom->map_clear();
   atom->nghost = 0;
   atom->avec->clear_bonus();
   if (maxexchange_fix_dynamic) {
     int bufextra_old = bufextra;
     init_exchange();
-    if (bufextra > bufextra_old) grow_send(maxsend+bufextra,2);
+    if (bufextra > bufextra_old)
+      grow_send(maxsend + bufextra, 2);
   }
   if (triclinic == 0) {
     sublo = domain->sublo;
@@ -482,59 +546,68 @@ void CommBrick::exchange()
     i = nsend = 0;
     while (i < nlocal) {
       if (x[i][dim] < lo || x[i][dim] >= hi) {
-        if (nsend > maxsend) grow_send(nsend,1);
-        nsend += avec->pack_exchange(i,&buf_send[nsend]);
-        avec->copy(nlocal-1,i,1);
+        if (nsend > maxsend)
+          grow_send(nsend, 1);
+        nsend += avec->pack_exchange(i, &buf_send[nsend]);
+        avec->copy(nlocal - 1, i, 1);
         nlocal--;
-      } else i++;
+      } else
+        i++;
     }
     atom->nlocal = nlocal;
-    if (procgrid[dim] == 1) nrecv = 0;
+    if (procgrid[dim] == 1)
+      nrecv = 0;
     else {
-      MPI_Sendrecv(&nsend,1,MPI_INT,procneigh[dim][0],0,
-                   &nrecv1,1,MPI_INT,procneigh[dim][1],0,world,MPI_STATUS_IGNORE);
+      MPI_Sendrecv(&nsend, 1, MPI_INT, procneigh[dim][0], 0, &nrecv1, 1,
+                   MPI_INT, procneigh[dim][1], 0, world, MPI_STATUS_IGNORE);
       nrecv = nrecv1;
       if (procgrid[dim] > 2) {
-        MPI_Sendrecv(&nsend,1,MPI_INT,procneigh[dim][1],0,
-                     &nrecv2,1,MPI_INT,procneigh[dim][0],0,world,MPI_STATUS_IGNORE);
+        MPI_Sendrecv(&nsend, 1, MPI_INT, procneigh[dim][1], 0, &nrecv2, 1,
+                     MPI_INT, procneigh[dim][0], 0, world, MPI_STATUS_IGNORE);
         nrecv += nrecv2;
       }
-      if (nrecv > maxrecv) grow_recv(nrecv);
-      MPI_Irecv(buf_recv,nrecv1,MPI_DOUBLE,procneigh[dim][1],0,world,&request);
-      MPI_Send(buf_send,nsend,MPI_DOUBLE,procneigh[dim][0],0,world);
-      MPI_Wait(&request,MPI_STATUS_IGNORE);
+      if (nrecv > maxrecv)
+        grow_recv(nrecv);
+      MPI_Irecv(buf_recv, nrecv1, MPI_DOUBLE, procneigh[dim][1], 0, world,
+                &request);
+      MPI_Send(buf_send, nsend, MPI_DOUBLE, procneigh[dim][0], 0, world);
+      MPI_Wait(&request, MPI_STATUS_IGNORE);
       if (procgrid[dim] > 2) {
-        MPI_Irecv(&buf_recv[nrecv1],nrecv2,MPI_DOUBLE,procneigh[dim][0],0,world,&request);
-        MPI_Send(buf_send,nsend,MPI_DOUBLE,procneigh[dim][1],0,world);
-        MPI_Wait(&request,MPI_STATUS_IGNORE);
+        MPI_Irecv(&buf_recv[nrecv1], nrecv2, MPI_DOUBLE, procneigh[dim][0], 0,
+                  world, &request);
+        MPI_Send(buf_send, nsend, MPI_DOUBLE, procneigh[dim][1], 0, world);
+        MPI_Wait(&request, MPI_STATUS_IGNORE);
       }
     }
     m = 0;
     while (m < nrecv) {
-      value = buf_recv[m+dim+1];
-      if (value >= lo && value < hi) m += avec->unpack_exchange(&buf_recv[m]);
-      else m += static_cast<int> (buf_recv[m]);
+      value = buf_recv[m + dim + 1];
+      if (value >= lo && value < hi)
+        m += avec->unpack_exchange(&buf_recv[m]);
+      else
+        m += static_cast<int>(buf_recv[m]);
     }
   }
-  if (atom->firstgroupname) atom->first_reorder();
+  if (atom->firstgroupname)
+    atom->first_reorder();
 }
-void CommBrick::borders()
-{
-  int i,n,itype,icollection,iswap,dim,ineed,twoneed;
-  int nsend,nrecv,sendflag,nfirst,nlast,ngroup,nprior;
-  double lo,hi;
+void CommBrick::borders() {
+  int i, n, itype, icollection, iswap, dim, ineed, twoneed;
+  int nsend, nrecv, sendflag, nfirst, nlast, ngroup, nprior;
+  double lo, hi;
   int *type;
   int *collection;
   double **x;
-  double *buf,*mlo,*mhi;
+  double *buf, *mlo, *mhi;
   MPI_Request request;
   AtomVec *avec = atom->avec;
-  if (mode == Comm::MULTI) neighbor->build_collection(0);
+  if (mode == Comm::MULTI)
+    neighbor->build_collection(0);
   iswap = 0;
   smax = rmax = 0;
   for (dim = 0; dim < 3; dim++) {
     nlast = 0;
-    twoneed = 2*maxneed[dim];
+    twoneed = 2 * maxneed[dim];
     for (ineed = 0; ineed < twoneed; ineed++) {
       x = atom->x;
       if (mode == Comm::SINGLE) {
@@ -554,21 +627,26 @@ void CommBrick::borders()
         nlast = atom->nlocal + atom->nghost;
       }
       nsend = 0;
-      if (ineed/2 >= sendneed[dim][ineed % 2]) sendflag = 0;
-      else sendflag = 1;
+      if (ineed / 2 >= sendneed[dim][ineed % 2])
+        sendflag = 0;
+      else
+        sendflag = 1;
       if (sendflag) {
         if (!bordergroup || ineed >= 2) {
           if (mode == Comm::SINGLE) {
             for (i = nfirst; i < nlast; i++)
               if (x[i][dim] >= lo && x[i][dim] <= hi) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                if (nsend == maxsendlist[iswap])
+                  grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
           } else if (mode == Comm::MULTI) {
             for (i = nfirst; i < nlast; i++) {
               icollection = collection[i];
-              if (x[i][dim] >= mlo[icollection] && x[i][dim] <= mhi[icollection]) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+              if (x[i][dim] >= mlo[icollection] &&
+                  x[i][dim] <= mhi[icollection]) {
+                if (nsend == maxsendlist[iswap])
+                  grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
             }
@@ -576,7 +654,8 @@ void CommBrick::borders()
             for (i = nfirst; i < nlast; i++) {
               itype = type[i];
               if (x[i][dim] >= mlo[itype] && x[i][dim] <= mhi[itype]) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                if (nsend == maxsendlist[iswap])
+                  grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
             }
@@ -586,27 +665,33 @@ void CommBrick::borders()
             ngroup = atom->nfirst;
             for (i = 0; i < ngroup; i++)
               if (x[i][dim] >= lo && x[i][dim] <= hi) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                if (nsend == maxsendlist[iswap])
+                  grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
             for (i = atom->nlocal; i < nlast; i++)
               if (x[i][dim] >= lo && x[i][dim] <= hi) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                if (nsend == maxsendlist[iswap])
+                  grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
           } else if (mode == Comm::MULTI) {
             ngroup = atom->nfirst;
             for (i = 0; i < ngroup; i++) {
               icollection = collection[i];
-              if (x[i][dim] >= mlo[icollection] && x[i][dim] <= mhi[icollection]) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+              if (x[i][dim] >= mlo[icollection] &&
+                  x[i][dim] <= mhi[icollection]) {
+                if (nsend == maxsendlist[iswap])
+                  grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
             }
             for (i = atom->nlocal; i < nlast; i++) {
               icollection = collection[i];
-              if (x[i][dim] >= mlo[icollection] && x[i][dim] <= mhi[icollection]) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+              if (x[i][dim] >= mlo[icollection] &&
+                  x[i][dim] <= mhi[icollection]) {
+                if (nsend == maxsendlist[iswap])
+                  grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
             }
@@ -615,173 +700,205 @@ void CommBrick::borders()
             for (i = 0; i < ngroup; i++) {
               itype = type[i];
               if (x[i][dim] >= mlo[itype] && x[i][dim] <= mhi[itype]) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                if (nsend == maxsendlist[iswap])
+                  grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
             }
             for (i = atom->nlocal; i < nlast; i++) {
               itype = type[i];
               if (x[i][dim] >= mlo[itype] && x[i][dim] <= mhi[itype]) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                if (nsend == maxsendlist[iswap])
+                  grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
             }
           }
         }
       }
-      if (nsend*size_border > maxsend) grow_send(nsend*size_border,0);
+      if (nsend * size_border > maxsend)
+        grow_send(nsend * size_border, 0);
       if (ghost_velocity)
-        n = avec->pack_border_vel(nsend,sendlist[iswap],buf_send,pbc_flag[iswap],pbc[iswap]);
+        n = avec->pack_border_vel(nsend, sendlist[iswap], buf_send,
+                                  pbc_flag[iswap], pbc[iswap]);
       else
-        n = avec->pack_border(nsend,sendlist[iswap],buf_send,pbc_flag[iswap],pbc[iswap]);
+        n = avec->pack_border(nsend, sendlist[iswap], buf_send, pbc_flag[iswap],
+                              pbc[iswap]);
       if (sendproc[iswap] != me) {
-        MPI_Sendrecv(&nsend,1,MPI_INT,sendproc[iswap],0,
-                     &nrecv,1,MPI_INT,recvproc[iswap],0,world,MPI_STATUS_IGNORE);
-        if (nrecv*size_border > maxrecv) grow_recv(nrecv*size_border);
-        if (nrecv) MPI_Irecv(buf_recv,nrecv*size_border,MPI_DOUBLE,
-                             recvproc[iswap],0,world,&request);
-        if (n) MPI_Send(buf_send,n,MPI_DOUBLE,sendproc[iswap],0,world);
-        if (nrecv) MPI_Wait(&request,MPI_STATUS_IGNORE);
+        MPI_Sendrecv(&nsend, 1, MPI_INT, sendproc[iswap], 0, &nrecv, 1, MPI_INT,
+                     recvproc[iswap], 0, world, MPI_STATUS_IGNORE);
+        if (nrecv * size_border > maxrecv)
+          grow_recv(nrecv * size_border);
+        if (nrecv)
+          MPI_Irecv(buf_recv, nrecv * size_border, MPI_DOUBLE, recvproc[iswap],
+                    0, world, &request);
+        if (n)
+          MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap], 0, world);
+        if (nrecv)
+          MPI_Wait(&request, MPI_STATUS_IGNORE);
         buf = buf_recv;
       } else {
         nrecv = nsend;
         buf = buf_send;
       }
       if (ghost_velocity)
-        avec->unpack_border_vel(nrecv,atom->nlocal+atom->nghost,buf);
+        avec->unpack_border_vel(nrecv, atom->nlocal + atom->nghost, buf);
       else
-        avec->unpack_border(nrecv,atom->nlocal+atom->nghost,buf);
-      smax = MAX(smax,nsend);
-      rmax = MAX(rmax,nrecv);
+        avec->unpack_border(nrecv, atom->nlocal + atom->nghost, buf);
+      smax = MAX(smax, nsend);
+      rmax = MAX(rmax, nrecv);
       sendnum[iswap] = nsend;
       recvnum[iswap] = nrecv;
-      size_forward_recv[iswap] = nrecv*size_forward;
-      size_reverse_send[iswap] = nrecv*size_reverse;
-      size_reverse_recv[iswap] = nsend*size_reverse;
+      size_forward_recv[iswap] = nrecv * size_forward;
+      size_reverse_send[iswap] = nrecv * size_reverse;
+      size_reverse_recv[iswap] = nsend * size_reverse;
       firstrecv[iswap] = atom->nlocal + atom->nghost;
       nprior = atom->nlocal + atom->nghost;
       atom->nghost += nrecv;
-      if (neighbor->style == Neighbor::MULTI) neighbor->build_collection(nprior);
+      if (neighbor->style == Neighbor::MULTI)
+        neighbor->build_collection(nprior);
       iswap++;
     }
   }
-  int max = MAX(maxforward*smax,maxreverse*rmax);
-  if (max > maxsend) grow_send(max,0);
-  max = MAX(maxforward*rmax,maxreverse*smax);
-  if (max > maxrecv) grow_recv(max);
-  if (map_style != Atom::MAP_NONE) atom->map_set();
+  int max = MAX(maxforward * smax, maxreverse * rmax);
+  if (max > maxsend)
+    grow_send(max, 0);
+  max = MAX(maxforward * rmax, maxreverse * smax);
+  if (max > maxrecv)
+    grow_recv(max);
+  if (map_style != Atom::MAP_NONE)
+    atom->map_set();
 }
-void CommBrick::forward_comm(Pair *pair)
-{
-  int iswap,n;
+void CommBrick::forward_comm(Pair *pair) {
+  int iswap, n;
   double *buf;
   MPI_Request request;
   int nsize = pair->comm_forward;
   for (iswap = 0; iswap < nswap; iswap++) {
-    n = pair->pack_forward_comm(sendnum[iswap],sendlist[iswap],buf_send,pbc_flag[iswap],pbc[iswap]);
+    n = pair->pack_forward_comm(sendnum[iswap], sendlist[iswap], buf_send,
+                                pbc_flag[iswap], pbc[iswap]);
     if (sendproc[iswap] != me) {
       if (recvnum[iswap])
-        MPI_Irecv(buf_recv,nsize*recvnum[iswap],MPI_DOUBLE,recvproc[iswap],0,world,&request);
+        MPI_Irecv(buf_recv, nsize * recvnum[iswap], MPI_DOUBLE, recvproc[iswap],
+                  0, world, &request);
       if (sendnum[iswap])
-        MPI_Send(buf_send,n,MPI_DOUBLE,sendproc[iswap],0,world);
-      if (recvnum[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
+        MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap], 0, world);
+      if (recvnum[iswap])
+        MPI_Wait(&request, MPI_STATUS_IGNORE);
       buf = buf_recv;
-    } else buf = buf_send;
-    pair->unpack_forward_comm(recvnum[iswap],firstrecv[iswap],buf);
+    } else
+      buf = buf_send;
+    pair->unpack_forward_comm(recvnum[iswap], firstrecv[iswap], buf);
   }
 }
-void CommBrick::reverse_comm(Pair *pair)
-{
-  int iswap,n;
+void CommBrick::reverse_comm(Pair *pair) {
+  int iswap, n;
   double *buf;
   MPI_Request request;
-  int nsize = MAX(pair->comm_reverse,pair->comm_reverse_off);
-  for (iswap = nswap-1; iswap >= 0; iswap--) {
-    n = pair->pack_reverse_comm(recvnum[iswap],firstrecv[iswap],buf_send);
+  int nsize = MAX(pair->comm_reverse, pair->comm_reverse_off);
+  for (iswap = nswap - 1; iswap >= 0; iswap--) {
+    n = pair->pack_reverse_comm(recvnum[iswap], firstrecv[iswap], buf_send);
     if (sendproc[iswap] != me) {
       if (sendnum[iswap])
-        MPI_Irecv(buf_recv,nsize*sendnum[iswap],MPI_DOUBLE,sendproc[iswap],0,world,&request);
+        MPI_Irecv(buf_recv, nsize * sendnum[iswap], MPI_DOUBLE, sendproc[iswap],
+                  0, world, &request);
       if (recvnum[iswap])
-        MPI_Send(buf_send,n,MPI_DOUBLE,recvproc[iswap],0,world);
-      if (sendnum[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
+        MPI_Send(buf_send, n, MPI_DOUBLE, recvproc[iswap], 0, world);
+      if (sendnum[iswap])
+        MPI_Wait(&request, MPI_STATUS_IGNORE);
       buf = buf_recv;
-    } else buf = buf_send;
-    pair->unpack_reverse_comm(sendnum[iswap],sendlist[iswap],buf);
+    } else
+      buf = buf_send;
+    pair->unpack_reverse_comm(sendnum[iswap], sendlist[iswap], buf);
   }
 }
-void CommBrick::forward_comm(Fix *fix, int size)
-{
-  int iswap,n,nsize;
+void CommBrick::forward_comm(Fix *fix, int size) {
+  int iswap, n, nsize;
   double *buf;
   MPI_Request request;
-  if (size) nsize = size;
-  else nsize = fix->comm_forward;
+  if (size)
+    nsize = size;
+  else
+    nsize = fix->comm_forward;
   for (iswap = 0; iswap < nswap; iswap++) {
-    n = fix->pack_forward_comm(sendnum[iswap],sendlist[iswap],buf_send,pbc_flag[iswap],pbc[iswap]);
+    n = fix->pack_forward_comm(sendnum[iswap], sendlist[iswap], buf_send,
+                               pbc_flag[iswap], pbc[iswap]);
     if (sendproc[iswap] != me) {
       if (recvnum[iswap])
-        MPI_Irecv(buf_recv,nsize*recvnum[iswap],MPI_DOUBLE,recvproc[iswap],0,world,&request);
+        MPI_Irecv(buf_recv, nsize * recvnum[iswap], MPI_DOUBLE, recvproc[iswap],
+                  0, world, &request);
       if (sendnum[iswap])
-        MPI_Send(buf_send,n,MPI_DOUBLE,sendproc[iswap],0,world);
-      if (recvnum[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
-      buf = buf_recv;
-    } else buf = buf_send;
-    fix->unpack_forward_comm(recvnum[iswap],firstrecv[iswap],buf);
-  }
-}
-void CommBrick::reverse_comm(Fix *fix, int size)
-{
-  int iswap,n,nsize;
-  double *buf;
-  MPI_Request request;
-  if (size) nsize = size;
-  else nsize = fix->comm_reverse;
-  for (iswap = nswap-1; iswap >= 0; iswap--) {
-    n = fix->pack_reverse_comm(recvnum[iswap],firstrecv[iswap],buf_send);
-    if (sendproc[iswap] != me) {
-      if (sendnum[iswap])
-        MPI_Irecv(buf_recv,nsize*sendnum[iswap],MPI_DOUBLE,sendproc[iswap],0,world,&request);
+        MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap], 0, world);
       if (recvnum[iswap])
-        MPI_Send(buf_send,n,MPI_DOUBLE,recvproc[iswap],0,world);
-      if (sendnum[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
+        MPI_Wait(&request, MPI_STATUS_IGNORE);
       buf = buf_recv;
-    } else buf = buf_send;
-    fix->unpack_reverse_comm(sendnum[iswap],sendlist[iswap],buf);
+    } else
+      buf = buf_send;
+    fix->unpack_forward_comm(recvnum[iswap], firstrecv[iswap], buf);
   }
 }
-void CommBrick::reverse_comm_variable(Fix *fix)
-{
-  int iswap,nsend,nrecv;
+void CommBrick::reverse_comm(Fix *fix, int size) {
+  int iswap, n, nsize;
   double *buf;
   MPI_Request request;
-  for (iswap = nswap-1; iswap >= 0; iswap--) {
-    nsend = fix->pack_reverse_comm_size(recvnum[iswap],firstrecv[iswap]);
-    if (nsend > maxsend) grow_send(nsend,0);
-    nsend = fix->pack_reverse_comm(recvnum[iswap],firstrecv[iswap],buf_send);
+  if (size)
+    nsize = size;
+  else
+    nsize = fix->comm_reverse;
+  for (iswap = nswap - 1; iswap >= 0; iswap--) {
+    n = fix->pack_reverse_comm(recvnum[iswap], firstrecv[iswap], buf_send);
     if (sendproc[iswap] != me) {
-      MPI_Sendrecv(&nsend,1,MPI_INT,recvproc[iswap],0,
-                   &nrecv,1,MPI_INT,sendproc[iswap],0,world,MPI_STATUS_IGNORE);
+      if (sendnum[iswap])
+        MPI_Irecv(buf_recv, nsize * sendnum[iswap], MPI_DOUBLE, sendproc[iswap],
+                  0, world, &request);
+      if (recvnum[iswap])
+        MPI_Send(buf_send, n, MPI_DOUBLE, recvproc[iswap], 0, world);
+      if (sendnum[iswap])
+        MPI_Wait(&request, MPI_STATUS_IGNORE);
+      buf = buf_recv;
+    } else
+      buf = buf_send;
+    fix->unpack_reverse_comm(sendnum[iswap], sendlist[iswap], buf);
+  }
+}
+void CommBrick::reverse_comm_variable(Fix *fix) {
+  int iswap, nsend, nrecv;
+  double *buf;
+  MPI_Request request;
+  for (iswap = nswap - 1; iswap >= 0; iswap--) {
+    nsend = fix->pack_reverse_comm_size(recvnum[iswap], firstrecv[iswap]);
+    if (nsend > maxsend)
+      grow_send(nsend, 0);
+    nsend = fix->pack_reverse_comm(recvnum[iswap], firstrecv[iswap], buf_send);
+    if (sendproc[iswap] != me) {
+      MPI_Sendrecv(&nsend, 1, MPI_INT, recvproc[iswap], 0, &nrecv, 1, MPI_INT,
+                   sendproc[iswap], 0, world, MPI_STATUS_IGNORE);
       if (sendnum[iswap]) {
-        if (nrecv > maxrecv) grow_recv(nrecv);
-        MPI_Irecv(buf_recv,maxrecv,MPI_DOUBLE,sendproc[iswap],0,world,&request);
+        if (nrecv > maxrecv)
+          grow_recv(nrecv);
+        MPI_Irecv(buf_recv, maxrecv, MPI_DOUBLE, sendproc[iswap], 0, world,
+                  &request);
       }
       if (recvnum[iswap])
-        MPI_Send(buf_send,nsend,MPI_DOUBLE,recvproc[iswap],0,world);
-      if (sendnum[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
+        MPI_Send(buf_send, nsend, MPI_DOUBLE, recvproc[iswap], 0, world);
+      if (sendnum[iswap])
+        MPI_Wait(&request, MPI_STATUS_IGNORE);
       buf = buf_recv;
-    } else buf = buf_send;
-    fix->unpack_reverse_comm(sendnum[iswap],sendlist[iswap],buf);
+    } else
+      buf = buf_send;
+    fix->unpack_reverse_comm(sendnum[iswap], sendlist[iswap], buf);
   }
 }
-void CommBrick::forward_comm_array(int nsize, double **array)
-{
-  int i,j,k,m,iswap,last;
+void CommBrick::forward_comm_array(int nsize, double **array) {
+  int i, j, k, m, iswap, last;
   double *buf;
   MPI_Request request;
   if (nsize > maxforward) {
     maxforward = nsize;
-    if (maxforward*smax > maxsend) grow_send(maxforward*smax,0);
-    if (maxforward*rmax > maxrecv) grow_recv(maxforward*rmax);
+    if (maxforward * smax > maxsend)
+      grow_send(maxforward * smax, 0);
+    if (maxforward * rmax > maxrecv)
+      grow_recv(maxforward * rmax);
   }
   for (iswap = 0; iswap < nswap; iswap++) {
     m = 0;
@@ -792,12 +909,16 @@ void CommBrick::forward_comm_array(int nsize, double **array)
     }
     if (sendproc[iswap] != me) {
       if (recvnum[iswap])
-        MPI_Irecv(buf_recv,nsize*recvnum[iswap],MPI_DOUBLE,recvproc[iswap],0,world,&request);
+        MPI_Irecv(buf_recv, nsize * recvnum[iswap], MPI_DOUBLE, recvproc[iswap],
+                  0, world, &request);
       if (sendnum[iswap])
-        MPI_Send(buf_send,nsize*sendnum[iswap],MPI_DOUBLE,sendproc[iswap],0,world);
-      if (recvnum[iswap]) MPI_Wait(&request,MPI_STATUS_IGNORE);
+        MPI_Send(buf_send, nsize * sendnum[iswap], MPI_DOUBLE, sendproc[iswap],
+                 0, world);
+      if (recvnum[iswap])
+        MPI_Wait(&request, MPI_STATUS_IGNORE);
       buf = buf_recv;
-    } else buf = buf_send;
+    } else
+      buf = buf_send;
     m = 0;
     last = firstrecv[iswap] + recvnum[iswap];
     for (i = firstrecv[iswap]; i < last; i++)
@@ -805,46 +926,50 @@ void CommBrick::forward_comm_array(int nsize, double **array)
         array[i][k] = buf[m++];
   }
 }
-int CommBrick::exchange_variable(int n, double *inbuf, double *&outbuf)
-{
-  int nsend,nrecv,nrecv1,nrecv2;
+int CommBrick::exchange_variable(int n, double *inbuf, double *&outbuf) {
+  int nsend, nrecv, nrecv1, nrecv2;
   MPI_Request request;
   nrecv = n;
-  if (nrecv > maxrecv) grow_recv(nrecv);
+  if (nrecv > maxrecv)
+    grow_recv(nrecv);
   if (inbuf)
-    memcpy(buf_recv,inbuf,nrecv*sizeof(double));
+    memcpy(buf_recv, inbuf, nrecv * sizeof(double));
   for (int dim = 0; dim < 3; dim++) {
-    if (procgrid[dim] == 1) continue;
+    if (procgrid[dim] == 1)
+      continue;
     nsend = nrecv;
-    MPI_Sendrecv(&nsend,1,MPI_INT,procneigh[dim][0],0,
-                 &nrecv1,1,MPI_INT,procneigh[dim][1],0,world,MPI_STATUS_IGNORE);
+    MPI_Sendrecv(&nsend, 1, MPI_INT, procneigh[dim][0], 0, &nrecv1, 1, MPI_INT,
+                 procneigh[dim][1], 0, world, MPI_STATUS_IGNORE);
     nrecv += nrecv1;
     if (procgrid[dim] > 2) {
-      MPI_Sendrecv(&nsend,1,MPI_INT,procneigh[dim][1],0,
-                   &nrecv2,1,MPI_INT,procneigh[dim][0],0,world,MPI_STATUS_IGNORE);
+      MPI_Sendrecv(&nsend, 1, MPI_INT, procneigh[dim][1], 0, &nrecv2, 1,
+                   MPI_INT, procneigh[dim][0], 0, world, MPI_STATUS_IGNORE);
       nrecv += nrecv2;
-    } else nrecv2 = 0;
+    } else
+      nrecv2 = 0;
     if (nrecv > maxrecv) {
-      maxrecv = static_cast<int> (BUFFACTOR * nrecv);
-      memory->grow(buf_recv, maxrecv + bufextra,"comm:buf_recv");
+      maxrecv = static_cast<int>(BUFFACTOR * nrecv);
+      memory->grow(buf_recv, maxrecv + bufextra, "comm:buf_recv");
     }
-    MPI_Irecv(&buf_recv[nsend],nrecv1,MPI_DOUBLE,procneigh[dim][1],0,world,&request);
-    MPI_Send(buf_recv,nsend,MPI_DOUBLE,procneigh[dim][0],0,world);
-    MPI_Wait(&request,MPI_STATUS_IGNORE);
+    MPI_Irecv(&buf_recv[nsend], nrecv1, MPI_DOUBLE, procneigh[dim][1], 0, world,
+              &request);
+    MPI_Send(buf_recv, nsend, MPI_DOUBLE, procneigh[dim][0], 0, world);
+    MPI_Wait(&request, MPI_STATUS_IGNORE);
     if (procgrid[dim] > 2) {
-      MPI_Irecv(&buf_recv[nsend+nrecv1],nrecv2,MPI_DOUBLE,procneigh[dim][0],0,world,&request);
-      MPI_Send(buf_recv,nsend,MPI_DOUBLE,procneigh[dim][1],0,world);
-      MPI_Wait(&request,MPI_STATUS_IGNORE);
+      MPI_Irecv(&buf_recv[nsend + nrecv1], nrecv2, MPI_DOUBLE,
+                procneigh[dim][0], 0, world, &request);
+      MPI_Send(buf_recv, nsend, MPI_DOUBLE, procneigh[dim][1], 0, world);
+      MPI_Wait(&request, MPI_STATUS_IGNORE);
     }
   }
   outbuf = buf_recv;
   return nrecv;
 }
-int CommBrick::exchange_variable_all2all(int nsend, double *inbuf, double *&outbuf)
-{
+int CommBrick::exchange_variable_all2all(int nsend, double *inbuf,
+                                         double *&outbuf) {
   int i, iswap, iproc, ntotal, *count;
   double *buf;
-  count = (int*)malloc(nprocs * sizeof *count);
+  count = (int *)malloc(nprocs * sizeof *count);
   if (count == NULL)
     error->one(FLERR, "malloc failed\n");
   MPI_Allgather(&nsend, 1, MPI_INT, count, 1, MPI_INT, world);
@@ -867,33 +992,29 @@ int CommBrick::exchange_variable_all2all(int nsend, double *inbuf, double *&outb
   outbuf = buf_recv;
   return ntotal;
 }
-void CommBrick::grow_send(int n, int flag)
-{
+void CommBrick::grow_send(int n, int flag) {
   if (flag == 0) {
-    maxsend = static_cast<int> (BUFFACTOR * n);
+    maxsend = static_cast<int>(BUFFACTOR * n);
     memory->destroy(buf_send);
-    memory->create(buf_send,maxsend+bufextra,"comm:buf_send");
+    memory->create(buf_send, maxsend + bufextra, "comm:buf_send");
   } else if (flag == 1) {
-    maxsend = static_cast<int> (BUFFACTOR * n);
-    memory->grow(buf_send,maxsend+bufextra,"comm:buf_send");
+    maxsend = static_cast<int>(BUFFACTOR * n);
+    memory->grow(buf_send, maxsend + bufextra, "comm:buf_send");
   } else {
     memory->destroy(buf_send);
-    memory->grow(buf_send,maxsend+bufextra,"comm:buf_send");
+    memory->grow(buf_send, maxsend + bufextra, "comm:buf_send");
   }
 }
-void CommBrick::grow_recv(int n)
-{
-  maxrecv = static_cast<int> (BUFFACTOR * n);
+void CommBrick::grow_recv(int n) {
+  maxrecv = static_cast<int>(BUFFACTOR * n);
   memory->destroy(buf_recv);
-  memory->create(buf_recv,maxrecv,"comm:buf_recv");
+  memory->create(buf_recv, maxrecv, "comm:buf_recv");
 }
-void CommBrick::grow_list(int iswap, int n)
-{
-  maxsendlist[iswap] = static_cast<int> (BUFFACTOR * n);
-  memory->grow(sendlist[iswap],maxsendlist[iswap],"comm:sendlist[iswap]");
+void CommBrick::grow_list(int iswap, int n) {
+  maxsendlist[iswap] = static_cast<int>(BUFFACTOR * n);
+  memory->grow(sendlist[iswap], maxsendlist[iswap], "comm:sendlist[iswap]");
 }
-void CommBrick::grow_swap(int n)
-{
+void CommBrick::grow_swap(int n) {
   free_swap();
   allocate_swap(n);
   if (mode == Comm::MULTI) {
@@ -904,42 +1025,40 @@ void CommBrick::grow_swap(int n)
     free_multiold();
     allocate_multiold(n);
   }
-  sendlist = (int **)
-    memory->srealloc(sendlist,n*sizeof(int *),"comm:sendlist");
-  memory->grow(maxsendlist,n,"comm:maxsendlist");
+  sendlist =
+      (int **)memory->srealloc(sendlist, n * sizeof(int *), "comm:sendlist");
+  memory->grow(maxsendlist, n, "comm:maxsendlist");
   for (int i = maxswap; i < n; i++) {
     maxsendlist[i] = BUFMIN;
-    memory->create(sendlist[i],BUFMIN,"comm:sendlist[i]");
+    memory->create(sendlist[i], BUFMIN, "comm:sendlist[i]");
   }
   maxswap = n;
 }
-void CommBrick::allocate_swap(int n)
-{
-  memory->create(sendnum,n,"comm:sendnum");
-  memory->create(recvnum,n,"comm:recvnum");
-  memory->create(sendproc,n,"comm:sendproc");
-  memory->create(recvproc,n,"comm:recvproc");
-  memory->create(size_forward_recv,n,"comm:size");
-  memory->create(size_reverse_send,n,"comm:size");
-  memory->create(size_reverse_recv,n,"comm:size");
-  memory->create(slablo,n,"comm:slablo");
-  memory->create(slabhi,n,"comm:slabhi");
-  memory->create(firstrecv,n,"comm:firstrecv");
-  memory->create(pbc_flag,n,"comm:pbc_flag");
-  memory->create(pbc,n,6,"comm:pbc");
+void CommBrick::allocate_swap(int n) {
+  memory->create(sendnum, n, "comm:sendnum");
+  memory->create(recvnum, n, "comm:recvnum");
+  memory->create(sendproc, n, "comm:sendproc");
+  memory->create(recvproc, n, "comm:recvproc");
+  memory->create(size_forward_recv, n, "comm:size");
+  memory->create(size_reverse_send, n, "comm:size");
+  memory->create(size_reverse_recv, n, "comm:size");
+  memory->create(slablo, n, "comm:slablo");
+  memory->create(slabhi, n, "comm:slabhi");
+  memory->create(firstrecv, n, "comm:firstrecv");
+  memory->create(pbc_flag, n, "comm:pbc_flag");
+  memory->create(pbc, n, 6, "comm:pbc");
 }
-void CommBrick::allocate_multi(int n)
-{
-  multilo = memory->create(multilo,n,ncollections,"comm:multilo");
-  multihi = memory->create(multihi,n,ncollections,"comm:multihi");
+void CommBrick::allocate_multi(int n) {
+  multilo = memory->create(multilo, n, ncollections, "comm:multilo");
+  multihi = memory->create(multihi, n, ncollections, "comm:multihi");
 }
-void CommBrick::allocate_multiold(int n)
-{
-  multioldlo = memory->create(multioldlo,n,atom->ntypes+1,"comm:multioldlo");
-  multioldhi = memory->create(multioldhi,n,atom->ntypes+1,"comm:multioldhi");
+void CommBrick::allocate_multiold(int n) {
+  multioldlo =
+      memory->create(multioldlo, n, atom->ntypes + 1, "comm:multioldlo");
+  multioldhi =
+      memory->create(multioldhi, n, atom->ntypes + 1, "comm:multioldhi");
 }
-void CommBrick::free_swap()
-{
+void CommBrick::free_swap() {
   memory->destroy(sendnum);
   memory->destroy(recvnum);
   memory->destroy(sendproc);
@@ -953,35 +1072,32 @@ void CommBrick::free_swap()
   memory->destroy(pbc_flag);
   memory->destroy(pbc);
 }
-void CommBrick::free_multi()
-{
+void CommBrick::free_multi() {
   memory->destroy(multilo);
   memory->destroy(multihi);
   multilo = multihi = nullptr;
 }
-void CommBrick::free_multiold()
-{
+void CommBrick::free_multiold() {
   memory->destroy(multioldlo);
   memory->destroy(multioldhi);
   multioldlo = multioldhi = nullptr;
 }
-void *CommBrick::extract(const char *str, int &dim)
-{
+void *CommBrick::extract(const char *str, int &dim) {
   dim = 0;
-  if (strcmp(str,"localsendlist") == 0) {
+  if (strcmp(str, "localsendlist") == 0) {
     int i, iswap, isend;
     dim = 1;
     if (!localsendlist)
-      memory->create(localsendlist,atom->nlocal,"comm:localsendlist");
+      memory->create(localsendlist, atom->nlocal, "comm:localsendlist");
     else
-      memory->grow(localsendlist,atom->nlocal,"comm:localsendlist");
+      memory->grow(localsendlist, atom->nlocal, "comm:localsendlist");
     for (i = 0; i < atom->nlocal; i++)
       localsendlist[i] = 0;
     for (iswap = 0; iswap < nswap; iswap++)
       for (isend = 0; isend < sendnum[iswap]; isend++)
         if (sendlist[iswap][isend] < atom->nlocal)
           localsendlist[sendlist[iswap][isend]] = 1;
-    return (void *) localsendlist;
+    return (void *)localsendlist;
   }
   return nullptr;
 }

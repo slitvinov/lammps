@@ -1,9 +1,9 @@
 #ifndef LMP_NEIGH_LIST_H
-#define LMP_NEIGH_LIST_H 
+#define LMP_NEIGH_LIST_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class NeighList : protected Pointers {
- public:
+public:
   enum RequestorType { NONE, PAIR, FIX, COMPUTE };
   void *requestor;
   RequestorType requestor_type;
@@ -57,5 +57,5 @@ class NeighList : protected Pointers {
   void print_attributes();
   int get_maxlocal() { return maxatom; }
 };
-}
+} // namespace LAMMPS_NS
 #endif

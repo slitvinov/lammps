@@ -1,12 +1,12 @@
 #ifndef LMP_ATOM_H
-#define LMP_ATOM_H 
+#define LMP_ATOM_H
 #include "pointers.h"
 #include <map>
 #include <set>
 namespace LAMMPS_NS {
 class AtomVec;
 class Atom : protected Pointers {
- public:
+public:
   char *atom_style;
   AtomVec *avec;
   enum { DOUBLE, INT, BIGINT };
@@ -108,7 +108,8 @@ class Atom : protected Pointers {
   void peratom_create();
   void add_peratom(const std::string &, void *, int, int, int threadflag = 0);
   void add_peratom_change_columns(const std::string &, int);
-  void add_peratom_vary(const std::string &, void *, int, int *, void *, int collength = 0);
+  void add_peratom_vary(const std::string &, void *, int, int *, void *,
+                        int collength = 0);
   void create_avec(const std::string &, int, char **, int);
   virtual AtomVec *new_avec(const std::string &);
   void init();
@@ -143,8 +144,7 @@ class Atom : protected Pointers {
   inline int get_max_same() { return max_same; };
   inline int get_map_maxarray() { return map_maxarray + 1; };
   int memcheck(const char *) { return 1; }
-  inline int map(tagint global)
-  {
+  inline int map(tagint global) {
     if (map_style == 1)
       return map_array[global];
     else if (map_style == 2)
@@ -159,7 +159,8 @@ class Atom : protected Pointers {
   int map_style_set();
   virtual void map_delete();
   int map_find_hash(tagint);
- protected:
+
+protected:
   int *map_array;
   int map_maxarray;
   struct HashElem {
@@ -187,5 +188,5 @@ class Atom : protected Pointers {
   void setup_sort_bins();
   int next_prime(int);
 };
-}
+} // namespace LAMMPS_NS
 #endif

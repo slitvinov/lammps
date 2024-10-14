@@ -1,12 +1,13 @@
 #ifndef LMP_LABEL_MAP_H
-#define LMP_LABEL_MAP_H 
+#define LMP_LABEL_MAP_H
 #include "pointers.h"
 #include <unordered_map>
 namespace LAMMPS_NS {
 class LabelMap : protected Pointers {
   friend class AtomVec;
   friend class ReadData;
- public:
+
+public:
   LabelMap(LAMMPS *lmp, int, int, int, int, int);
   ~LabelMap();
   void modify_lmap(int, char **);
@@ -14,7 +15,8 @@ class LabelMap : protected Pointers {
   void create_lmap2lmap(LabelMap *, int);
   int find(const std::string &, int) const;
   bool is_complete(int) const;
- protected:
+
+protected:
   int natomtypes, nbondtypes, nangletypes, ndihedraltypes, nimpropertypes;
   std::vector<std::string> typelabel, btypelabel, atypelabel;
   std::vector<std::string> dtypelabel, itypelabel;
@@ -41,5 +43,5 @@ class LabelMap : protected Pointers {
   int read_int(FILE *);
   void write_map(const std::string &);
 };
-}
+} // namespace LAMMPS_NS
 #endif

@@ -1,11 +1,11 @@
 #ifndef LMP_GROUP_H
-#define LMP_GROUP_H 
+#define LMP_GROUP_H
 #include "pointers.h"
 #include <map>
 namespace LAMMPS_NS {
 class Region;
 class Group : protected Pointers {
- public:
+public:
   int ngroup;
   char **names;
   int *bitmask;
@@ -40,12 +40,13 @@ class Group : protected Pointers {
   void inertia(int, double *, double[3][3]);
   void inertia(int, double *, double[3][3], Region *);
   void omega(double *, double[3][3], double *);
- private:
+
+private:
   int me;
   std::map<tagint, int> *hash;
   int find_unused();
   static void molring(int, char *, void *);
   int molbit;
 };
-}
+} // namespace LAMMPS_NS
 #endif

@@ -1,17 +1,19 @@
 #ifndef LMP_IMBALANCE_NEIGH_H
-#define LMP_IMBALANCE_NEIGH_H 
+#define LMP_IMBALANCE_NEIGH_H
 #include "imbalance.h"
 namespace LAMMPS_NS {
 class ImbalanceNeigh : public Imbalance {
- public:
+public:
   ImbalanceNeigh(class LAMMPS *);
- public:
+
+public:
   int options(int, char **) override;
   void compute(double *) override;
   std::string info() override;
- private:
+
+private:
   double factor;
   int did_warn;
 };
-}
+} // namespace LAMMPS_NS
 #endif

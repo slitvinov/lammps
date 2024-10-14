@@ -1,37 +1,36 @@
 #include "random_mars.h"
-#include <cmath>
-#include <cstring>
 #include "error.h"
 #include "math_const.h"
+#include <cmath>
+#include <cstring>
 using namespace LAMMPS_NS;
-enum{ADD,SUBTRACT};
-RanMars::RanMars(LAMMPS *lmp, int seed) : Pointers(lmp),
-  u(nullptr)
-{
-  int ij,kl,i,j,k,l,ii,jj,m;
-  double s,t;
+enum { ADD, SUBTRACT };
+RanMars::RanMars(LAMMPS *lmp, int seed) : Pointers(lmp), u(nullptr) {
+  int ij, kl, i, j, k, l, ii, jj, m;
+  double s, t;
   if (seed <= 0 || seed > 900000000)
-    error->one(FLERR,"Invalid seed for Marsaglia random # generator");
+    error->one(FLERR, "Invalid seed for Marsaglia random # generator");
   save = 0;
-  u = new double[97+1];
-  memset(u,0,98*sizeof(double));
-  ij = (seed-1)/30082;
-  kl = (seed-1) - 30082*ij;
-  i = (ij/177) % 177 + 2;
-  j = ij %177 + 2;
-  k = (kl/169) % 178 + 1;
+  u = new double[97 + 1];
+  memset(u, 0, 98 * sizeof(double));
+  ij = (seed - 1) / 30082;
+  kl = (seed - 1) - 30082 * ij;
+  i = (ij / 177) % 177 + 2;
+  j = ij % 177 + 2;
+  k = (kl / 169) % 178 + 1;
   l = kl % 169;
   for (ii = 1; ii <= 97; ii++) {
     s = 0.0;
     t = 0.5;
     for (jj = 1; jj <= 24; jj++) {
-      m = ((i*j) % 179)*k % 179;
+      m = ((i * j) % 179) * k % 179;
       i = j;
       j = k;
       k = m;
-      l = (53*l+1) % 169;
-      if ((l*m) % 64 >= 32) s = s + t;
-      t = 0.5*t;
+      l = (53 * l + 1) % 169;
+      if ((l * m) % 64 >= 32)
+        s = s + t;
+      t = 0.5 * t;
     }
     u[ii] = s;
   }
@@ -42,37 +41,37 @@ RanMars::RanMars(LAMMPS *lmp, int seed) : Pointers(lmp),
   j97 = 33;
   uniform();
 }
-RanMars::~RanMars()
-{
-  delete [] u;
-}
-double RanMars::uniform()
-{
+RanMars::~RanMars() { delete[] u; }
+double RanMars::uniform() {
   double uni = u[i97] - u[j97];
-  if (uni < 0.0) uni += 1.0;
+  if (uni < 0.0)
+    uni += 1.0;
   u[i97] = uni;
   i97--;
-  if (i97 == 0) i97 = 97;
+  if (i97 == 0)
+    i97 = 97;
   j97--;
-  if (j97 == 0) j97 = 97;
+  if (j97 == 0)
+    j97 = 97;
   c -= cd;
-  if (c < 0.0) c += cm;
+  if (c < 0.0)
+    c += cm;
   uni -= c;
-  if (uni < 0.0) uni += 1.0;
+  if (uni < 0.0)
+    uni += 1.0;
   return uni;
 }
-double RanMars::gaussian()
-{
-  double first,v1,v2,rsq,fac;
+double RanMars::gaussian() {
+  double first, v1, v2, rsq, fac;
   if (!save) {
     do {
-      v1 = 2.0*uniform()-1.0;
-      v2 = 2.0*uniform()-1.0;
-      rsq = v1*v1 + v2*v2;
+      v1 = 2.0 * uniform() - 1.0;
+      v2 = 2.0 * uniform() - 1.0;
+      rsq = v1 * v1 + v2 * v2;
     } while ((rsq >= 1.0) || (rsq == 0.0));
-    fac = sqrt(-2.0*log(rsq)/rsq);
-    second = v1*fac;
-    first = v2*fac;
+    fac = sqrt(-2.0 * log(rsq) / rsq);
+    second = v1 * fac;
+    first = v2 * fac;
     save = 1;
   } else {
     first = second;
@@ -80,44 +79,42 @@ double RanMars::gaussian()
   }
   return first;
 }
-double RanMars::gaussian(double mu, double sigma)
-{
+double RanMars::gaussian(double mu, double sigma) {
   double v1;
-  v1 = mu+sigma*gaussian();
+  v1 = mu + sigma * gaussian();
   return v1;
 }
-double RanMars::rayleigh(double sigma)
-{
+double RanMars::rayleigh(double sigma) {
   double v1;
-  if (sigma <= 0.0) error->all(FLERR,"Invalid Rayleigh parameter");
+  if (sigma <= 0.0)
+    error->all(FLERR, "Invalid Rayleigh parameter");
   v1 = uniform();
-  if (v1 == 0.0) return 1.0e300;
-  return sigma*sqrt(-2.0*log(v1));
+  if (v1 == 0.0)
+    return 1.0e300;
+  return sigma * sqrt(-2.0 * log(v1));
 }
-double RanMars::besselexp(double theta, double alpha, double cp)
-{
-  double first,v1,v2;
+double RanMars::besselexp(double theta, double alpha, double cp) {
+  double first, v1, v2;
   if (theta < 0.0 || alpha < 0.0 || alpha > 1.0)
-    error->all(FLERR,"Invalid Bessel exponential distribution parameters");
+    error->all(FLERR, "Invalid Bessel exponential distribution parameters");
   v1 = uniform();
   v2 = uniform();
   if (cp < 0.0)
-    first = sqrt((1.0-alpha)*cp*cp - 2.0*alpha*theta*log(v1) +
-                 2.0*sqrt(-2.0*theta*(1.0-alpha)*alpha*log(v1)) *
-                 cos(2.0*MathConst::MY_PI*v2)*cp);
+    first = sqrt((1.0 - alpha) * cp * cp - 2.0 * alpha * theta * log(v1) +
+                 2.0 * sqrt(-2.0 * theta * (1.0 - alpha) * alpha * log(v1)) *
+                     cos(2.0 * MathConst::MY_PI * v2) * cp);
   else
-    first = -sqrt((1.0-alpha)*cp*cp - 2.0*alpha*theta*log(v1) -
-                  2.0*sqrt(-2.0*theta*(1.0-alpha)*alpha*log(v1)) *
-                  cos(2.0*MathConst::MY_PI*v2)*cp);
+    first = -sqrt((1.0 - alpha) * cp * cp - 2.0 * alpha * theta * log(v1) -
+                  2.0 * sqrt(-2.0 * theta * (1.0 - alpha) * alpha * log(v1)) *
+                      cos(2.0 * MathConst::MY_PI * v2) * cp);
   return first;
 }
-void RanMars::select_subset(bigint ntarget, int nmine, int *mark, int *next)
-{
-  int mode,index,oldindex,newvalue,nflip,which;
-  int active[2],first[2];
-  int newactive[2],newfirst[2],newlast[2];
-  bigint nmark,nflipall;
-  bigint activeall[2],bsum[3],bsumall[3];
+void RanMars::select_subset(bigint ntarget, int nmine, int *mark, int *next) {
+  int mode, index, oldindex, newvalue, nflip, which;
+  int active[2], first[2];
+  int newactive[2], newfirst[2], newlast[2];
+  bigint nmark, nflipall;
+  bigint activeall[2], bsum[3], bsumall[3];
   double thresh;
   active[0] = nmine;
   active[1] = 0;
@@ -125,27 +122,32 @@ void RanMars::select_subset(bigint ntarget, int nmine, int *mark, int *next)
   first[1] = -1;
   bigint bnmine = nmine;
   bigint bnall;
-  MPI_Allreduce(&bnmine,&bnall,1,MPI_LMP_BIGINT,MPI_SUM,world);
+  MPI_Allreduce(&bnmine, &bnall, 1, MPI_LMP_BIGINT, MPI_SUM, world);
   activeall[0] = bnall;
-  for (int i = 0; i < nmine; i++) mark[i] = 0;
-  for (int i = 0; i < nmine; i++) next[i] = i+1;
-  if (nmine > 0) next[nmine-1] = -1;
+  for (int i = 0; i < nmine; i++)
+    mark[i] = 0;
+  for (int i = 0; i < nmine; i++)
+    next[i] = i + 1;
+  if (nmine > 0)
+    next[nmine - 1] = -1;
   nmark = 0;
   while (nmark != ntarget) {
-    if (ntarget-nmark > 0) {
+    if (ntarget - nmark > 0) {
       mode = ADD;
-      thresh = 1.0 * (ntarget-nmark) / activeall[mode];
+      thresh = 1.0 * (ntarget - nmark) / activeall[mode];
     } else {
       mode = SUBTRACT;
-      thresh = 1.0 * (nmark-ntarget) / activeall[mode];
+      thresh = 1.0 * (nmark - ntarget) / activeall[mode];
     }
-    thresh = MAX(thresh,0.01);
-    thresh = MIN(thresh,0.99);
+    thresh = MAX(thresh, 0.01);
+    thresh = MIN(thresh, 0.99);
     newactive[0] = newactive[1] = 0;
     newfirst[0] = newfirst[1] = -1;
     newlast[0] = newlast[1] = -1;
-    if (mode == ADD) newvalue = 1;
-    else if (mode == SUBTRACT) newvalue = 0;
+    if (mode == ADD)
+      newvalue = 1;
+    else if (mode == SUBTRACT)
+      newvalue = 0;
     index = first[mode];
     nflip = 0;
     while ((nmine > 0) && (index >= 0)) {
@@ -157,8 +159,10 @@ void RanMars::select_subset(bigint ntarget, int nmine, int *mark, int *next)
       index = next[index];
       which = mark[oldindex];
       newactive[which]++;
-      if (newfirst[which] < 0) newfirst[which] = oldindex;
-      if (newlast[which] >= 0) next[newlast[which]] = oldindex;
+      if (newfirst[which] < 0)
+        newfirst[which] = oldindex;
+      if (newlast[which] >= 0)
+        next[newlast[which]] = oldindex;
       newlast[which] = oldindex;
       next[oldindex] = -1;
       active[0] = newactive[0];
@@ -169,26 +173,28 @@ void RanMars::select_subset(bigint ntarget, int nmine, int *mark, int *next)
     bsum[0] = nflip;
     bsum[1] = active[0];
     bsum[2] = active[1];
-    MPI_Allreduce(&bsum,&bsumall,3,MPI_LMP_BIGINT,MPI_SUM,world);
+    MPI_Allreduce(&bsum, &bsumall, 3, MPI_LMP_BIGINT, MPI_SUM, world);
     nflipall = bsumall[0];
     activeall[0] = bsumall[1];
     activeall[1] = bsumall[2];
-    if (mode == ADD) nmark += nflipall;
-    else if (mode == SUBTRACT) nmark -= nflipall;
+    if (mode == ADD)
+      nmark += nflipall;
+    else if (mode == SUBTRACT)
+      nmark -= nflipall;
   }
 }
-void RanMars::get_state(double *state)
-{
-  for (int i=0; i < 98; ++i) state[i] = u[i];
+void RanMars::get_state(double *state) {
+  for (int i = 0; i < 98; ++i)
+    state[i] = u[i];
   state[98] = i97;
   state[99] = j97;
-  state[100]= c;
-  state[101]= cd;
-  state[102]= cm;
+  state[100] = c;
+  state[101] = cd;
+  state[102] = cm;
 }
-void RanMars::set_state(double *state)
-{
-  for (int i=0; i < 98; ++i) u[i] = state[i];
+void RanMars::set_state(double *state) {
+  for (int i = 0; i < 98; ++i)
+    u[i] = state[i];
   i97 = state[98];
   j97 = state[99];
   c = state[100];

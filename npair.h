@@ -1,9 +1,9 @@
 #ifndef LMP_NPAIR_H
-#define LMP_NPAIR_H 
+#define LMP_NPAIR_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class NPair : protected Pointers {
- public:
+public:
   int istyle;
   class NBin *nb;
   bigint last_build;
@@ -14,7 +14,8 @@ class NPair : protected Pointers {
   virtual void copy_neighbor_info();
   void build_setup();
   virtual void build(class NeighList *) = 0;
- protected:
+
+protected:
   double **mycutneighsq;
   int includegroup;
   int exclude;
@@ -57,8 +58,8 @@ class NPair : protected Pointers {
   int coord2bin(double *);
   int coord2bin(double *, int &, int &, int &);
   int coord2bin(double *, int);
-  inline int find_special(const tagint *list, const int *nspecial, const tagint tag) const
-  {
+  inline int find_special(const tagint *list, const int *nspecial,
+                          const tagint tag) const {
     const int n1 = nspecial[0];
     const int n2 = nspecial[1];
     const int n3 = nspecial[2];
@@ -93,5 +94,5 @@ class NPair : protected Pointers {
   int copymode;
   ExecutionSpace execution_space;
 };
-}
+} // namespace LAMMPS_NS
 #endif

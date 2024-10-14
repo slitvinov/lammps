@@ -1,5 +1,5 @@
 #ifndef LMP_DOMAIN_H
-#define LMP_DOMAIN_H 
+#define LMP_DOMAIN_H
 #include "pointers.h"
 #include <cmath>
 #include <map>
@@ -7,7 +7,7 @@
 namespace LAMMPS_NS {
 class Region;
 class Domain : protected Pointers {
- public:
+public:
   int box_exist;
   int dimension;
   int nonperiodic;
@@ -57,7 +57,9 @@ class Domain : protected Pointers {
   virtual void pbc();
   void subbox_too_small_check(double);
   void minimum_image(double &, double &, double &) const;
-  void minimum_image(double *delta) const { minimum_image(delta[0], delta[1], delta[2]); }
+  void minimum_image(double *delta) const {
+    minimum_image(delta[0], delta[1], delta[2]);
+  }
   int closest_image(int, int);
   int closest_image(const double *const, int);
   void closest_image(const double *const, const double *const, double *const);
@@ -85,16 +87,19 @@ class Domain : protected Pointers {
   void x2lamda(double *, double *, double *, double *);
   void bbox(double *, double *, double *, double *);
   void box_corners();
-  inline int minimum_image_check(double dx, double dy, double dz)
-  {
-    if (xperiodic && fabs(dx) > xprd_half) return 1;
-    if (yperiodic && fabs(dy) > yprd_half) return 1;
-    if (zperiodic && fabs(dz) > zprd_half) return 1;
+  inline int minimum_image_check(double dx, double dy, double dz) {
+    if (xperiodic && fabs(dx) > xprd_half)
+      return 1;
+    if (yperiodic && fabs(dy) > yprd_half)
+      return 1;
+    if (zperiodic && fabs(dz) > zprd_half)
+      return 1;
     return 0;
   }
- protected:
+
+protected:
   double small[3];
   std::unordered_set<Region *> regions;
 };
-}
+} // namespace LAMMPS_NS
 #endif

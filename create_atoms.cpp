@@ -31,33 +31,41 @@ enum { ATOM, MOLECULE };
 enum { COUNT, INSERT, INSERT_SELECTED };
 enum { NONE, RATIO, SUBSET };
 enum { BISECTION, QUASIRANDOM };
-static constexpr const char *mesh_name[] = {"recursive bisection", "quasi-random"};
+static constexpr const char *mesh_name[] = {"recursive bisection",
+                                            "quasi-random"};
 CreateAtoms::CreateAtoms(LAMMPS *lmp) : Command(lmp), basistype(nullptr) {}
-void CreateAtoms::command(int narg, char **arg)
-{
+void CreateAtoms::command(int narg, char **arg) {
   if (domain->box_exist == 0)
     error->all(FLERR, "Create_atoms command before simulation box is defined");
   if (modify->nfix_restart_peratom)
-    error->all(FLERR, "Cannot create_atoms after reading restart file with per-atom info");
+    error->all(
+        FLERR,
+        "Cannot create_atoms after reading restart file with per-atom info");
   int latsty = domain->lattice->style;
   if (latsty == Lattice::SQ || latsty == Lattice::SQ2 || latsty == Lattice::HEX)
     error->all(FLERR, "Lattice style incompatible with simulation dimension");
-  if (narg < 2) utils::missing_cmd_args(FLERR, "create_atoms", error);
+  if (narg < 2)
+    utils::missing_cmd_args(FLERR, "create_atoms", error);
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
   const char *meshfile;
   int iarg;
   if (strcmp(arg[1], "random") == 0) {
     style = RANDOM;
-    if (narg < 5) utils::missing_cmd_args(FLERR, "create_atoms random", error);
+    if (narg < 5)
+      utils::missing_cmd_args(FLERR, "create_atoms random", error);
     nrandom = utils::bnumeric(FLERR, arg[2], false, lmp);
-    if (nrandom < 0) error->all(FLERR, "Illegal create_atoms number of random atoms {}", nrandom);
+    if (nrandom < 0)
+      error->all(FLERR, "Illegal create_atoms number of random atoms {}",
+                 nrandom);
     seed = utils::inumeric(FLERR, arg[3], false, lmp);
-    if (seed <= 0) error->all(FLERR, "Illegal create_atoms random seed {}", seed);
+    if (seed <= 0)
+      error->all(FLERR, "Illegal create_atoms random seed {}", seed);
     if (strcmp(arg[4], "NULL") == 0)
       region = nullptr;
     else {
       region = domain->get_region_by_id(arg[4]);
-      if (!region) error->all(FLERR, "Create_atoms region {} does not exist", arg[4]);
+      if (!region)
+        error->all(FLERR, "Create_atoms region {} does not exist", arg[4]);
       region->init();
       region->prematch();
     }
@@ -82,13 +90,15 @@ void CreateAtoms::command(int narg, char **arg)
   mesh_density = 1.0;
   nbasis = domain->lattice->nbasis;
   basistype = new int[nbasis];
-  for (int i = 0; i < nbasis; i++) basistype[i] = ntype;
+  for (int i = 0; i < nbasis; i++)
+    basistype[i] = ntype;
   if (mode == ATOM) {
     if ((ntype <= 0) || (ntype > atom->ntypes))
       error->all(FLERR, "Invalid atom type in create_atoms command");
   }
   ranlatt = nullptr;
-  if (subsetflag != NONE) ranlatt = new RanMars(lmp, subsetseed + comm->me);
+  if (subsetflag != NONE)
+    ranlatt = new RanMars(lmp, subsetseed + comm->me);
   if (!vstr && (xstr || ystr || zstr))
     error->all(FLERR, "Incomplete use of variables in create_atoms command");
   if (vstr && (!xstr && !ystr && !zstr))
@@ -110,7 +120,8 @@ void CreateAtoms::command(int narg, char **arg)
   subhi[2] = domain->subhi[2];
   MPI_Barrier(world);
   double time1 = platform::walltime();
-  if (atom->map_style != Atom::MAP_NONE) atom->map_clear();
+  if (atom->map_style != Atom::MAP_NONE)
+    atom->map_clear();
   atom->nghost = 0;
   atom->avec->clear_bonus();
   bigint natoms_previous = atom->natoms;
@@ -119,8 +130,10 @@ void CreateAtoms::command(int narg, char **arg)
     add_random();
   bigint nblocal = atom->nlocal;
   MPI_Allreduce(&nblocal, &atom->natoms, 1, MPI_LMP_BIGINT, MPI_SUM, world);
-  if (atom->natoms < 0 || atom->natoms >= MAXBIGINT) error->all(FLERR, "Too many total atoms");
-  if (atom->tag_enable) atom->tag_extend();
+  if (atom->natoms < 0 || atom->natoms >= MAXBIGINT)
+    error->all(FLERR, "Too many total atoms");
+  if (atom->tag_enable)
+    atom->tag_extend();
   atom->tag_check();
   if (atom->map_style != Atom::MAP_NONE) {
     atom->map_init();
@@ -140,11 +153,11 @@ void CreateAtoms::command(int narg, char **arg)
       domain->print_box("  using lattice units in ");
     else
       domain->print_box("  using box units in ");
-    utils::logmesg(lmp, "  create_atoms CPU = {:.3f} seconds\n", platform::walltime() - time1);
+    utils::logmesg(lmp, "  create_atoms CPU = {:.3f} seconds\n",
+                   platform::walltime() - time1);
   }
 }
-void CreateAtoms::add_random()
-{
+void CreateAtoms::add_random() {
   double xlo, ylo, zlo, xhi, yhi, zhi, zmid;
   double delx, dely, delz, distsq, odistsq;
   double lamda[3], *coord;
@@ -154,7 +167,8 @@ void CreateAtoms::add_random()
     odistsq = odist * odist;
   }
   auto random = new RanPark(lmp, seed);
-  for (int ii = 0; ii < 30; ii++) random->uniform();
+  for (int ii = 0; ii < 30; ii++)
+    random->uniform();
   xlo = domain->boxlo[0];
   xhi = domain->boxhi[0];
   ylo = domain->boxlo[1];
@@ -182,8 +196,10 @@ void CreateAtoms::add_random()
       xone[0] = xlo + random->uniform() * (xhi - xlo);
       xone[1] = ylo + random->uniform() * (yhi - ylo);
       xone[2] = zlo + random->uniform() * (zhi - zlo);
-      if (domain->dimension == 2) xone[2] = zmid;
-      if (region && (region->match(xone[0], xone[1], xone[2]) == 0)) continue;
+      if (domain->dimension == 2)
+        xone[2] = zmid;
+      if (region && (region->match(xone[0], xone[1], xone[2]) == 0))
+        continue;
       coord = xone;
       if (overlapflag) {
         double **x = atom->x;
@@ -202,12 +218,14 @@ void CreateAtoms::add_random()
         }
         int reject_any;
         MPI_Allreduce(&reject, &reject_any, 1, MPI_INT, MPI_MAX, world);
-        if (reject_any) continue;
+        if (reject_any)
+          continue;
       }
       success = 1;
       break;
     }
-    if (!success) continue;
+    if (!success)
+      continue;
     ninsert++;
     if (coord[0] >= sublo[0] && coord[0] < subhi[0] && coord[1] >= sublo[1] &&
         coord[1] < subhi[1] && coord[2] >= sublo[2] && coord[2] < subhi[2]) {
@@ -216,6 +234,7 @@ void CreateAtoms::add_random()
     }
   }
   if (ninsert < nrandom && comm->me == 0)
-    error->warning(FLERR, "Only inserted {} particles out of {}", ninsert, nrandom);
+    error->warning(FLERR, "Only inserted {} particles out of {}", ninsert,
+                   nrandom);
   delete random;
 }

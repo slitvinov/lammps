@@ -1,10 +1,10 @@
 #ifndef LMP_LAMMPS_H
-#define LMP_LAMMPS_H 
+#define LMP_LAMMPS_H
 #include <cstdio>
 #include <mpi.h>
 namespace LAMMPS_NS {
 class LAMMPS {
- public:
+public:
   class Memory *memory;
   class Error *error;
   class Universe *universe;
@@ -34,9 +34,10 @@ class LAMMPS {
   void create();
   void init();
   void destroy();
- private:
+
+private:
   LAMMPS(){};
   LAMMPS(const LAMMPS &){};
 };
-}
+} // namespace LAMMPS_NS
 #endif

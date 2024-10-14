@@ -1,13 +1,13 @@
 #ifndef LMP_LMPTYPE_H
-#define LMP_LMPTYPE_H 
+#define LMP_LMPTYPE_H
 #if __cplusplus < 201103L
 #error LAMMPS requires a C++11 (or later) compliant compiler. Enable C++11 compatibility or upgrade the compiler.
 #endif
 #ifndef __STDC_LIMIT_MACROS
-#define __STDC_LIMIT_MACROS 
+#define __STDC_LIMIT_MACROS
 #endif
 #ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS 
+#define __STDC_FORMAT_MACROS
 #endif
 #include <cinttypes>
 #include <climits>
@@ -22,8 +22,9 @@ namespace LAMMPS_NS {
 #define NEIGHMASK 0x1FFFFFFF
 #define HISTMASK 0xDFFFFFFF
 #define SPECIALMASK 0x3FFFFFFF
-#if !defined(LAMMPS_SMALLSMALL) && !defined(LAMMPS_BIGBIG) && !defined(LAMMPS_SMALLBIG)
-#define LAMMPS_SMALLBIG 
+#if !defined(LAMMPS_SMALLSMALL) && !defined(LAMMPS_BIGBIG) &&                  \
+    !defined(LAMMPS_SMALLBIG)
+#define LAMMPS_SMALLBIG
 #endif
 #ifdef LAMMPS_LONGLONG_TO_LONG
 #define MPI_LL MPI_LONG
@@ -111,7 +112,7 @@ union ubuf {
   ubuf(const int64_t &arg) : i(arg) {}
   ubuf(const int &arg) : i(arg) {}
 };
-}
+} // namespace LAMMPS_NS
 #ifdef _alignvar
 #undef _alignvar
 #endif
@@ -122,25 +123,26 @@ union ubuf {
 #undef _noopt
 #endif
 #if defined(__INTEL_COMPILER)
-#define _alignvar(expr,val) __declspec(align(val)) expr
+#define _alignvar(expr, val) __declspec(align(val)) expr
 #elif defined(__GNUC__) || defined(__PGI) || defined(__INTEL_LLVM_COMPILER)
-#define _alignvar(expr,val) expr __attribute((aligned(val)))
+#define _alignvar(expr, val) expr __attribute((aligned(val)))
 #else
-#define _alignvar(expr,val) expr
+#define _alignvar(expr, val) expr
 #endif
 #if defined(__INTEL_COMPILER) || (defined(__PGI) && !defined(__NVCOMPILER))
 #define _noalias restrict
-#elif defined(__GNUC__) || defined(__INTEL_LLVM_COMPILER) || defined(__NVCOMPILER)
+#elif defined(__GNUC__) || defined(__INTEL_LLVM_COMPILER) ||                   \
+    defined(__NVCOMPILER)
 #define _noalias __restrict
 #else
-#define _noalias 
+#define _noalias
 #endif
 #if defined(__clang__)
 #define _noopt __attribute__((optnone))
 #elif defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)
-#define _noopt 
+#define _noopt
 #elif defined(__PGI)
-#define _noopt 
+#define _noopt
 #elif defined(__GNUC__)
 #if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 9))
 #if defined(_FORTIFY_SOURCE) && (_FORTIFY_SOURCE > 0)
@@ -150,13 +152,13 @@ union ubuf {
 #endif
 #else
 #if defined(_FORTIFY_SOURCE) && (_FORTIFY_SOURCE > 0)
-#define _noopt 
+#define _noopt
 #else
 #define _noopt __attribute__((optimize("O0")))
 #endif
 #endif
 #else
-#define _noopt 
+#define _noopt
 #endif
-#define LMP_UNUSED_PARAM(x) (void) (x)
+#define LMP_UNUSED_PARAM(x) (void)(x)
 #endif

@@ -2,8 +2,8 @@
 #include <cstring>
 #include <stdexcept>
 using namespace LAMMPS_NS;
-ArgInfo::ArgInfo(const std::string &arg, int allowed) : type(NONE), dim(0), index1(-1), index2(-1)
-{
+ArgInfo::ArgInfo(const std::string &arg, int allowed)
+    : type(NONE), dim(0), index1(-1), index2(-1) {
   if (((arg.size() > 3) && (arg[1] == '2') && (arg[2] == '_')) ||
       ((arg.size() > 2) && (arg[1] == '_'))) {
     if ((arg[0] == 'c') && (allowed & COMPUTE))
@@ -33,18 +33,21 @@ ArgInfo::ArgInfo(const std::string &arg, int allowed) : type(NONE), dim(0), inde
           type = UNKNOWN;
         } else {
           try {
-            index2 = std::stoi(arg.substr(has_idx2 + 1, arg.size() - (has_idx2 + 2)));
+            index2 = std::stoi(
+                arg.substr(has_idx2 + 1, arg.size() - (has_idx2 + 2)));
           } catch (std::invalid_argument &) {
             type = UNKNOWN;
           }
         }
       } else
         has_idx2 = arg.size();
-      if ((arg[has_idx2 - 1] != ']') || ((dim == 1) && (arg.find(']') != has_idx2 - 1))) {
+      if ((arg[has_idx2 - 1] != ']') ||
+          ((dim == 1) && (arg.find(']') != has_idx2 - 1))) {
         type = UNKNOWN;
       } else {
         try {
-          index1 = std::stoi(arg.substr(has_idx1 + 1, arg.size() - (has_idx1 + 2)));
+          index1 =
+              std::stoi(arg.substr(has_idx1 + 1, arg.size() - (has_idx1 + 2)));
         } catch (std::invalid_argument &) {
           type = UNKNOWN;
         }
@@ -58,8 +61,7 @@ ArgInfo::ArgInfo(const std::string &arg, int allowed) : type(NONE), dim(0), inde
     name = arg;
   }
 }
-char *ArgInfo::copy_name()
-{
+char *ArgInfo::copy_name() {
   auto dest = new char[name.size() + 1];
   strcpy(dest, name.c_str());
   return dest;

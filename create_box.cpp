@@ -10,16 +10,19 @@
 #include <cstring>
 using namespace LAMMPS_NS;
 CreateBox::CreateBox(LAMMPS *lmp) : Command(lmp) {}
-void CreateBox::command(int narg, char **arg)
-{
-  if (narg < 2) utils::missing_cmd_args(FLERR, "create_box", error);
-  if (domain->box_exist) error->all(FLERR, "Cannot create_box after simulation box is defined");
+void CreateBox::command(int narg, char **arg) {
+  if (narg < 2)
+    utils::missing_cmd_args(FLERR, "create_box", error);
+  if (domain->box_exist)
+    error->all(FLERR, "Cannot create_box after simulation box is defined");
   if (domain->dimension == 2 && domain->zperiodic == 0)
     error->all(FLERR, "Cannot run 2d simulation with nonperiodic Z dimension");
   domain->box_exist = 1;
   auto region = domain->get_region_by_id(arg[1]);
-  if (!region) error->all(FLERR, "Create_box region {} does not exist", arg[1]);
-  if (region->bboxflag == 0) error->all(FLERR, "Create_box region does not support a bounding box");
+  if (!region)
+    error->all(FLERR, "Create_box region {} does not exist", arg[1]);
+  if (region->bboxflag == 0)
+    error->all(FLERR, "Create_box region does not support a bounding box");
   region->init();
   if (strcmp(region->style, "prism") != 0) {
     domain->triclinic = 0;

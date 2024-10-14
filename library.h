@@ -1,7 +1,8 @@
 #ifndef LAMMPS_LIBRARY_H
-#define LAMMPS_LIBRARY_H 
-#if !defined(LAMMPS_BIGBIG) && !defined(LAMMPS_SMALLBIG) && !defined(LAMMPS_SMALLSMALL)
-#define LAMMPS_SMALLBIG 
+#define LAMMPS_LIBRARY_H
+#if !defined(LAMMPS_BIGBIG) && !defined(LAMMPS_SMALLBIG) &&                    \
+    !defined(LAMMPS_SMALLSMALL)
+#define LAMMPS_SMALLBIG
 #endif
 #if defined(LAMMPS_LIB_MPI)
 #include <mpi.h>

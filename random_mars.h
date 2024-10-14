@@ -1,9 +1,9 @@
 #ifndef LMP_RANMARS_H
-#define LMP_RANMARS_H 
+#define LMP_RANMARS_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class RanMars : protected Pointers {
- public:
+public:
   RanMars(class LAMMPS *, int);
   ~RanMars() override;
   double uniform();
@@ -14,7 +14,8 @@ class RanMars : protected Pointers {
   void select_subset(bigint, int, int *, int *);
   void get_state(double *);
   void set_state(double *);
- private:
+
+private:
   char padding[1024];
   int save;
   double second;
@@ -22,5 +23,5 @@ class RanMars : protected Pointers {
   int i97, j97;
   double c, cd, cm;
 };
-}
+} // namespace LAMMPS_NS
 #endif

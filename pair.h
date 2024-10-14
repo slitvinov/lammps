@@ -1,5 +1,5 @@
 #ifndef LMP_PAIR_H
-#define LMP_PAIR_H 
+#define LMP_PAIR_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class Pair : protected Pointers {
@@ -12,7 +12,8 @@ class Pair : protected Pointers {
   friend class ThrOMP;
   friend class Info;
   friend class Neighbor;
- public:
+
+public:
   static int instance_total;
   double eng_vdwl, eng_coul;
   double virial[6];
@@ -85,23 +86,25 @@ class Pair : protected Pointers {
   double mix_energy(double, double, double, double);
   double mix_distance(double, double);
   void compute_dummy(int, int);
-  void ev_tally(int, int, int, int, double, double, double, double, double, double);
-  void ev_tally3(int, int, int, double, double, double *, double *, double *, double *);
+  void ev_tally(int, int, int, int, double, double, double, double, double,
+                double);
+  void ev_tally3(int, int, int, double, double, double *, double *, double *,
+                 double *);
   void v_tally2_newton(int, double *, double *);
   void v_tally3(int, int, int, double *, double *, double *, double *);
-  void v_tally4(int, int, int, int, double *, double *, double *, double *, double *, double *);
+  void v_tally4(int, int, int, int, double *, double *, double *, double *,
+                double *, double *);
   virtual void compute(int, int) = 0;
   virtual void compute_inner() {}
   virtual void compute_middle() {}
   virtual void compute_outer(int, int) {}
-  virtual double single(int, int, int, int, double, double, double, double &fforce)
-  {
+  virtual double single(int, int, int, int, double, double, double,
+                        double &fforce) {
     fforce = 0.0;
     return 0.0;
   }
-  virtual void born_matrix(int , int , int , int , double ,
-                           double , double , double &du, double &du2)
-  {
+  virtual void born_matrix(int, int, int, int, double, double, double,
+                           double &du, double &du2) {
     du = du2 = 0.0;
   }
   virtual void finish() {}
@@ -130,18 +133,22 @@ class Pair : protected Pointers {
   virtual void transfer_history(double *, double *, int, int) {}
   virtual double atom2cut(int) { return 0.0; }
   virtual double radii2cut(double, double) { return 0.0; }
- protected:
+
+protected:
   int num_tally_compute;
   class Compute **list_tally_compute;
- public:
+
+public:
   virtual void add_tally_callback(class Compute *);
   virtual void del_tally_callback(class Compute *);
- protected:
+
+protected:
   int instance_me;
   int offset_flag, mix_flag;
   double tabinner;
   double tabinner_disp;
- protected:
+
+protected:
   int nelements;
   char **elements;
   int *elem1param;
@@ -151,18 +158,19 @@ class Pair : protected Pointers {
   int nparams;
   int maxparam;
   void map_element2type(int, char **, bool update_setflag = true);
- public:
+
+public:
   typedef union {
     int i;
     float f;
   } union_int_float_t;
   inline int fdotr_is_set() const { return vflag_fdotr; }
- protected:
+
+protected:
   int vflag_fdotr;
   int maxeatom, maxvatom, maxcvatom;
   int copymode;
-  void ev_init(int eflag, int vflag, int alloc = 1)
-  {
+  void ev_init(int eflag, int vflag, int alloc = 1) {
     if (eflag || vflag)
       ev_setup(eflag, vflag, alloc);
     else
@@ -171,15 +179,16 @@ class Pair : protected Pointers {
   virtual void ev_setup(int, int, int alloc = 1);
   void ev_unset();
   void ev_tally_full(int, double, double, double, double, double, double);
-  void ev_tally_xyz_full(int, double, double, double, double, double, double, double, double);
-  void ev_tally4(int, int, int, int, double, double *, double *, double *, double *, double *,
-                 double *);
+  void ev_tally_xyz_full(int, double, double, double, double, double, double,
+                         double, double);
+  void ev_tally4(int, int, int, int, double, double *, double *, double *,
+                 double *, double *, double *);
   void ev_tally_tip4p(int, int *, double *, double, double);
-  void ev_tally_xyz(int, int, int, int, double, double, double, double, double, double, double,
-                    double);
+  void ev_tally_xyz(int, int, int, int, double, double, double, double, double,
+                    double, double, double);
   void v_tally2(int, int, double, double *);
   void virial_fdotr_compute();
   inline int sbmask(int j) const { return j >> SBBITS & 3; }
 };
-}
+} // namespace LAMMPS_NS
 #endif

@@ -1,5 +1,5 @@
 #ifndef LMP_TOKENIZER_H
-#define LMP_TOKENIZER_H 
+#define LMP_TOKENIZER_H
 #include "lmptype.h"
 #include <exception>
 #include <string>
@@ -11,8 +11,10 @@ class Tokenizer {
   std::string separators;
   size_t start;
   size_t ntokens;
- public:
-  Tokenizer(std::string str, std::string separators = TOKENIZER_DEFAULT_SEPARATORS);
+
+public:
+  Tokenizer(std::string str,
+            std::string separators = TOKENIZER_DEFAULT_SEPARATORS);
   Tokenizer(Tokenizer &&);
   Tokenizer(const Tokenizer &);
   Tokenizer &operator=(const Tokenizer &);
@@ -28,28 +30,26 @@ class Tokenizer {
 };
 class TokenizerException : public std::exception {
   std::string message;
- public:
+
+public:
   TokenizerException() = delete;
   explicit TokenizerException(const std::string &msg, const std::string &token);
   const char *what() const noexcept override { return message.c_str(); }
 };
 class InvalidIntegerException : public TokenizerException {
- public:
-  explicit InvalidIntegerException(const std::string &token) :
-      TokenizerException("Not a valid integer number", token)
-  {
-  }
+public:
+  explicit InvalidIntegerException(const std::string &token)
+      : TokenizerException("Not a valid integer number", token) {}
 };
 class InvalidFloatException : public TokenizerException {
- public:
-  explicit InvalidFloatException(const std::string &token) :
-      TokenizerException("Not a valid floating-point number", token)
-  {
-  }
+public:
+  explicit InvalidFloatException(const std::string &token)
+      : TokenizerException("Not a valid floating-point number", token) {}
 };
 class ValueTokenizer {
   Tokenizer tokens;
- public:
+
+public:
   ValueTokenizer(const std::string &str,
                  const std::string &separators = TOKENIZER_DEFAULT_SEPARATORS);
   ValueTokenizer(const ValueTokenizer &) = default;
@@ -67,5 +67,5 @@ class ValueTokenizer {
   void skip(int ntokens = 1);
   size_t count();
 };
-}
+} // namespace LAMMPS_NS
 #endif

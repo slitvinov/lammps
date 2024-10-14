@@ -1,16 +1,14 @@
 #include "force.h"
-#include "style_pair.h"
 #include "atom.h"
 #include "comm.h"
 #include "error.h"
+#include "style_pair.h"
 #include <cstring>
 using namespace LAMMPS_NS;
-template <typename S, typename T> static S *style_creator(LAMMPS *lmp)
-{
+template <typename S, typename T> static S *style_creator(LAMMPS *lmp) {
   return new T(lmp);
 }
-Force::Force(LAMMPS *lmp) : Pointers(lmp)
-{
+Force::Force(LAMMPS *lmp) : Pointers(lmp) {
   newton = newton_pair = 1;
   dielectric = 1.0;
   qqr2e_lammps_real = 332.06371;
@@ -19,53 +17,51 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp)
   pair_style = utils::strdup("none");
   create_factories();
 }
-void _noopt Force::create_factories()
-{
+void _noopt Force::create_factories() {
   pair_map = new PairCreatorMap();
-#define PAIR_CLASS 
-#define PairStyle(key,Class) (*pair_map)[#key] = &style_creator<Pair, Class>;
+#define PAIR_CLASS
+#define PairStyle(key, Class) (*pair_map)[#key] = &style_creator<Pair, Class>;
 #include "style_pair.h"
 #undef PairStyle
 #undef PAIR_CLASS
 }
-Force::~Force()
-{
+Force::~Force() {
   delete[] pair_style;
-  if (pair) delete pair;
+  if (pair)
+    delete pair;
   pair = nullptr;
   delete pair_map;
 }
-void Force::init()
-{
+void Force::init() {
   qqrd2e = qqr2e / dielectric;
-  if (pair) pair->init();
+  if (pair)
+    pair->init();
 }
-void Force::setup()
-{
-  if (pair) pair->setup();
+void Force::setup() {
+  if (pair)
+    pair->setup();
 }
-void Force::create_pair(const std::string &style, int trysuffix)
-{
+void Force::create_pair(const std::string &style, int trysuffix) {
   delete[] pair_style;
-  if (pair) delete pair;
+  if (pair)
+    delete pair;
   pair_style = nullptr;
   pair = nullptr;
   int sflag;
   pair = new_pair(style, trysuffix, sflag);
   pair_style = store_style(style, sflag);
 }
-Pair *Force::new_pair(const std::string &style, int trysuffix, int &sflag)
-{
+Pair *Force::new_pair(const std::string &style, int trysuffix, int &sflag) {
   sflag = 0;
-  if (style == "none") return nullptr;
+  if (style == "none")
+    return nullptr;
   if (pair_map->find(style) != pair_map->end()) {
     PairCreator &pair_creator = (*pair_map)[style];
     return pair_creator(lmp);
   }
   return nullptr;
 }
-Pair *Force::pair_match(const std::string &word, int exact, int nsub)
-{
+Pair *Force::pair_match(const std::string &word, int exact, int nsub) {
   int iwhich, count;
   if (exact && (word == pair_style))
     return pair;
@@ -73,13 +69,12 @@ Pair *Force::pair_match(const std::string &word, int exact, int nsub)
     return pair;
   return nullptr;
 }
-char *Force::pair_match_ptr(Pair *ptr)
-{
-  if (ptr == pair) return pair_style;
+char *Force::pair_match_ptr(Pair *ptr) {
+  if (ptr == pair)
+    return pair_style;
   return nullptr;
 }
-char *Force::store_style(const std::string &style, int sflag)
-{
+char *Force::store_style(const std::string &style, int sflag) {
   std::string estyle = style;
   return utils::strdup(estyle);
 }

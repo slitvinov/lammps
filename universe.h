@@ -1,9 +1,9 @@
 #ifndef LMP_UNIVERSE_H
-#define LMP_UNIVERSE_H 
+#define LMP_UNIVERSE_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class Universe : protected Pointers {
- public:
+public:
   MPI_Comm uworld;
   int me, nprocs;
   FILE *uscreen;
@@ -21,5 +21,5 @@ class Universe : protected Pointers {
   void add_world(char *);
   int consistent();
 };
-}
+} // namespace LAMMPS_NS
 #endif

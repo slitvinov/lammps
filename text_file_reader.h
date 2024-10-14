@@ -1,5 +1,5 @@
 #ifndef LMP_TEXT_FILE_READER_H
-#define LMP_TEXT_FILE_READER_H 
+#define LMP_TEXT_FILE_READER_H
 #include "tokenizer.h"
 #include <cstdio>
 #include <exception>
@@ -11,7 +11,8 @@ class TextFileReader {
   int bufsize;
   char *line;
   FILE *fp;
- public:
+
+public:
   bool ignore_comments;
   TextFileReader(const std::string &filename, const std::string &filetype);
   TextFileReader(FILE *fp, std::string filetype);
@@ -25,18 +26,20 @@ class TextFileReader {
   void skip_line();
   char *next_line(int nparams = 0);
   void next_dvector(double *list, int n);
-  ValueTokenizer next_values(int nparams,
-                             const std::string &separators = TOKENIZER_DEFAULT_SEPARATORS);
+  ValueTokenizer
+  next_values(int nparams,
+              const std::string &separators = TOKENIZER_DEFAULT_SEPARATORS);
 };
 class FileReaderException : public std::exception {
   std::string message;
- public:
+
+public:
   FileReaderException(const std::string &msg) : message(msg) {}
   const char *what() const noexcept override { return message.c_str(); }
 };
 class EOFException : public FileReaderException {
- public:
+public:
   EOFException(const std::string &msg) : FileReaderException(msg) {}
 };
-}
+} // namespace LAMMPS_NS
 #endif

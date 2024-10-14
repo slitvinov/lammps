@@ -1,9 +1,9 @@
 #ifndef LMP_LATTICE_H
-#define LMP_LATTICE_H 
+#define LMP_LATTICE_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class Lattice : protected Pointers {
- public:
+public:
   enum { NONE, SC, BCC, FCC, HCP, DIAMOND, SQ, SQ2, HEX, CUSTOM };
   int style;
   double xlattice, ylattice, zlattice;
@@ -14,9 +14,10 @@ class Lattice : protected Pointers {
   ~Lattice() override;
   void lattice2box(double &, double &, double &);
   void box2lattice(double &, double &, double &);
-  void bbox(int, double, double, double, double &, double &, double &, double &, double &,
-            double &);
- private:
+  void bbox(int, double, double, double, double &, double &, double &, double &,
+            double &, double &);
+
+private:
   double scale;
   double origin[3];
   int orientx[3];
@@ -34,5 +35,5 @@ class Lattice : protected Pointers {
   double dot(double *, double *);
   void cross(double *, double *, double *);
 };
-}
+} // namespace LAMMPS_NS
 #endif

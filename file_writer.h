@@ -1,9 +1,9 @@
 #ifndef LMP_FILE_WRITER_H
-#define LMP_FILE_WRITER_H 
+#define LMP_FILE_WRITER_H
 #include <string>
 namespace LAMMPS_NS {
 class FileWriter {
- public:
+public:
   FileWriter() = default;
   virtual ~FileWriter() = default;
   virtual void open(const std::string &path, bool append = false) = 0;
@@ -14,9 +14,10 @@ class FileWriter {
 };
 class FileWriterException : public std::exception {
   std::string message;
- public:
+
+public:
   FileWriterException(const std::string &msg) : message(msg) {}
   const char *what() const noexcept override { return message.c_str(); }
 };
-}
+} // namespace LAMMPS_NS
 #endif

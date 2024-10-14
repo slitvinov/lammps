@@ -1,8 +1,7 @@
 #include "atom_vec_atomic.h"
 #include "atom.h"
 using namespace LAMMPS_NS;
-AtomVecAtomic::AtomVecAtomic(LAMMPS *lmp) : AtomVec(lmp)
-{
+AtomVecAtomic::AtomVecAtomic(LAMMPS *lmp) : AtomVec(lmp) {
   molecular = Atom::ATOMIC;
   mass_type = PER_TYPE;
   fields_data_atom = {"id", "type", "x"};

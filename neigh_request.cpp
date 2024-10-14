@@ -4,8 +4,7 @@
 #include "neighbor.h"
 using namespace LAMMPS_NS;
 using namespace NeighConst;
-NeighRequest::NeighRequest(LAMMPS *_lmp) : Pointers(_lmp)
-{
+NeighRequest::NeighRequest(LAMMPS *_lmp) : Pointers(_lmp) {
   id = 0;
   pair = 1;
   fix = compute = command = neigh = 0;
@@ -37,64 +36,87 @@ NeighRequest::NeighRequest(LAMMPS *_lmp) : Pointers(_lmp)
   unique = 0;
   index_bin = index_pair = -1;
 }
-NeighRequest::NeighRequest(LAMMPS *_lmp, void *ptr, int num) : NeighRequest(_lmp)
-{
+NeighRequest::NeighRequest(LAMMPS *_lmp, void *ptr, int num)
+    : NeighRequest(_lmp) {
   requestor = ptr;
   requestor_instance = num;
 }
-NeighRequest::NeighRequest(NeighRequest *old) : NeighRequest(old->lmp)
-{
+NeighRequest::NeighRequest(NeighRequest *old) : NeighRequest(old->lmp) {
   copy_request(old, 1);
 }
-NeighRequest::~NeighRequest()
-{
+NeighRequest::~NeighRequest() {
   delete[] iskip;
   memory->destroy(ijskip);
 }
-int NeighRequest::identical(NeighRequest *other)
-{
+int NeighRequest::identical(NeighRequest *other) {
   int same = 1;
-  if (requestor != other->requestor) same = 0;
-  if (requestor_instance != other->requestor_instance) same = 0;
-  if (id != other->id) same = 0;
-  if (pair != other->pair) same = 0;
-  if (fix != other->fix) same = 0;
-  if (compute != other->compute) same = 0;
-  if (command != other->command) same = 0;
-  if (neigh != other->neigh) same = 0;
-  if (half != other->half) same = 0;
-  if (full != other->full) same = 0;
-  if (occasional != other->occasional) same = 0;
-  if (newton != other->newton) same = 0;
-  if (ghost != other->ghost) same = 0;
-  if (size != other->size) same = 0;
-  if (history != other->history) same = 0;
-  if (granonesided != other->granonesided) same = 0;
-  if (respainner != other->respainner) same = 0;
-  if (respamiddle != other->respamiddle) same = 0;
-  if (respaouter != other->respaouter) same = 0;
-  if (bond != other->bond) same = 0;
-  if (omp != other->omp) same = 0;
-  if (ssa != other->ssa) same = 0;
-  if (copy != other->copy) same = 0;
-  if (cutoff != other->cutoff) same = 0;
-  if (skip != other->skip) same = 0;
-  if (same && skip && other->skip) same = same_skip(other);
+  if (requestor != other->requestor)
+    same = 0;
+  if (requestor_instance != other->requestor_instance)
+    same = 0;
+  if (id != other->id)
+    same = 0;
+  if (pair != other->pair)
+    same = 0;
+  if (fix != other->fix)
+    same = 0;
+  if (compute != other->compute)
+    same = 0;
+  if (command != other->command)
+    same = 0;
+  if (neigh != other->neigh)
+    same = 0;
+  if (half != other->half)
+    same = 0;
+  if (full != other->full)
+    same = 0;
+  if (occasional != other->occasional)
+    same = 0;
+  if (newton != other->newton)
+    same = 0;
+  if (ghost != other->ghost)
+    same = 0;
+  if (size != other->size)
+    same = 0;
+  if (history != other->history)
+    same = 0;
+  if (granonesided != other->granonesided)
+    same = 0;
+  if (respainner != other->respainner)
+    same = 0;
+  if (respamiddle != other->respamiddle)
+    same = 0;
+  if (respaouter != other->respaouter)
+    same = 0;
+  if (bond != other->bond)
+    same = 0;
+  if (omp != other->omp)
+    same = 0;
+  if (ssa != other->ssa)
+    same = 0;
+  if (copy != other->copy)
+    same = 0;
+  if (cutoff != other->cutoff)
+    same = 0;
+  if (skip != other->skip)
+    same = 0;
+  if (same && skip && other->skip)
+    same = same_skip(other);
   return same;
 }
-int NeighRequest::same_skip(NeighRequest *other)
-{
+int NeighRequest::same_skip(NeighRequest *other) {
   const int ntypes = atom->ntypes;
   int same = 1;
   for (int i = 1; i <= ntypes; i++)
-    if (iskip[i] != other->iskip[i]) same = 0;
+    if (iskip[i] != other->iskip[i])
+      same = 0;
   for (int i = 1; i <= ntypes; i++)
     for (int j = 1; j <= ntypes; j++)
-      if (ijskip[i][j] != other->ijskip[i][j]) same = 0;
+      if (ijskip[i][j] != other->ijskip[i][j])
+        same = 0;
   return same;
 }
-void NeighRequest::copy_request(NeighRequest *other, int skipflag)
-{
+void NeighRequest::copy_request(NeighRequest *other, int skipflag) {
   requestor = other->requestor;
   requestor_instance = other->requestor_instance;
   id = other->id;
@@ -120,57 +142,68 @@ void NeighRequest::copy_request(NeighRequest *other, int skipflag)
   cutoff = other->cutoff;
   iskip = nullptr;
   ijskip = nullptr;
-  if (!skipflag) return;
+  if (!skipflag)
+    return;
   int i, j;
   int ntp1 = atom->ntypes + 1;
   skip = other->skip;
   if (other->iskip) {
     iskip = new int[ntp1];
-    for (i = 1; i < ntp1; i++) iskip[i] = other->iskip[i];
+    for (i = 1; i < ntp1; i++)
+      iskip[i] = other->iskip[i];
   }
   if (other->ijskip) {
     memory->create(ijskip, ntp1, ntp1, "neigh_request:ijskip");
     for (i = 1; i < ntp1; i++)
-      for (j = 1; j < ntp1; j++) ijskip[i][j] = other->ijskip[i][j];
+      for (j = 1; j < ntp1; j++)
+        ijskip[i][j] = other->ijskip[i][j];
   }
 }
-void NeighRequest::apply_flags(int flags)
-{
+void NeighRequest::apply_flags(int flags) {
   if (flags & REQ_FULL) {
     half = 0;
     full = 1;
   }
-  if (flags & REQ_GHOST) { ghost = 1; }
-  if (flags & REQ_SIZE) { size = 1; }
-  if (flags & REQ_HISTORY) { history = 1; }
-  if (flags & REQ_NEWTON_ON) { newton = 1; }
-  if (flags & REQ_NEWTON_OFF) { newton = 2; }
-  if (flags & REQ_OCCASIONAL) { occasional = 1; }
-  if (flags & REQ_RESPA_INOUT) { respainner = respaouter = 1; }
-  if (flags & REQ_RESPA_ALL) { respainner = respamiddle = respaouter = 1; }
-  if (flags & REQ_SSA) { ssa = 1; }
+  if (flags & REQ_GHOST) {
+    ghost = 1;
+  }
+  if (flags & REQ_SIZE) {
+    size = 1;
+  }
+  if (flags & REQ_HISTORY) {
+    history = 1;
+  }
+  if (flags & REQ_NEWTON_ON) {
+    newton = 1;
+  }
+  if (flags & REQ_NEWTON_OFF) {
+    newton = 2;
+  }
+  if (flags & REQ_OCCASIONAL) {
+    occasional = 1;
+  }
+  if (flags & REQ_RESPA_INOUT) {
+    respainner = respaouter = 1;
+  }
+  if (flags & REQ_RESPA_ALL) {
+    respainner = respamiddle = respaouter = 1;
+  }
+  if (flags & REQ_SSA) {
+    ssa = 1;
+  }
 }
-void NeighRequest::set_cutoff(double _cutoff)
-{
+void NeighRequest::set_cutoff(double _cutoff) {
   cut = 1;
   cutoff = _cutoff;
 }
-void NeighRequest::set_id(int _id)
-{
-  id = _id;
-}
-void NeighRequest::set_skip(int *_iskip, int **_ijskip)
-{
+void NeighRequest::set_id(int _id) { id = _id; }
+void NeighRequest::set_skip(int *_iskip, int **_ijskip) {
   skip = 1;
   iskip = _iskip;
   ijskip = _ijskip;
 }
-void NeighRequest::enable_full()
-{
+void NeighRequest::enable_full() {
   half = 0;
   full = 1;
 }
-void NeighRequest::enable_ghost()
-{
-  ghost = 1;
-}
+void NeighRequest::enable_ghost() { ghost = 1; }

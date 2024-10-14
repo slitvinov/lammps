@@ -1,10 +1,11 @@
 #ifndef LMP_FIX_H
-#define LMP_FIX_H 
+#define LMP_FIX_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class Fix : protected Pointers {
   friend class Neighbor;
- public:
+
+public:
   static int instance_total;
   char *id, *style;
   int igroup, groupbit;
@@ -162,12 +163,14 @@ class Fix : protected Pointers {
   virtual void unpack_reverse_grid(int, void *, int, int *){};
   virtual void pack_remap_grid(int, void *, int, int *){};
   virtual void unpack_remap_grid(int, void *, int, int *){};
-  virtual int unpack_read_grid(int, char *) {return 0;};
+  virtual int unpack_read_grid(int, char *) { return 0; };
   virtual void pack_write_grid(int, void *){};
   virtual void unpack_write_grid(int, void *, int *){};
   virtual int get_grid_by_name(const std::string &, int &) { return -1; };
   virtual void *get_grid_by_index(int) { return nullptr; };
-  virtual int get_griddata_by_name(int, const std::string &, int &) { return -1; };
+  virtual int get_griddata_by_name(int, const std::string &, int &) {
+    return -1;
+  };
   virtual void *get_griddata_by_index(int) { return nullptr; };
   virtual double compute_scalar() { return 0.0; }
   virtual double compute_vector(int) { return 0.0; }
@@ -186,7 +189,8 @@ class Fix : protected Pointers {
   virtual int image(int *&, double **&) { return 0; }
   virtual int modify_param(int, char **) { return 0; }
   virtual void *extract(const char *, int &) { return nullptr; }
- protected:
+
+protected:
   int instance_me;
   int evflag;
   int eflag_either, eflag_global, eflag_atom;
@@ -194,18 +198,16 @@ class Fix : protected Pointers {
   int maxeatom, maxvatom, maxcvatom;
   int copymode;
   int dynamic;
-  void ev_init(int eflag, int vflag)
-  {
+  void ev_init(int eflag, int vflag) {
     if ((eflag && thermo_energy) || (vflag && thermo_virial))
       ev_setup(eflag, vflag);
     else
-      evflag = eflag_either = eflag_global = eflag_atom = vflag_either = vflag_global = vflag_atom =
-          cvflag_atom = 0;
+      evflag = eflag_either = eflag_global = eflag_atom = vflag_either =
+          vflag_global = vflag_atom = cvflag_atom = 0;
   }
   void ev_setup(int, int);
   void ev_tally(int, int *, double, double, double *);
-  void v_init(int vflag)
-  {
+  void v_init(int vflag) {
     if (vflag && thermo_virial)
       v_setup(vflag);
     else
@@ -213,37 +215,39 @@ class Fix : protected Pointers {
   }
   void v_setup(int);
   void v_tally(int, int *, double, double *);
-  void v_tally(int, int *, double, double *, int, int, int[][2], double *, double[][3]);
-  void v_tally(int, int *, double, double *, double[][3], double[][3], double[]);
+  void v_tally(int, int *, double, double *, int, int, int[][2], double *,
+               double[][3]);
+  void v_tally(int, int *, double, double *, double[][3], double[][3],
+               double[]);
   void v_tally(int, double *);
   void v_tally(int, int, double);
 };
 namespace FixConst {
-  enum {
-    INITIAL_INTEGRATE = 1 << 0,
-    POST_INTEGRATE = 1 << 1,
-    PRE_EXCHANGE = 1 << 2,
-    PRE_NEIGHBOR = 1 << 3,
-    POST_NEIGHBOR = 1 << 4,
-    PRE_FORCE = 1 << 5,
-    PRE_REVERSE = 1 << 6,
-    POST_FORCE = 1 << 7,
-    FINAL_INTEGRATE = 1 << 8,
-    END_OF_STEP = 1 << 9,
-    POST_RUN = 1 << 10,
-    INITIAL_INTEGRATE_RESPA = 1 << 11,
-    POST_INTEGRATE_RESPA = 1 << 12,
-    PRE_FORCE_RESPA = 1 << 13,
-    POST_FORCE_RESPA = 1 << 14,
-    FINAL_INTEGRATE_RESPA = 1 << 15,
-    MIN_PRE_EXCHANGE = 1 << 16,
-    MIN_PRE_NEIGHBOR = 1 << 17,
-    MIN_POST_NEIGHBOR = 1 << 18,
-    MIN_PRE_FORCE = 1 << 19,
-    MIN_PRE_REVERSE = 1 << 20,
-    MIN_POST_FORCE = 1 << 21,
-    MIN_ENERGY = 1 << 22
-  };
+enum {
+  INITIAL_INTEGRATE = 1 << 0,
+  POST_INTEGRATE = 1 << 1,
+  PRE_EXCHANGE = 1 << 2,
+  PRE_NEIGHBOR = 1 << 3,
+  POST_NEIGHBOR = 1 << 4,
+  PRE_FORCE = 1 << 5,
+  PRE_REVERSE = 1 << 6,
+  POST_FORCE = 1 << 7,
+  FINAL_INTEGRATE = 1 << 8,
+  END_OF_STEP = 1 << 9,
+  POST_RUN = 1 << 10,
+  INITIAL_INTEGRATE_RESPA = 1 << 11,
+  POST_INTEGRATE_RESPA = 1 << 12,
+  PRE_FORCE_RESPA = 1 << 13,
+  POST_FORCE_RESPA = 1 << 14,
+  FINAL_INTEGRATE_RESPA = 1 << 15,
+  MIN_PRE_EXCHANGE = 1 << 16,
+  MIN_PRE_NEIGHBOR = 1 << 17,
+  MIN_POST_NEIGHBOR = 1 << 18,
+  MIN_PRE_FORCE = 1 << 19,
+  MIN_PRE_REVERSE = 1 << 20,
+  MIN_POST_FORCE = 1 << 21,
+  MIN_ENERGY = 1 << 22
+};
 }
-}
+} // namespace LAMMPS_NS
 #endif

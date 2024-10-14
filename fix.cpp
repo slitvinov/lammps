@@ -9,18 +9,17 @@
 using namespace LAMMPS_NS;
 using namespace FixConst;
 int Fix::instance_total = 0;
-Fix::Fix(LAMMPS *lmp, int , char **arg) :
-  Pointers(lmp),
-  id(nullptr), style(nullptr), extlist(nullptr), vector_atom(nullptr), array_atom(nullptr),
-  vector_local(nullptr), array_local(nullptr), eatom(nullptr), vatom(nullptr),
-  cvatom(nullptr)
-{
+Fix::Fix(LAMMPS *lmp, int, char **arg)
+    : Pointers(lmp), id(nullptr), style(nullptr), extlist(nullptr),
+      vector_atom(nullptr), array_atom(nullptr), vector_local(nullptr),
+      array_local(nullptr), eatom(nullptr), vatom(nullptr), cvatom(nullptr) {
   instance_me = instance_total++;
   id = utils::strdup(arg[0]);
   if (!utils::is_id(id))
-    error->all(FLERR,"Fix ID must be alphanumeric or underscore characters");
+    error->all(FLERR, "Fix ID must be alphanumeric or underscore characters");
   igroup = group->find(arg[1]);
-  if (igroup == -1) error->all(FLERR,"Could not find fix group ID");
+  if (igroup == -1)
+    error->all(FLERR, "Could not find fix group ID");
   groupbit = group->bitmask[igroup];
   style = utils::strdup(arg[2]);
   restart_global = restart_peratom = restart_file = 0;
@@ -66,61 +65,69 @@ Fix::Fix(LAMMPS *lmp, int , char **arg) :
   forward_comm_device = 0;
   copymode = 0;
 }
-Fix::~Fix()
-{
-  if (copymode) return;
-  delete [] id;
-  delete [] style;
+Fix::~Fix() {
+  if (copymode)
+    return;
+  delete[] id;
+  delete[] style;
   memory->destroy(eatom);
   memory->destroy(vatom);
   memory->destroy(cvatom);
 }
-void Fix::modify_params(int narg, char **arg)
-{
-  if (narg == 0) error->all(FLERR,"Illegal fix_modify command");
+void Fix::modify_params(int narg, char **arg) {
+  if (narg == 0)
+    error->all(FLERR, "Illegal fix_modify command");
   int iarg = 0;
   while (iarg < narg) {
-    if (strcmp(arg[iarg],"dynamic/dof") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix_modify command");
-      dynamic = utils::logical(FLERR,arg[iarg+1],false,lmp);
+    if (strcmp(arg[iarg], "dynamic/dof") == 0) {
+      if (iarg + 2 > narg)
+        error->all(FLERR, "Illegal fix_modify command");
+      dynamic = utils::logical(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-    } else if (strcmp(arg[iarg],"energy") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix_modify command");
-      thermo_energy = utils::logical(FLERR,arg[iarg+1],false,lmp);
+    } else if (strcmp(arg[iarg], "energy") == 0) {
+      if (iarg + 2 > narg)
+        error->all(FLERR, "Illegal fix_modify command");
+      thermo_energy = utils::logical(FLERR, arg[iarg + 1], false, lmp);
       if (thermo_energy && !energy_global_flag && !energy_peratom_flag)
-          error->all(FLERR,"Illegal fix_modify command");
+        error->all(FLERR, "Illegal fix_modify command");
       iarg += 2;
-    } else if (strcmp(arg[iarg],"virial") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix_modify command");
-      thermo_virial = utils::logical(FLERR,arg[iarg+1],false,lmp);
+    } else if (strcmp(arg[iarg], "virial") == 0) {
+      if (iarg + 2 > narg)
+        error->all(FLERR, "Illegal fix_modify command");
+      thermo_virial = utils::logical(FLERR, arg[iarg + 1], false, lmp);
       if (thermo_virial && !virial_global_flag && !virial_peratom_flag)
-        error->all(FLERR,"Illegal fix_modify command");
+        error->all(FLERR, "Illegal fix_modify command");
       iarg += 2;
-    } else if (strcmp(arg[iarg],"respa") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix_modify command");
-      if (!respa_level_support) error->all(FLERR,"Illegal fix_modify command");
-      int lvl = utils::inumeric(FLERR,arg[iarg+1],false,lmp);
-      if (lvl < 0) error->all(FLERR,"Illegal fix_modify command");
-      respa_level = lvl-1;
+    } else if (strcmp(arg[iarg], "respa") == 0) {
+      if (iarg + 2 > narg)
+        error->all(FLERR, "Illegal fix_modify command");
+      if (!respa_level_support)
+        error->all(FLERR, "Illegal fix_modify command");
+      int lvl = utils::inumeric(FLERR, arg[iarg + 1], false, lmp);
+      if (lvl < 0)
+        error->all(FLERR, "Illegal fix_modify command");
+      respa_level = lvl - 1;
       iarg += 2;
     } else {
-      int n = modify_param(narg-iarg,&arg[iarg]);
-      if (n == 0) error->all(FLERR,"Illegal fix_modify command");
+      int n = modify_param(narg - iarg, &arg[iarg]);
+      if (n == 0)
+        error->all(FLERR, "Illegal fix_modify command");
       iarg += n;
     }
   }
 }
-void Fix::ev_setup(int eflag, int vflag)
-{
-  int i,n;
+void Fix::ev_setup(int eflag, int vflag) {
+  int i, n;
   evflag = 1;
-  if (!thermo_energy) eflag_either = eflag_global = eflag_atom = 0;
+  if (!thermo_energy)
+    eflag_either = eflag_global = eflag_atom = 0;
   else {
     eflag_either = eflag;
     eflag_global = eflag & ENERGY_GLOBAL;
     eflag_atom = eflag & ENERGY_ATOM;
   }
-  if (!thermo_virial) vflag_either = vflag_global = vflag_atom = 0;
+  if (!thermo_virial)
+    vflag_either = vflag_global = vflag_atom = 0;
   else {
     vflag_either = vflag;
     vflag_global = vflag & (VIRIAL_PAIR | VIRIAL_FDOTR);
@@ -135,22 +142,25 @@ void Fix::ev_setup(int eflag, int vflag)
   if (eflag_atom && atom->nlocal > maxeatom) {
     maxeatom = atom->nmax;
     memory->destroy(eatom);
-    memory->create(eatom,maxeatom,"fix:eatom");
+    memory->create(eatom, maxeatom, "fix:eatom");
   }
   if (vflag_atom && atom->nlocal > maxvatom) {
     maxvatom = atom->nmax;
     memory->destroy(vatom);
-    memory->create(vatom,maxvatom,6,"fix:vatom");
+    memory->create(vatom, maxvatom, 6, "fix:vatom");
   }
   if (cvflag_atom && atom->nlocal > maxcvatom) {
     maxcvatom = atom->nmax;
     memory->destroy(cvatom);
-    memory->create(cvatom,maxcvatom,9,"fix:cvatom");
+    memory->create(cvatom, maxcvatom, 9, "fix:cvatom");
   }
-  if (vflag_global) for (i = 0; i < 6; i++) virial[i] = 0.0;
+  if (vflag_global)
+    for (i = 0; i < 6; i++)
+      virial[i] = 0.0;
   if (eflag_atom) {
     n = atom->nlocal;
-    for (i = 0; i < n; i++) eatom[i] = 0.0;
+    for (i = 0; i < n; i++)
+      eatom[i] = 0.0;
   }
   if (vflag_atom) {
     n = atom->nlocal;
@@ -178,9 +188,8 @@ void Fix::ev_setup(int eflag, int vflag)
     }
   }
 }
-void Fix::v_setup(int vflag)
-{
-  int i,n;
+void Fix::v_setup(int vflag) {
+  int i, n;
   evflag = 1;
   vflag_global = vflag & (VIRIAL_PAIR | VIRIAL_FDOTR);
   if (centroidstressflag != CENTROID_AVAIL) {
@@ -193,14 +202,16 @@ void Fix::v_setup(int vflag)
   if (vflag_atom && atom->nlocal > maxvatom) {
     maxvatom = atom->nmax;
     memory->destroy(vatom);
-    memory->create(vatom,maxvatom,6,"fix:vatom");
+    memory->create(vatom, maxvatom, 6, "fix:vatom");
   }
   if (cvflag_atom && atom->nlocal > maxcvatom) {
     maxcvatom = atom->nmax;
     memory->destroy(cvatom);
-    memory->create(cvatom,maxcvatom,9,"fix:cvatom");
+    memory->create(cvatom, maxcvatom, 9, "fix:cvatom");
   }
-  if (vflag_global) for (i = 0; i < 6; i++) virial[i] = 0.0;
+  if (vflag_global)
+    for (i = 0; i < 6; i++)
+      virial[i] = 0.0;
   if (vflag_atom) {
     n = atom->nlocal;
     for (i = 0; i < n; i++) {
@@ -227,76 +238,73 @@ void Fix::v_setup(int vflag)
     }
   }
 }
-void Fix::ev_tally(int n, int *list, double total, double eng, double *v)
-{
+void Fix::ev_tally(int n, int *list, double total, double eng, double *v) {
   if (eflag_atom) {
-    double fraction = eng/total;
+    double fraction = eng / total;
     for (int i = 0; i < n; i++)
       eatom[list[i]] += fraction;
   }
-  v_tally(n,list,total,v);
+  v_tally(n, list, total, v);
 }
-void Fix::v_tally(int n, int *list, double total, double *v)
-{
+void Fix::v_tally(int n, int *list, double total, double *v) {
   int m;
   if (vflag_global) {
-    double fraction = n/total;
-    virial[0] += fraction*v[0];
-    virial[1] += fraction*v[1];
-    virial[2] += fraction*v[2];
-    virial[3] += fraction*v[3];
-    virial[4] += fraction*v[4];
-    virial[5] += fraction*v[5];
+    double fraction = n / total;
+    virial[0] += fraction * v[0];
+    virial[1] += fraction * v[1];
+    virial[2] += fraction * v[2];
+    virial[3] += fraction * v[3];
+    virial[4] += fraction * v[4];
+    virial[5] += fraction * v[5];
   }
   if (vflag_atom) {
-    double fraction = 1.0/total;
+    double fraction = 1.0 / total;
     for (int i = 0; i < n; i++) {
       m = list[i];
-      vatom[m][0] += fraction*v[0];
-      vatom[m][1] += fraction*v[1];
-      vatom[m][2] += fraction*v[2];
-      vatom[m][3] += fraction*v[3];
-      vatom[m][4] += fraction*v[4];
-      vatom[m][5] += fraction*v[5];
+      vatom[m][0] += fraction * v[0];
+      vatom[m][1] += fraction * v[1];
+      vatom[m][2] += fraction * v[2];
+      vatom[m][3] += fraction * v[3];
+      vatom[m][4] += fraction * v[4];
+      vatom[m][5] += fraction * v[5];
     }
   }
 }
 void Fix::v_tally(int n, int *list, double total, double *vtot,
-    double rlist[][3], double flist[][3], double center[])
-{
+                  double rlist[][3], double flist[][3], double center[]) {
   v_tally(n, list, total, vtot);
   if (cvflag_atom) {
-    for (int i = 0; i< n; i++) {
+    for (int i = 0; i < n; i++) {
       const double ri0[3] = {
-        rlist[i][0]-center[0],
-        rlist[i][1]-center[1],
-        rlist[i][2]-center[2],
+          rlist[i][0] - center[0],
+          rlist[i][1] - center[1],
+          rlist[i][2] - center[2],
       };
-      cvatom[list[i]][0] += ri0[0]*flist[i][0];
-      cvatom[list[i]][1] += ri0[1]*flist[i][1];
-      cvatom[list[i]][2] += ri0[2]*flist[i][2];
-      cvatom[list[i]][3] += ri0[0]*flist[i][1];
-      cvatom[list[i]][4] += ri0[0]*flist[i][2];
-      cvatom[list[i]][5] += ri0[1]*flist[i][2];
-      cvatom[list[i]][6] += ri0[1]*flist[i][0];
-      cvatom[list[i]][7] += ri0[2]*flist[i][0];
-      cvatom[list[i]][8] += ri0[2]*flist[i][1];
+      cvatom[list[i]][0] += ri0[0] * flist[i][0];
+      cvatom[list[i]][1] += ri0[1] * flist[i][1];
+      cvatom[list[i]][2] += ri0[2] * flist[i][2];
+      cvatom[list[i]][3] += ri0[0] * flist[i][1];
+      cvatom[list[i]][4] += ri0[0] * flist[i][2];
+      cvatom[list[i]][5] += ri0[1] * flist[i][2];
+      cvatom[list[i]][6] += ri0[1] * flist[i][0];
+      cvatom[list[i]][7] += ri0[2] * flist[i][0];
+      cvatom[list[i]][8] += ri0[2] * flist[i][1];
     }
   }
 }
 void Fix::v_tally(int n, int *list, double total, double *vtot, int nlocal,
-    int npair, int pairlist[][2], double *fpairlist, double dellist[][3])
-{
+                  int npair, int pairlist[][2], double *fpairlist,
+                  double dellist[][3]) {
   v_tally(n, list, total, vtot);
   if (cvflag_atom) {
     double v[6];
     for (int i = 0; i < npair; i++) {
-      v[0] = 0.5*dellist[i][0]*dellist[i][0]*fpairlist[i];
-      v[1] = 0.5*dellist[i][1]*dellist[i][1]*fpairlist[i];
-      v[2] = 0.5*dellist[i][2]*dellist[i][2]*fpairlist[i];
-      v[3] = 0.5*dellist[i][0]*dellist[i][1]*fpairlist[i];
-      v[4] = 0.5*dellist[i][0]*dellist[i][2]*fpairlist[i];
-      v[5] = 0.5*dellist[i][1]*dellist[i][2]*fpairlist[i];
+      v[0] = 0.5 * dellist[i][0] * dellist[i][0] * fpairlist[i];
+      v[1] = 0.5 * dellist[i][1] * dellist[i][1] * fpairlist[i];
+      v[2] = 0.5 * dellist[i][2] * dellist[i][2] * fpairlist[i];
+      v[3] = 0.5 * dellist[i][0] * dellist[i][1] * fpairlist[i];
+      v[4] = 0.5 * dellist[i][0] * dellist[i][2] * fpairlist[i];
+      v[5] = 0.5 * dellist[i][1] * dellist[i][2] * fpairlist[i];
       const int i0 = pairlist[i][0];
       const int i1 = pairlist[i][1];
       if (i0 < nlocal) {
@@ -324,8 +332,7 @@ void Fix::v_tally(int n, int *list, double total, double *vtot, int nlocal,
     }
   }
 }
-void Fix::v_tally(int i, double *v)
-{
+void Fix::v_tally(int i, double *v) {
   if (vflag_global) {
     virial[0] += v[0];
     virial[1] += v[1];
@@ -343,8 +350,7 @@ void Fix::v_tally(int i, double *v)
     vatom[i][5] += v[5];
   }
 }
-void Fix::v_tally(int n, int i, double vn)
-{
+void Fix::v_tally(int n, int i, double vn) {
   if (vflag_global)
     virial[n] += vn;
   if (vflag_atom)

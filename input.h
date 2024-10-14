@@ -1,5 +1,5 @@
 #ifndef LMP_INPUT_H
-#define LMP_INPUT_H 
+#define LMP_INPUT_H
 #include "pointers.h"
 #include <map>
 namespace LAMMPS_NS {
@@ -9,7 +9,8 @@ class Input : protected Pointers {
   friend class Error;
   friend class Deprecated;
   friend class SimpleCommandsTest_Echo_Test;
- public:
+
+public:
   int narg;
   char **arg;
   Input(class LAMMPS *, int, char **);
@@ -17,11 +18,13 @@ class Input : protected Pointers {
   void file();
   void substitute(char *&, char *&, int &, int &, int);
   void write_echo(const std::string &);
- protected:
+
+protected:
   char *command;
   int echo_screen;
   int echo_log;
- private:
+
+private:
   int me;
   int maxarg;
   char *line, *copy, *work;
@@ -32,11 +35,13 @@ class Input : protected Pointers {
   int jump_skip;
   bool utf8_warn;
   FILE **infiles;
- public:
+
+public:
   typedef Command *(*CommandCreator)(LAMMPS *);
   typedef std::map<std::string, CommandCreator> CommandCreatorMap;
   CommandCreatorMap *command_map;
- private:
+
+private:
   void parse();
   char *nextword(char *, char **);
   int numtriple(char *);
@@ -55,5 +60,5 @@ class Input : protected Pointers {
   void region();
   void timestep();
 };
-}
+} // namespace LAMMPS_NS
 #endif

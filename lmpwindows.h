@@ -5,23 +5,11 @@
 #define pclose _pclose
 #define strdup _strdup
 #if !defined(__MINGW32__)
-inline double pow(int i, int j)
-{
-  return pow((double) i, j);
-}
-inline double fabs(int i)
-{
-  return fabs((double) i);
-}
-inline double sqrt(int i)
-{
-  return sqrt((double) i);
-}
+inline double pow(int i, int j) { return pow((double)i, j); }
+inline double fabs(int i) { return fabs((double)i); }
+inline double sqrt(int i) { return sqrt((double)i); }
 #endif
-inline double trunc(double x)
-{
-  return x > 0 ? floor(x) : ceil(x);
-}
+inline double trunc(double x) { return x > 0 ? floor(x) : ceil(x); }
 #ifndef S_IRWXU
 #define S_IRWXU 0
 #endif
@@ -31,7 +19,4 @@ inline double trunc(double x)
 #ifndef S_IXGRP
 #define S_IXGRP 0
 #endif
-inline int mkdir(const char *path, int)
-{
-  return _mkdir(path);
-}
+inline int mkdir(const char *path, int) { return _mkdir(path); }

@@ -1,5 +1,5 @@
 #ifndef LMP_FORCE_H
-#define LMP_FORCE_H 
+#define LMP_FORCE_H
 #include "pointers.h"
 #include <map>
 namespace LAMMPS_NS {
@@ -15,7 +15,7 @@ enum {
 };
 enum { CENTROID_SAME = 0, CENTROID_AVAIL = 1, CENTROID_NOTAVAIL = 2 };
 class Force : protected Pointers {
- public:
+public:
   double boltz;
   double hplanck;
   double mvv2e;
@@ -51,8 +51,9 @@ class Force : protected Pointers {
   Pair *pair_match(const std::string &, int, int nsub = 0);
   char *pair_match_ptr(Pair *);
   char *store_style(const std::string &, int);
- private:
+
+private:
   void create_factories();
 };
-}
+} // namespace LAMMPS_NS
 #endif

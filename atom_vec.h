@@ -1,10 +1,10 @@
 #ifndef LMP_ATOM_VEC_H
-#define LMP_ATOM_VEC_H 
+#define LMP_ATOM_VEC_H
 #include "pointers.h"
 #include <vector>
 namespace LAMMPS_NS {
 class AtomVec : protected Pointers {
- public:
+public:
   enum { PER_ATOM = 0, PER_TYPE = 1 };
   int molecular;
   int bonds_allow;
@@ -28,7 +28,8 @@ class AtomVec : protected Pointers {
   int size_data_bonus;
   int nargcopy;
   char **argcopy;
-  std::vector<std::string> fields_grow, fields_copy, fields_comm, fields_comm_vel;
+  std::vector<std::string> fields_grow, fields_copy, fields_comm,
+      fields_comm_vel;
   std::vector<std::string> fields_reverse, fields_border, fields_border_vel;
   std::vector<std::string> fields_exchange, fields_restart, fields_create;
   std::vector<std::string> fields_data_atom, fields_data_vel;
@@ -73,7 +74,8 @@ class AtomVec : protected Pointers {
   virtual int unpack_restart_bonus(int, double *) { return 0; }
   virtual void create_atom(int, double *);
   virtual void create_atom_post(int) {}
-  virtual void data_atom(double *, imageint, const std::vector<std::string> &, std::string &);
+  virtual void data_atom(double *, imageint, const std::vector<std::string> &,
+                         std::string &);
   virtual void data_atom_post(int) {}
   virtual void data_atom_bonus(int, const std::vector<std::string> &) {}
   virtual void data_body(int, int, int, int *, double *) {}
@@ -86,7 +88,8 @@ class AtomVec : protected Pointers {
   virtual int pack_data_bonus(double *, int) { return 0; }
   virtual int property_atom(const std::string &) { return -1; }
   virtual void pack_property_atom(int, double *, int, int) {}
- protected:
+
+protected:
   int nmax;
   int deform_vremap;
   int deform_groupbit;
@@ -95,9 +98,12 @@ class AtomVec : protected Pointers {
   int *type, *mask;
   imageint *image;
   double **x, **v, **f;
-  static const std::vector<std::string> default_grow, default_copy, default_comm, default_comm_vel;
-  static const std::vector<std::string> default_reverse, default_border, default_border_vel;
-  static const std::vector<std::string> default_exchange, default_restart, default_create;
+  static const std::vector<std::string> default_grow, default_copy,
+      default_comm, default_comm_vel;
+  static const std::vector<std::string> default_reverse, default_border,
+      default_border_vel;
+  static const std::vector<std::string> default_exchange, default_restart,
+      default_create;
   static const std::vector<std::string> default_data_atom, default_data_vel;
   struct Method {
     std::vector<void *> pdata;
@@ -119,8 +125,9 @@ class AtomVec : protected Pointers {
   void grow_nmax();
   int grow_nmax_bonus(int);
   void setup_fields();
-  int process_fields(const std::vector<std::string> &, const std::vector<std::string> &, Method *);
+  int process_fields(const std::vector<std::string> &,
+                     const std::vector<std::string> &, Method *);
   void init_method(int, Method *);
 };
-}
+} // namespace LAMMPS_NS
 #endif

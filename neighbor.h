@@ -1,11 +1,11 @@
 #ifndef LMP_NEIGHBOR_H
-#define LMP_NEIGHBOR_H 
+#define LMP_NEIGHBOR_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class NeighRequest;
 class NeighList;
 class Neighbor : protected Pointers {
- public:
+public:
   enum { NSQ, BIN, MULTI_OLD, MULTI };
   int style;
   int every;
@@ -90,7 +90,8 @@ class Neighbor : protected Pointers {
   bigint get_nneigh_full();
   bigint get_nneigh_half();
   bigint last_setup_bins;
- protected:
+
+protected:
   int me, nprocs;
   int firsttime;
   int dimension;
@@ -142,69 +143,69 @@ class Neighbor : protected Pointers {
   int copymode;
 };
 namespace NeighConst {
-  enum {
-    NB_INTEL = 1 << 0,
-    NB_KOKKOS_DEVICE = 1 << 1,
-    NB_KOKKOS_HOST = 1 << 2,
-    NB_SSA = 1 << 3,
-    NB_STANDARD = 1 << 4,
-    NB_MULTI = 1 << 5
-  };
-  enum {
-    NS_BIN = 1 << 0,
-    NS_MULTI = 1 << 1,
-    NS_HALF = 1 << 2,
-    NS_FULL = 1 << 3,
-    NS_2D = 1 << 4,
-    NS_3D = 1 << 5,
-    NS_ORTHO = 1 << 6,
-    NS_TRI = 1 << 7,
-    NS_GHOST = 1 << 8,
-    NS_SSA = 1 << 9,
-    NS_MULTI_OLD = 1 << 10
-  };
-  enum {
-    NP_NSQ = 1 << 0,
-    NP_BIN = 1 << 1,
-    NP_MULTI = 1 << 2,
-    NP_HALF = 1 << 3,
-    NP_FULL = 1 << 4,
-    NP_ORTHO = 1 << 5,
-    NP_TRI = 1 << 6,
-    NP_ATOMONLY = 1 << 7,
-    NP_MOLONLY = 1 << 8,
-    NP_NEWTON = 1 << 9,
-    NP_NEWTOFF = 1 << 10,
-    NP_GHOST = 1 << 11,
-    NP_SIZE = 1 << 12,
-    NP_ONESIDE = 1 << 13,
-    NP_RESPA = 1 << 14,
-    NP_BOND = 1 << 15,
-    NP_OMP = 1 << 16,
-    NP_INTEL = 1 << 17,
-    NP_KOKKOS_DEVICE = 1 << 18,
-    NP_KOKKOS_HOST = 1 << 19,
-    NP_SSA = 1 << 20,
-    NP_COPY = 1 << 21,
-    NP_SKIP = 1 << 22,
-    NP_HALF_FULL = 1 << 23,
-    NP_OFF2ON = 1 << 24,
-    NP_MULTI_OLD = 1 << 25,
-    NP_TRIM = 1 << 26
-  };
-  enum {
-    REQ_DEFAULT = 0,
-    REQ_FULL = 1 << 0,
-    REQ_GHOST = 1 << 1,
-    REQ_SIZE = 1 << 2,
-    REQ_HISTORY = 1 << 3,
-    REQ_OCCASIONAL = 1 << 4,
-    REQ_RESPA_INOUT = 1 << 5,
-    REQ_RESPA_ALL = 1 << 6,
-    REQ_NEWTON_ON = 1 << 8,
-    REQ_NEWTON_OFF = 1 << 9,
-    REQ_SSA = 1 << 10,
-  };
-}
-}
+enum {
+  NB_INTEL = 1 << 0,
+  NB_KOKKOS_DEVICE = 1 << 1,
+  NB_KOKKOS_HOST = 1 << 2,
+  NB_SSA = 1 << 3,
+  NB_STANDARD = 1 << 4,
+  NB_MULTI = 1 << 5
+};
+enum {
+  NS_BIN = 1 << 0,
+  NS_MULTI = 1 << 1,
+  NS_HALF = 1 << 2,
+  NS_FULL = 1 << 3,
+  NS_2D = 1 << 4,
+  NS_3D = 1 << 5,
+  NS_ORTHO = 1 << 6,
+  NS_TRI = 1 << 7,
+  NS_GHOST = 1 << 8,
+  NS_SSA = 1 << 9,
+  NS_MULTI_OLD = 1 << 10
+};
+enum {
+  NP_NSQ = 1 << 0,
+  NP_BIN = 1 << 1,
+  NP_MULTI = 1 << 2,
+  NP_HALF = 1 << 3,
+  NP_FULL = 1 << 4,
+  NP_ORTHO = 1 << 5,
+  NP_TRI = 1 << 6,
+  NP_ATOMONLY = 1 << 7,
+  NP_MOLONLY = 1 << 8,
+  NP_NEWTON = 1 << 9,
+  NP_NEWTOFF = 1 << 10,
+  NP_GHOST = 1 << 11,
+  NP_SIZE = 1 << 12,
+  NP_ONESIDE = 1 << 13,
+  NP_RESPA = 1 << 14,
+  NP_BOND = 1 << 15,
+  NP_OMP = 1 << 16,
+  NP_INTEL = 1 << 17,
+  NP_KOKKOS_DEVICE = 1 << 18,
+  NP_KOKKOS_HOST = 1 << 19,
+  NP_SSA = 1 << 20,
+  NP_COPY = 1 << 21,
+  NP_SKIP = 1 << 22,
+  NP_HALF_FULL = 1 << 23,
+  NP_OFF2ON = 1 << 24,
+  NP_MULTI_OLD = 1 << 25,
+  NP_TRIM = 1 << 26
+};
+enum {
+  REQ_DEFAULT = 0,
+  REQ_FULL = 1 << 0,
+  REQ_GHOST = 1 << 1,
+  REQ_SIZE = 1 << 2,
+  REQ_HISTORY = 1 << 3,
+  REQ_OCCASIONAL = 1 << 4,
+  REQ_RESPA_INOUT = 1 << 5,
+  REQ_RESPA_ALL = 1 << 6,
+  REQ_NEWTON_ON = 1 << 8,
+  REQ_NEWTON_OFF = 1 << 9,
+  REQ_SSA = 1 << 10,
+};
+} // namespace NeighConst
+} // namespace LAMMPS_NS
 #endif

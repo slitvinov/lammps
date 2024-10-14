@@ -1,15 +1,16 @@
 #ifdef COMMAND_CLASS
-CommandStyle(create_atoms,CreateAtoms);
+CommandStyle(create_atoms, CreateAtoms);
 #else
 #ifndef LMP_CREATE_ATOMS_H
-#define LMP_CREATE_ATOMS_H 
+#define LMP_CREATE_ATOMS_H
 #include "command.h"
 namespace LAMMPS_NS {
 class CreateAtoms : public Command {
- public:
+public:
   CreateAtoms(class LAMMPS *);
   void command(int, char **) override;
- private:
+
+private:
   int ntype, style, mode, nbasis, seed;
   bigint nrandom;
   int remapflag;
@@ -39,6 +40,6 @@ class CreateAtoms : public Command {
   double sublo[3], subhi[3];
   void add_random();
 };
-}
+} // namespace LAMMPS_NS
 #endif
 #endif

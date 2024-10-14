@@ -1,5 +1,5 @@
 #ifndef LMP_ATOM_MASK_H
-#define LMP_ATOM_MASK_H 
+#define LMP_ATOM_MASK_H
 #define EMPTY_MASK 0x00000000
 #define ALL_MASK 0xffffffff
 #define SAMETAG_MASK 0x40000000

@@ -5,27 +5,30 @@
 #include "math_extra.h"
 #include <cstring>
 using namespace LAMMPS_NS;
-enum{CONSTANT,VARIABLE};
+enum { CONSTANT, VARIABLE };
 #define BIG 1.0e20
-RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg) :
-  Region(lmp, narg, arg), xlostr(nullptr), xhistr(nullptr), ylostr(nullptr), yhistr(nullptr), zlostr(nullptr), zhistr(nullptr)
-{
-  options(narg-8,&arg[8]);
+RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
+    : Region(lmp, narg, arg), xlostr(nullptr), xhistr(nullptr), ylostr(nullptr),
+      yhistr(nullptr), zlostr(nullptr), zhistr(nullptr) {
+  options(narg - 8, &arg[8]);
   xlostyle = CONSTANT;
-  xlo = xscale*utils::numeric(FLERR,arg[2],false,lmp);
+  xlo = xscale * utils::numeric(FLERR, arg[2], false, lmp);
   xhistyle = CONSTANT;
-  xhi = xscale*utils::numeric(FLERR,arg[3],false,lmp);
+  xhi = xscale * utils::numeric(FLERR, arg[3], false, lmp);
   ylostyle = CONSTANT;
-  ylo = yscale*utils::numeric(FLERR,arg[4],false,lmp);
+  ylo = yscale * utils::numeric(FLERR, arg[4], false, lmp);
   yhistyle = CONSTANT;
-  yhi = yscale*utils::numeric(FLERR,arg[5],false,lmp);
+  yhi = yscale * utils::numeric(FLERR, arg[5], false, lmp);
   zlostyle = CONSTANT;
-  zlo = zscale*utils::numeric(FLERR,arg[6],false,lmp);
+  zlo = zscale * utils::numeric(FLERR, arg[6], false, lmp);
   zhistyle = CONSTANT;
-  zhi = zscale*utils::numeric(FLERR,arg[7],false,lmp);
-  if (xlo > xhi) error->all(FLERR,"Illegal region block xlo: {} >= xhi: {}", xlo, xhi);
-  if (ylo > yhi) error->all(FLERR,"Illegal region block ylo: {} >= yhi: {}", ylo, yhi);
-  if (zlo > zhi) error->all(FLERR,"Illegal region block zlo: {} >= zhi: {}", zlo, zhi);
+  zhi = zscale * utils::numeric(FLERR, arg[7], false, lmp);
+  if (xlo > xhi)
+    error->all(FLERR, "Illegal region block xlo: {} >= xhi: {}", xlo, xhi);
+  if (ylo > yhi)
+    error->all(FLERR, "Illegal region block ylo: {} >= yhi: {}", ylo, yhi);
+  if (zlo > zhi)
+    error->all(FLERR, "Illegal region block zlo: {} >= zhi: {}", zlo, zhi);
   if (interior) {
     bboxflag = 1;
     extent_xlo = xlo;
@@ -34,11 +37,14 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg) :
     extent_yhi = yhi;
     extent_zlo = zlo;
     extent_zhi = zhi;
-  } else bboxflag = 0;
+  } else
+    bboxflag = 0;
   cmax = 6;
   contact = new Contact[cmax];
-  if (interior) tmax = 3;
-  else tmax = 1;
+  if (interior)
+    tmax = 3;
+  else
+    tmax = 1;
   face[0][0] = -1.0;
   face[0][1] = 0.0;
   face[0][2] = 0.0;
@@ -98,25 +104,20 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg) :
   MathExtra::copy3(corners[1][2], corners[5][2]);
   MathExtra::copy3(corners[0][2], corners[5][3]);
 }
-RegBlock::~RegBlock()
-{
-  if (copymode) return;
-  delete [] xlostr;
-  delete [] xhistr;
-  delete [] ylostr;
-  delete [] yhistr;
-  delete [] zlostr;
-  delete [] zhistr;
-  delete [] contact;
+RegBlock::~RegBlock() {
+  if (copymode)
+    return;
+  delete[] xlostr;
+  delete[] xhistr;
+  delete[] ylostr;
+  delete[] yhistr;
+  delete[] zlostr;
+  delete[] zhistr;
+  delete[] contact;
 }
-void RegBlock::init()
-{
-  Region::init();
-}
-int RegBlock::inside(double x, double y, double z)
-{
+void RegBlock::init() { Region::init(); }
+int RegBlock::inside(double x, double y, double z) {
   if (x >= xlo && x <= xhi && y >= ylo && y <= yhi && z >= zlo && z <= zhi)
     return 1;
   return 0;
 }
-

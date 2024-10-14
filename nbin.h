@@ -1,9 +1,9 @@
 #ifndef LMP_NBIN_H
-#define LMP_NBIN_H 
+#define LMP_NBIN_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class NBin : protected Pointers {
- public:
+public:
   int istyle;
   bigint last_bin;
   double cutoff_custom;
@@ -30,7 +30,8 @@ class NBin : protected Pointers {
   virtual void bin_atoms_setup(int) = 0;
   virtual void setup_bins(int) = 0;
   virtual void bin_atoms() = 0;
- protected:
+
+protected:
   int includegroup;
   double cutneighmin;
   double cutneighmax;
@@ -48,5 +49,5 @@ class NBin : protected Pointers {
   int coord2bin(double *);
   int coord2bin_multi(double *, int);
 };
-}
+} // namespace LAMMPS_NS
 #endif

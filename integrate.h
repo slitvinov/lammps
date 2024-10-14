@@ -1,9 +1,9 @@
 #ifndef LMP_INTEGRATE_H
-#define LMP_INTEGRATE_H 
+#define LMP_INTEGRATE_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class Integrate : protected Pointers {
- public:
+public:
   Integrate(class LAMMPS *, int, char **);
   ~Integrate() override;
   virtual void init();
@@ -12,7 +12,8 @@ class Integrate : protected Pointers {
   virtual void force_clear() = 0;
   virtual void cleanup() {}
   virtual void reset_dt() {}
- protected:
+
+protected:
   int eflag, vflag;
   int virial_style;
   int external_force_clear;
@@ -28,5 +29,5 @@ class Integrate : protected Pointers {
   void ev_setup();
   void ev_set(bigint);
 };
-}
+} // namespace LAMMPS_NS
 #endif

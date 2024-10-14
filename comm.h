@@ -1,9 +1,9 @@
 #ifndef LMP_COMM_H
-#define LMP_COMM_H 
+#define LMP_COMM_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class Comm : protected Pointers {
- public:
+public:
   enum { BRICK, TILED };
   int style;
   enum { LAYOUT_UNIFORM, LAYOUT_NONUNIFORM, LAYOUT_TILED };
@@ -54,9 +54,11 @@ class Comm : protected Pointers {
   virtual int exchange_variable_all2all(int, double *, double *&) = 0;
   virtual void coord2proc_setup() {}
   virtual int coord2proc(double *, int &, int &, int &);
-  void ring(int, int, void *, int, void (*)(int, char *, void *), void *, void *, int self = 1);
+  void ring(int, int, void *, int, void (*)(int, char *, void *), void *,
+            void *, int self = 1);
   virtual void *extract(const char *, int &) { return nullptr; }
- protected:
+
+protected:
   int bordergroup;
   int triclinic;
   int map_style;
@@ -84,8 +86,9 @@ class Comm : protected Pointers {
   int user_coregrid[3];
   int multi_reduce;
   void init_exchange();
- public:
+
+public:
   enum { MULTIPLE };
 };
-}
+} // namespace LAMMPS_NS
 #endif

@@ -1,5 +1,5 @@
 #ifndef LMP_NEIGH_REQUEST_H
-#define LMP_NEIGH_REQUEST_H 
+#define LMP_NEIGH_REQUEST_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class NeighRequest : protected Pointers {
@@ -10,7 +10,8 @@ class NeighRequest : protected Pointers {
   friend class NeighborKokkos;
   friend class NPairSkipIntel;
   friend class FixIntel;
- protected:
+
+protected:
   void *requestor;
   int requestor_instance;
   int id;
@@ -49,7 +50,8 @@ class NeighRequest : protected Pointers {
   int unique;
   int index_bin;
   int index_pair;
- public:
+
+public:
   NeighRequest(class LAMMPS *);
   NeighRequest(class LAMMPS *, void *, int);
   NeighRequest(NeighRequest *);
@@ -67,5 +69,5 @@ class NeighRequest : protected Pointers {
   int get_size() const { return size; }
   void *get_requestor() const { return requestor; }
 };
-}
+} // namespace LAMMPS_NS
 #endif

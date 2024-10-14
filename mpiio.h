@@ -1,5 +1,5 @@
 #ifndef LMP_MPIIO_H
-#define LMP_MPIIO_H 
+#define LMP_MPIIO_H
 #ifdef LMP_MPIIO
 #if defined(MPI_STUBS)
 #error "The MPIIO package cannot be compiled in serial with MPI STUBS"
@@ -8,7 +8,7 @@
 #else
 namespace LAMMPS_NS {
 class RestartMPIIO {
- public:
+public:
   int mpiio_exists;
   RestartMPIIO(class LAMMPS *) { mpiio_exists = 0; }
   ~RestartMPIIO() {}
@@ -18,6 +18,6 @@ class RestartMPIIO {
   void read(MPI_Offset, long, double *) {}
   void close() {}
 };
-}
+} // namespace LAMMPS_NS
 #endif
 #endif

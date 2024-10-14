@@ -4,9 +4,9 @@
 #include "my_page.h"
 #include "neigh_list.h"
 using namespace LAMMPS_NS;
-NPairHalfBinAtomonlyNewton::NPairHalfBinAtomonlyNewton(LAMMPS *lmp) : NPair(lmp) {}
-void NPairHalfBinAtomonlyNewton::build(NeighList *list)
-{
+NPairHalfBinAtomonlyNewton::NPairHalfBinAtomonlyNewton(LAMMPS *lmp)
+    : NPair(lmp) {}
+void NPairHalfBinAtomonlyNewton::build(NeighList *list) {
   int i, j, k, n, itype, jtype, ibin;
   double xtmp, ytmp, ztmp, delx, dely, delz, rsq;
   int *neighptr;
@@ -14,7 +14,8 @@ void NPairHalfBinAtomonlyNewton::build(NeighList *list)
   int *type = atom->type;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
-  if (includegroup) nlocal = atom->nfirst;
+  if (includegroup)
+    nlocal = atom->nfirst;
   int *ilist = list->ilist;
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
@@ -30,26 +31,32 @@ void NPairHalfBinAtomonlyNewton::build(NeighList *list)
     ztmp = x[i][2];
     for (j = bins[i]; j >= 0; j = bins[j]) {
       if (j >= nlocal) {
-        if (x[j][2] < ztmp) continue;
+        if (x[j][2] < ztmp)
+          continue;
         if (x[j][2] == ztmp) {
-          if (x[j][1] < ytmp) continue;
-          if (x[j][1] == ytmp && x[j][0] < xtmp) continue;
+          if (x[j][1] < ytmp)
+            continue;
+          if (x[j][1] == ytmp && x[j][0] < xtmp)
+            continue;
         }
       }
       jtype = type[j];
-      if (exclude && exclusion(i, j, itype, jtype, mask)) continue;
+      if (exclude && exclusion(i, j, itype, jtype, mask))
+        continue;
       delx = xtmp - x[j][0];
       dely = ytmp - x[j][1];
       delz = ztmp - x[j][2];
       rsq = delx * delx + dely * dely + delz * delz;
-      if (rsq <= cutneighsq[itype][jtype]) neighptr[n++] = j;
+      if (rsq <= cutneighsq[itype][jtype])
+        neighptr[n++] = j;
     }
     ibin = atom2bin[i];
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
     ipage->vgot(n);
-    if (ipage->status()) error->one(FLERR, "Neighbor list overflow, boost neigh_modify one");
+    if (ipage->status())
+      error->one(FLERR, "Neighbor list overflow, boost neigh_modify one");
   }
   list->inum = inum;
 }

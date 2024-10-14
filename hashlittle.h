@@ -1,5 +1,5 @@
 #ifndef LMP_HASHLITTLE_H
-#define LMP_HASHLITTLE_H 
+#define LMP_HASHLITTLE_H
 #include <cstddef>
 #include <cstdint>
 namespace LAMMPS_NS {

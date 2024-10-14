@@ -1,8 +1,8 @@
 #ifndef LAMMPS_MY_POOL_CHUNK_H
-#define LAMMPS_MY_POOL_CHUNK_H 
+#define LAMMPS_MY_POOL_CHUNK_H
 namespace LAMMPS_NS {
 template <class T> class MyPoolChunk {
- public:
+public:
   int ndatum;
   int nchunk;
   MyPoolChunk(int user_minchunk = 1, int user_maxchunk = 1, int user_nbin = 1,
@@ -13,7 +13,8 @@ template <class T> class MyPoolChunk {
   void put(int index);
   double size() const;
   int status() const { return errorflag; }
- private:
+
+private:
   int minchunk;
   int maxchunk;
   int nbin;
@@ -29,5 +30,5 @@ template <class T> class MyPoolChunk {
   int *chunksize;
   void allocate(int ibin);
 };
-}
+} // namespace LAMMPS_NS
 #endif

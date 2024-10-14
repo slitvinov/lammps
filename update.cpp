@@ -1,5 +1,4 @@
 #include "update.h"
-#include "style_integrate.h"
 #include "comm.h"
 #include "error.h"
 #include "fix.h"
@@ -7,14 +6,14 @@
 #include "integrate.h"
 #include "modify.h"
 #include "neighbor.h"
+#include "style_integrate.h"
 #include <cstring>
 using namespace LAMMPS_NS;
-template <typename T> static Integrate *integrate_creator(LAMMPS *lmp, int narg, char **arg)
-{
+template <typename T>
+static Integrate *integrate_creator(LAMMPS *lmp, int narg, char **arg) {
   return new T(lmp, narg, arg);
 }
-Update::Update(LAMMPS *lmp) : Pointers(lmp)
-{
+Update::Update(LAMMPS *lmp) : Pointers(lmp) {
   char *str;
   ntimestep = 0;
   atime = 0.0;
@@ -35,30 +34,29 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp)
   integrate_style = nullptr;
   integrate = nullptr;
   integrate_map = new IntegrateCreatorMap();
-#define INTEGRATE_CLASS 
-#define IntegrateStyle(key,Class) (*integrate_map)[#key] = &integrate_creator<Class>;
+#define INTEGRATE_CLASS
+#define IntegrateStyle(key, Class)                                             \
+  (*integrate_map)[#key] = &integrate_creator<Class>;
 #include "style_integrate.h"
 #undef IntegrateStyle
 #undef INTEGRATE_CLASS
-  str = (char *) "verlet";
+  str = (char *)"verlet";
   create_integrate(1, &str, 1);
 }
-Update::~Update()
-{
+Update::~Update() {
   delete[] unit_style;
   delete[] integrate_style;
   delete integrate;
   delete integrate_map;
 }
-void Update::init()
-{
-  if (whichflag == 0) return;
+void Update::init() {
+  if (whichflag == 0)
+    return;
   if (whichflag == 1)
     integrate->init();
   first_update = 1;
 }
-void Update::set_units(const char *style)
-{
+void Update::set_units(const char *style) {
   double dt_old = dt;
   if (strcmp(style, "lj") == 0) {
     force->boltz = 1.0;
@@ -84,14 +82,16 @@ void Update::set_units(const char *style)
   delete[] unit_style;
   unit_style = utils::strdup(style);
   if (!dt_default && (comm->me == 0)) {
-    error->warning(FLERR, "Changing timestep from {:.6} to {:.6} due to changing units to {}",
-                   dt_old, dt, unit_style);
+    error->warning(
+        FLERR,
+        "Changing timestep from {:.6} to {:.6} due to changing units to {}",
+        dt_old, dt, unit_style);
   }
   dt_default = 1;
 }
-void Update::create_integrate(int narg, char **arg, int trysuffix)
-{
-  if (narg < 1) error->all(FLERR, "Illegal run_style command");
+void Update::create_integrate(int narg, char **arg, int trysuffix) {
+  if (narg < 1)
+    error->all(FLERR, "Illegal run_style command");
   delete[] integrate_style;
   delete integrate;
   if (narg - 1 > 0) {
@@ -102,8 +102,7 @@ void Update::create_integrate(int narg, char **arg, int trysuffix)
   std::string estyle = arg[0];
   integrate_style = utils::strdup(estyle);
 }
-void Update::new_integrate(char *style, int narg, char **arg)
-{
+void Update::new_integrate(char *style, int narg, char **arg) {
   if (integrate_map->find(style) != integrate_map->end()) {
     IntegrateCreator &integrate_creator = (*integrate_map)[style];
     integrate = integrate_creator(lmp, narg, arg);
@@ -111,9 +110,7 @@ void Update::new_integrate(char *style, int narg, char **arg)
   }
   error->all(FLERR, "Illegal integrate style");
 }
-void Update::update_time()
-{
+void Update::update_time() {
   atime += (ntimestep - atimestep) * dt;
   atimestep = ntimestep;
 }
-

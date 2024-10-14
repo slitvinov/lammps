@@ -7,7 +7,7 @@
 #include <mpi.h>
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 
+#define WIN32_LEAN_AND_MEAN
 #endif
 #if defined(_WIN32_WINNT)
 #undef _WIN32_WINNT
@@ -48,16 +48,17 @@ static const std::vector<compress_info> compress_styles = {
     {"bz2", "bzip2", " > ", " -cdf ", compress_info::BZIP2},
     {"zst", "zstd", " -q > ", " -cdf ", compress_info::ZSTD},
     {"xz", "xz", " > ", " -cdf ", compress_info::XZ},
-    {"lzma", "xz", " --format=lzma > ", " --format=lzma -cdf ", compress_info::LZMA},
+    {"lzma", "xz", " --format=lzma > ", " --format=lzma -cdf ",
+     compress_info::LZMA},
     {"lz4", "lz4", " > ", " -cdf ", compress_info::LZ4},
 };
-static const compress_info &find_compress_type(const std::string &file)
-{
+static const compress_info &find_compress_type(const std::string &file) {
   std::size_t dot = file.find_last_of('.');
   if (dot != std::string::npos) {
     const std::string ext = file.substr(dot + 1);
     for (const auto &i : compress_styles) {
-      if (i.extension == ext) return i;
+      if (i.extension == ext)
+        return i;
     }
   }
   return compress_styles[0];
@@ -67,10 +68,10 @@ using namespace LAMMPS_NS;
 #if defined(__clang__)
 [[clang::optnone]]
 #elif defined(_MSC_VER)
-#pragma optimize("",off)
+#pragma optimize("", off)
 #endif
-double platform::cputime()
-{
+double
+platform::cputime() {
   double rv = 0.0;
 #ifdef _WIN32
   FILETIME ct, et, kt, ut;
@@ -85,8 +86,8 @@ double platform::cputime()
 #else
   struct rusage ru;
   if (getrusage(RUSAGE_SELF, &ru) == 0) {
-    rv = (double) ru.ru_utime.tv_sec;
-    rv += (double) ru.ru_utime.tv_usec * 0.000001;
+    rv = (double)ru.ru_utime.tv_sec;
+    rv += (double)ru.ru_utime.tv_usec * 0.000001;
   }
 #endif
   return rv;
@@ -95,16 +96,15 @@ double platform::cputime()
 #elif defined(_MSC_VER)
 #pragma optimize("", on)
 #endif
-double platform::walltime()
-{
-  return std::chrono::duration<double>(std::chrono::steady_clock::now() - initial_time).count();
+double platform::walltime() {
+  return std::chrono::duration<double>(std::chrono::steady_clock::now() -
+                                       initial_time)
+      .count();
 }
-void platform::usleep(int usec)
-{
+void platform::usleep(int usec) {
   return std::this_thread::sleep_for(std::chrono::microseconds(usec));
 }
-std::string platform::os_info()
-{
+std::string platform::os_info() {
   std::string buf;
 #if defined(_WIN32)
   char value[1024];
@@ -112,7 +112,7 @@ std::string platform::os_info()
   const char *subkey = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
   const char *entry = "CurrentBuild";
   RegGetValue(HKEY_LOCAL_MACHINE, subkey, entry, RRF_RT_REG_SZ, nullptr, &value,
-              (LPDWORD) &value_length);
+              (LPDWORD)&value_length);
   value[1023] = '\0';
   auto build = std::string(value);
   if (build == "6002") {
@@ -161,35 +161,36 @@ std::string platform::os_info()
     buf = "Windows 11 22H2";
   } else {
     const char *entry = "ProductName";
-    RegGetValue(HKEY_LOCAL_MACHINE, subkey, entry, RRF_RT_REG_SZ, nullptr, &value,
-                (LPDWORD) &value_length);
+    RegGetValue(HKEY_LOCAL_MACHINE, subkey, entry, RRF_RT_REG_SZ, nullptr,
+                &value, (LPDWORD)&value_length);
     value[1023] = '\0';
     buf = value;
   }
   DWORD fullversion, majorv, minorv, buildv = 0;
   fullversion = GetVersion();
-  majorv = (DWORD) (LOBYTE(LOWORD(fullversion)));
-  minorv = (DWORD) (HIBYTE(LOWORD(fullversion)));
-  if (fullversion < 0x80000000) buildv = (DWORD) (HIWORD(fullversion));
-  buf += ", Windows ABI " + std::to_string(majorv) + "." + std::to_string(minorv) + " (" +
-      std::to_string(buildv) + ") on ";
+  majorv = (DWORD)(LOBYTE(LOWORD(fullversion)));
+  minorv = (DWORD)(HIBYTE(LOWORD(fullversion)));
+  if (fullversion < 0x80000000)
+    buildv = (DWORD)(HIWORD(fullversion));
+  buf += ", Windows ABI " + std::to_string(majorv) + "." +
+         std::to_string(minorv) + " (" + std::to_string(buildv) + ") on ";
   SYSTEM_INFO si;
   GetSystemInfo(&si);
   switch (si.wProcessorArchitecture) {
-    case PROCESSOR_ARCHITECTURE_AMD64:
-      buf += "x86_64";
-      break;
-    case PROCESSOR_ARCHITECTURE_ARM:
-      buf += "arm";
-      break;
-    case PROCESSOR_ARCHITECTURE_IA64:
-      buf += "ia64";
-      break;
-    case PROCESSOR_ARCHITECTURE_INTEL:
-      buf += "i386";
-      break;
-    default:
-      buf += "(unknown)";
+  case PROCESSOR_ARCHITECTURE_AMD64:
+    buf += "x86_64";
+    break;
+  case PROCESSOR_ARCHITECTURE_ARM:
+    buf += "arm";
+    break;
+  case PROCESSOR_ARCHITECTURE_IA64:
+    buf += "ia64";
+    break;
+  case PROCESSOR_ARCHITECTURE_INTEL:
+    buf += "i386";
+    break;
+  default:
+    buf += "(unknown)";
   }
 #else
   struct utsname ut;
@@ -213,8 +214,7 @@ std::string platform::os_info()
 #endif
   return buf;
 }
-std::string platform::cxx_standard()
-{
+std::string platform::cxx_standard() {
 #if __cplusplus > 202002L
   return "newer than C++20";
 #elif __cplusplus == 202002L
@@ -231,15 +231,14 @@ std::string platform::cxx_standard()
   return "unknown";
 #endif
 }
-std::string platform::compiler_info()
-{
+std::string platform::compiler_info() {
   std::string buf = "(Unknown)";
 #if defined(__INTEL_LLVM_COMPILER)
   double version = static_cast<double>(__INTEL_LLVM_COMPILER) * 0.01;
   buf = fmt::format("Intel LLVM C++ {:.1f} / {}", version, __VERSION__);
 #elif defined(__ibmxl__)
-  buf = fmt::format("IBM XL C/C++ (Clang) {}.{}.{}", __ibmxl_version__, __ibmxl_release__,
-                    __ibmxl_modification__);
+  buf = fmt::format("IBM XL C/C++ (Clang) {}.{}.{}", __ibmxl_version__,
+                    __ibmxl_release__, __ibmxl_modification__);
 #elif defined(__clang__)
   buf = fmt::format("Clang C++ {}", __VERSION__);
 #elif defined(__PGI)
@@ -249,35 +248,36 @@ std::string platform::compiler_info()
 #define __VERSION__ __INTEL_COMPILER_BUILD_DATE
 #endif
   double version = static_cast<double>(__INTEL_COMPILER) * 0.01;
-  buf = fmt::format("Intel Classic C++ {:.2f}.{} / {}", version, __INTEL_COMPILER_UPDATE,
-                    __VERSION__);
+  buf = fmt::format("Intel Classic C++ {:.2f}.{} / {}", version,
+                    __INTEL_COMPILER_UPDATE, __VERSION__);
 #elif defined(__MINGW64__)
-  buf = fmt::format("MinGW-w64 64bit {}.{} / GNU C++ {}", __MINGW64_VERSION_MAJOR,
-                    __MINGW64_VERSION_MINOR, __VERSION__);
+  buf =
+      fmt::format("MinGW-w64 64bit {}.{} / GNU C++ {}", __MINGW64_VERSION_MAJOR,
+                  __MINGW64_VERSION_MINOR, __VERSION__);
 #elif defined(__MINGW32__)
-  buf = fmt::format("MinGW-w64 32bit {}.{} / GNU C++ {}", __MINGW32_MAJOR_VERSION,
-                    __MINGW32_MINOR_VERSION, __VERSION__);
+  buf =
+      fmt::format("MinGW-w64 32bit {}.{} / GNU C++ {}", __MINGW32_MAJOR_VERSION,
+                  __MINGW32_MINOR_VERSION, __VERSION__);
 #elif defined(__GNUC__)
   buf = fmt::format("GNU C++ {}", __VERSION__);
 #elif defined(_MSC_VER) && (_MSC_VER >= 1920) && (_MSC_VER < 1930)
   constexpr int major = _MSC_VER / 100;
   constexpr int minor = _MSC_VER - major * 100;
   constexpr int patch = minor - 20;
-  buf = fmt::format("Microsoft Visual Studio 2019 Version 16.{}, C/C++ {}.{}", patch, major - 5,
-                    minor);
+  buf = fmt::format("Microsoft Visual Studio 2019 Version 16.{}, C/C++ {}.{}",
+                    patch, major - 5, minor);
 #elif defined(_MSC_VER) && (_MSC_VER >= 1930) && (_MSC_VER < 2000)
   constexpr int major = _MSC_VER / 100;
   constexpr int minor = _MSC_VER - major * 100;
   constexpr int patch = minor - 30;
-  buf = fmt::format("Microsoft Visual Studio 2022 Version 17.{}, C/C++ {}.{}", patch, major - 5,
-                    minor);
+  buf = fmt::format("Microsoft Visual Studio 2022 Version 17.{}, C/C++ {}.{}",
+                    patch, major - 5, minor);
 #else
   buf = "(Unknown)";
 #endif
   return buf;
 }
-std::string platform::openmp_standard()
-{
+std::string platform::openmp_standard() {
 #if !defined(_OPENMP)
   return "OpenMP not enabled";
 #else
@@ -306,8 +306,7 @@ std::string platform::openmp_standard()
 #endif
 #endif
 }
-std::string platform::mpi_vendor()
-{
+std::string platform::mpi_vendor() {
 #if defined(MPI_STUBS)
   return "MPI STUBS";
 #elif defined(OPEN_MPI)
@@ -325,24 +324,25 @@ std::string platform::mpi_vendor()
   DWORD value_length = 1024;
   const char *subkey = "SOFTWARE\\Microsoft\\MPI";
   const char *entry = "Version";
-  auto rv = RegGetValueA(HKEY_LOCAL_MACHINE, subkey, entry, RRF_RT_REG_SZ, nullptr, &value,
-                         (LPDWORD) &value_length);
+  auto rv = RegGetValueA(HKEY_LOCAL_MACHINE, subkey, entry, RRF_RT_REG_SZ,
+                         nullptr, &value, (LPDWORD)&value_length);
   std::string buf = "Microsoft MPI";
-  if (rv == ERROR_SUCCESS) buf += std::string(" v") + value;
+  if (rv == ERROR_SUCCESS)
+    buf += std::string(" v") + value;
   return buf;
 #else
   return "Unknown MPI implementation";
 #endif
 }
-std::string platform::mpi_info(int &major, int &minor)
-{
+std::string platform::mpi_info(int &major, int &minor) {
 #if (defined(MPI_VERSION) && (MPI_VERSION > 2)) || defined(MPI_STUBS)
   int len = 0;
   static char version[MPI_MAX_LIBRARY_VERSION_STRING];
   MPI_Get_library_version(version, &len);
   if (len > 80) {
     char *ptr = strchr(version + 80, '\n');
-    if (ptr) *ptr = '\0';
+    if (ptr)
+      *ptr = '\0';
   }
 #else
   constexpr int MAX_VERSION_STRING = 32;
@@ -357,53 +357,58 @@ std::string platform::mpi_info(int &major, int &minor)
 #endif
   return {version};
 }
-std::string platform::compress_info()
-{
+std::string platform::compress_info() {
   std::string buf = "Available compression formats:\n\n";
   bool none_found = true;
   for (const auto &cmpi : compress_styles) {
-    if (cmpi.style == ::compress_info::NONE) continue;
+    if (cmpi.style == ::compress_info::NONE)
+      continue;
     if (find_exe_path(cmpi.command).size()) {
       none_found = false;
-      buf += fmt::format("Extension: .{:6} Command: {}\n", cmpi.extension, cmpi.command);
+      buf += fmt::format("Extension: .{:6} Command: {}\n", cmpi.extension,
+                         cmpi.command);
     }
   }
-  if (none_found) buf += "None\n";
+  if (none_found)
+    buf += "None\n";
   return buf;
 }
-int platform::putenv(const std::string &vardef)
-{
-  if (vardef.size() == 0) return -1;
+int platform::putenv(const std::string &vardef) {
+  if (vardef.size() == 0)
+    return -1;
   auto found = vardef.find_first_of('=');
 #ifdef _WIN32
   if (found == std::string::npos)
     return _putenv_s(vardef.c_str(), "1");
   else
-    return _putenv_s(vardef.substr(0, found).c_str(), vardef.substr(found + 1).c_str());
+    return _putenv_s(vardef.substr(0, found).c_str(),
+                     vardef.substr(found + 1).c_str());
 #else
   if (found == std::string::npos)
     return setenv(vardef.c_str(), "", 1);
   else
-    return setenv(vardef.substr(0, found).c_str(), vardef.substr(found + 1).c_str(), 1);
+    return setenv(vardef.substr(0, found).c_str(),
+                  vardef.substr(found + 1).c_str(), 1);
 #endif
   return -1;
 }
-int platform::unsetenv(const std::string &variable)
-{
-  if (variable.size() == 0) return -1;
+int platform::unsetenv(const std::string &variable) {
+  if (variable.size() == 0)
+    return -1;
 #ifdef _WIN32
   const char *ptr = getenv(variable.c_str());
-  if (!ptr) return -1;
+  if (!ptr)
+    return -1;
   return _putenv_s(variable.c_str(), "");
 #else
   return ::unsetenv(variable.c_str());
 #endif
 }
-std::vector<std::string> platform::list_pathenv(const std::string &var)
-{
+std::vector<std::string> platform::list_pathenv(const std::string &var) {
   std::vector<std::string> dirs;
   const char *ptr = getenv(var.c_str());
-  if (ptr == nullptr) return dirs;
+  if (ptr == nullptr)
+    return dirs;
   std::string pathvar = ptr;
   std::size_t first = 0, next;
   while (true) {
@@ -418,9 +423,9 @@ std::vector<std::string> platform::list_pathenv(const std::string &var)
   }
   return dirs;
 }
-std::string platform::find_exe_path(const std::string &cmd)
-{
-  if (cmd.size() == 0) return "";
+std::string platform::find_exe_path(const std::string &cmd) {
+  if (cmd.size() == 0)
+    return "";
   auto pathdirs = list_pathenv("PATH");
 #ifdef _WIN32
   pathdirs.insert(pathdirs.begin(), ".");
@@ -433,63 +438,55 @@ std::string platform::find_exe_path(const std::string &cmd)
     const char *extensions[] = {".exe", ".com", ".bat", nullptr};
     for (auto ext = extensions; *ext != nullptr; ++ext) {
       auto exe_path = exe + *ext;
-      if (file_is_readable(exe_path)) return exe_path;
+      if (file_is_readable(exe_path))
+        return exe_path;
     }
 #else
     memset(&info, 0, sizeof(info));
-    if (stat(exe.c_str(), &info) != 0) continue;
-    if ((info.st_mode & (S_IXOTH | S_IXGRP | S_IXUSR)) != 0) return exe;
+    if (stat(exe.c_str(), &info) != 0)
+      continue;
+    if ((info.st_mode & (S_IXOTH | S_IXGRP | S_IXUSR)) != 0)
+      return exe;
 #endif
   }
   return "";
 }
 #ifdef _WIN32
-void *platform::dlopen(const std::string &fname)
-{
-  return (void *) LoadLibrary(fname.c_str());
+void *platform::dlopen(const std::string &fname) {
+  return (void *)LoadLibrary(fname.c_str());
 }
-std::string platform::dlerror()
-{
-  return "";
+std::string platform::dlerror() { return ""; }
+int platform::dlclose(void *handle) {
+  return (FreeLibrary((HINSTANCE)handle) == 0);
 }
-int platform::dlclose(void *handle)
-{
-  return (FreeLibrary((HINSTANCE) handle) == 0);
-}
-void *platform::dlsym(void *handle, const std::string &symbol)
-{
-  return (void *) GetProcAddress((HINSTANCE) handle, symbol.c_str());
+void *platform::dlsym(void *handle, const std::string &symbol) {
+  return (void *)GetProcAddress((HINSTANCE)handle, symbol.c_str());
 }
 #else
-void *platform::dlopen(const std::string &fname)
-{
+void *platform::dlopen(const std::string &fname) {
   return ::dlopen(fname.c_str(), RTLD_NOW | RTLD_GLOBAL);
 }
-std::string platform::dlerror()
-{
+std::string platform::dlerror() {
   const char *errmesg = ::dlerror();
   if (errmesg)
     return {errmesg};
   else
     return {""};
 }
-int platform::dlclose(void *handle)
-{
-  return ::dlclose(handle);
-}
-void *platform::dlsym(void *handle, const std::string &symbol)
-{
+int platform::dlclose(void *handle) { return ::dlclose(handle); }
+void *platform::dlsym(void *handle, const std::string &symbol) {
   return ::dlsym(handle, symbol.c_str());
 }
 #endif
-const char *platform::guesspath(FILE *fp, char *buf, int len)
-{
-  if ((buf == nullptr) || (len < 16)) return nullptr;
+const char *platform::guesspath(FILE *fp, char *buf, int len) {
+  if ((buf == nullptr) || (len < 16))
+    return nullptr;
   memset(buf, 0, len);
   len--;
 #if defined(__linux__)
   int fd = fileno(fp);
-  if (readlink((std::string("/proc/self/fd/") + std::to_string(fd)).c_str(), buf, len) <= 0)
+  if (readlink((std::string("/proc/self/fd/") + std::to_string(fd)).c_str(),
+               buf, len) <= 0)
     strncpy(buf, "(unknown)", len);
 #elif defined(__APPLE__)
   int fd = fileno(fp);
@@ -500,8 +497,9 @@ const char *platform::guesspath(FILE *fp, char *buf, int len)
     strncpy(buf, "(unknown)", len);
 #elif defined(_WIN32)
   char filepath[MAX_PATH];
-  HANDLE h = (HANDLE) _get_osfhandle(_fileno(fp));
-  if (GetFinalPathNameByHandleA(h, filepath, MAX_PATH, FILE_NAME_NORMALIZED) > 0)
+  HANDLE h = (HANDLE)_get_osfhandle(_fileno(fp));
+  if (GetFinalPathNameByHandleA(h, filepath, MAX_PATH, FILE_NAME_NORMALIZED) >
+      0)
     strncpy(buf, filepath, len);
   else
     strncpy(buf, "(unknown)", len);
@@ -510,82 +508,88 @@ const char *platform::guesspath(FILE *fp, char *buf, int len)
 #endif
   return buf;
 }
-bool platform::is_console(FILE *fp)
-{
-  if (!fp) return false;
+bool platform::is_console(FILE *fp) {
+  if (!fp)
+    return false;
 #if defined(_WIN32)
   return (_isatty(_fileno(fp)) == 1);
 #else
   return (isatty(fileno(fp)) == 1);
 #endif
 }
-std::string platform::current_directory()
-{
+std::string platform::current_directory() {
   std::string cwd;
 #if defined(_WIN32)
   char *buf = new char[MAX_PATH];
-  if (_getcwd(buf, MAX_PATH)) { cwd = buf; }
+  if (_getcwd(buf, MAX_PATH)) {
+    cwd = buf;
+  }
   delete[] buf;
 #else
   auto buf = new char[PATH_MAX];
-  if (::getcwd(buf, PATH_MAX)) { cwd = buf; }
+  if (::getcwd(buf, PATH_MAX)) {
+    cwd = buf;
+  }
   delete[] buf;
 #endif
   return cwd;
 }
-bool platform::path_is_directory(const std::string &path)
-{
+bool platform::path_is_directory(const std::string &path) {
 #if defined(_WIN32)
   struct _stat info;
   memset(&info, 0, sizeof(info));
-  if (_stat(path.c_str(), &info) != 0) return false;
+  if (_stat(path.c_str(), &info) != 0)
+    return false;
 #else
   struct stat info;
   memset(&info, 0, sizeof(info));
-  if (stat(path.c_str(), &info) != 0) return false;
+  if (stat(path.c_str(), &info) != 0)
+    return false;
 #endif
   return ((info.st_mode & S_IFDIR) != 0);
 }
-std::vector<std::string> platform::list_directory(const std::string &dir)
-{
+std::vector<std::string> platform::list_directory(const std::string &dir) {
   std::vector<std::string> files;
-  if (!path_is_directory(dir)) return files;
+  if (!path_is_directory(dir))
+    return files;
 #if defined(_WIN32)
   HANDLE handle;
   WIN32_FIND_DATA fd;
   std::string searchname = dir + filepathsep[0] + "*";
   handle = FindFirstFile(searchname.c_str(), &fd);
-  if (handle == ((HANDLE) -1)) return files;
+  if (handle == ((HANDLE)-1))
+    return files;
   while (FindNextFile(handle, &fd)) {
     std::string entry(fd.cFileName);
-    if ((entry == "..") || (entry == ".")) continue;
+    if ((entry == "..") || (entry == "."))
+      continue;
     files.push_back(entry);
   }
   FindClose(handle);
 #else
   std::string dirname = dir + filepathsep[0];
   DIR *handle = opendir(dirname.c_str());
-  if (handle == nullptr) return files;
+  if (handle == nullptr)
+    return files;
   struct dirent *fd;
   while ((fd = readdir(handle)) != nullptr) {
     std::string entry(fd->d_name);
-    if ((entry == "..") || (entry == ".")) continue;
+    if ((entry == "..") || (entry == "."))
+      continue;
     files.push_back(entry);
   }
   closedir(handle);
 #endif
   return files;
 }
-int platform::chdir(const std::string &path)
-{
+int platform::chdir(const std::string &path) {
 #if defined(_WIN32)
   return ::_chdir(path.c_str());
 #else
   return ::chdir(path.c_str());
 #endif
 }
-int platform::mkdir(const std::string &path)
-{
+int platform::mkdir(const std::string &path) {
   std::deque<std::string> dirlist = {path};
   std::string dirname = path_dirname(path);
   while ((dirname != ".") && (dirname != "")) {
@@ -600,13 +604,13 @@ int platform::mkdir(const std::string &path)
 #else
       rv = ::mkdir(dir.c_str(), S_IRWXU | S_IRGRP | S_IXGRP);
 #endif
-      if (rv != 0) return rv;
+      if (rv != 0)
+        return rv;
     }
   }
   return 0;
 }
-int platform::rmdir(const std::string &path)
-{
+int platform::rmdir(const std::string &path) {
   auto entries = list_directory(path);
   for (const auto &entry : entries) {
     const auto newpath = path_join(path, entry);
@@ -621,43 +625,39 @@ int platform::rmdir(const std::string &path)
   return ::rmdir(path.c_str());
 #endif
 }
-int platform::unlink(const std::string &path)
-{
+int platform::unlink(const std::string &path) {
 #if defined(_WIN32)
   return ::_unlink(path.c_str());
 #else
   return ::unlink(path.c_str());
 #endif
 }
-bigint platform::ftell(FILE *fp)
-{
+bigint platform::ftell(FILE *fp) {
 #if defined(_WIN32)
   return (bigint)::_ftelli64(fp);
 #else
   return (bigint)::ftell(fp);
 #endif
 }
-int platform::fseek(FILE *fp, bigint pos)
-{
+int platform::fseek(FILE *fp, bigint pos) {
 #if defined(_WIN32)
   if (pos == platform::END_OF_FILE)
     return ::_fseeki64(fp, 0, SEEK_END);
   else
-    return ::_fseeki64(fp, (__int64) pos, SEEK_SET);
+    return ::_fseeki64(fp, (__int64)pos, SEEK_SET);
 #else
   if (pos == platform::END_OF_FILE)
     return ::fseek(fp, 0, SEEK_END);
   else
-    return ::fseek(fp, (long) pos, SEEK_SET);
+    return ::fseek(fp, (long)pos, SEEK_SET);
 #endif
 }
-int platform::ftruncate(FILE *fp, bigint length)
-{
+int platform::ftruncate(FILE *fp, bigint length) {
 #if defined(_WIN32)
-  HANDLE h = (HANDLE) _get_osfhandle(_fileno(fp));
+  HANDLE h = (HANDLE)_get_osfhandle(_fileno(fp));
   LARGE_INTEGER li_start, li_length;
-  li_start.QuadPart = (int64_t) 0;
-  li_length.QuadPart = (int64_t) length;
+  li_start.QuadPart = (int64_t)0;
+  li_length.QuadPart = (int64_t)length;
   if (SetFilePointerEx(h, li_start, NULL, FILE_CURRENT) &&
       SetFilePointerEx(h, li_length, NULL, FILE_BEGIN) && SetEndOfFile(h)) {
     return 0;
@@ -666,11 +666,10 @@ int platform::ftruncate(FILE *fp, bigint length)
   }
 #else
   platform::fseek(fp, length);
-  return ::ftruncate(fileno(fp), (off_t) length);
+  return ::ftruncate(fileno(fp), (off_t)length);
 #endif
 }
-FILE *platform::popen(const std::string &cmd, const std::string &mode)
-{
+FILE *platform::popen(const std::string &cmd, const std::string &mode) {
   FILE *fp = nullptr;
 #if defined(_WIN32)
   if (mode == "r")
@@ -685,16 +684,14 @@ FILE *platform::popen(const std::string &cmd, const std::string &mode)
 #endif
   return fp;
 }
-int platform::pclose(FILE *fp)
-{
+int platform::pclose(FILE *fp) {
 #if defined(_WIN32)
   return ::_pclose(fp);
 #else
   return ::pclose(fp);
 #endif
 }
-std::string platform::path_basename(const std::string &path)
-{
+std::string platform::path_basename(const std::string &path) {
   size_t start = path.find_last_of(platform::filepathsep);
   if (start == std::string::npos) {
     start = 0;
@@ -703,28 +700,30 @@ std::string platform::path_basename(const std::string &path)
   }
   return path.substr(start);
 }
-std::string platform::path_dirname(const std::string &path)
-{
+std::string platform::path_dirname(const std::string &path) {
   size_t start = path.find_last_of(platform::filepathsep);
-  if (start == std::string::npos) return ".";
+  if (start == std::string::npos)
+    return ".";
   return path.substr(0, start);
 }
-std::string platform::path_join(const std::string &a, const std::string &b)
-{
-  if (a.empty()) return b;
-  if (b.empty()) return a;
+std::string platform::path_join(const std::string &a, const std::string &b) {
+  if (a.empty())
+    return b;
+  if (b.empty())
+    return a;
   std::string joined = a;
   while (joined.find_last_of(platform::filepathsep) == joined.size() - 1) {
     for (const auto &s : platform::filepathsep)
-      if (joined.back() == s) joined.pop_back();
+      if (joined.back() == s)
+        joined.pop_back();
   }
   std::size_t skip = 0;
-  while (b.find_first_of(platform::filepathsep, skip) == skip) ++skip;
+  while (b.find_first_of(platform::filepathsep, skip) == skip)
+    ++skip;
   joined += platform::filepathsep[0] + b.substr(skip);
   return joined;
 }
-bool platform::file_is_readable(const std::string &path)
-{
+bool platform::file_is_readable(const std::string &path) {
   FILE *fp = fopen(path.c_str(), "r");
   if (fp) {
     fclose(fp);
@@ -732,29 +731,31 @@ bool platform::file_is_readable(const std::string &path)
   }
   return false;
 }
-bool platform::has_compress_extension(const std::string &file)
-{
+bool platform::has_compress_extension(const std::string &file) {
   return find_compress_type(file).style != ::compress_info::NONE;
 }
-FILE *platform::compressed_read(const std::string &file)
-{
+FILE *platform::compressed_read(const std::string &file) {
   FILE *fp = nullptr;
 #if defined(LAMMPS_GZIP)
   auto compress = find_compress_type(file);
-  if (compress.style == ::compress_info::NONE) return nullptr;
+  if (compress.style == ::compress_info::NONE)
+    return nullptr;
   if (find_exe_path(compress.command).size())
-    fp = popen((compress.command + compress.uncompressflags + "\"" + file + "\""), "r");
+    fp = popen(
+        (compress.command + compress.uncompressflags + "\"" + file + "\""),
+        "r");
 #endif
   return fp;
 }
-FILE *platform::compressed_write(const std::string &file)
-{
+FILE *platform::compressed_write(const std::string &file) {
   FILE *fp = nullptr;
 #if defined(LAMMPS_GZIP)
   auto compress = find_compress_type(file);
-  if (compress.style == ::compress_info::NONE) return nullptr;
+  if (compress.style == ::compress_info::NONE)
+    return nullptr;
   if (find_exe_path(compress.command).size())
-    fp = popen((compress.command + compress.compressflags + "\"" + file + "\""), "w");
+    fp = popen((compress.command + compress.compressflags + "\"" + file + "\""),
+               "w");
 #endif
   return fp;
 }

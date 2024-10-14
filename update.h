@@ -1,10 +1,10 @@
 #ifndef LMP_UPDATE_H
-#define LMP_UPDATE_H 
+#define LMP_UPDATE_H
 #include "pointers.h"
 #include <map>
 namespace LAMMPS_NS {
 class Update : protected Pointers {
- public:
+public:
   double dt;
   double etol, ftol;
   bigint ntimestep;
@@ -34,8 +34,9 @@ class Update : protected Pointers {
   void set_units(const char *);
   void create_integrate(int, char **, int);
   void update_time();
- private:
+
+private:
   void new_integrate(char *, int, char **);
 };
-}
+} // namespace LAMMPS_NS
 #endif

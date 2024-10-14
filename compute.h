@@ -1,18 +1,19 @@
 #ifndef LMP_COMPUTE_H
-#define LMP_COMPUTE_H 
+#define LMP_COMPUTE_H
 #include "pointers.h"
 namespace LAMMPS_NS {
 class Compute : protected Pointers {
   friend class Neighbor;
- public:
+
+public:
   enum {
     INVOKED_NONE = 0,
-    INVOKED_SCALAR = 1<<0,
-    INVOKED_VECTOR = 1<<1,
-    INVOKED_ARRAY = 1<<2,
-    INVOKED_PERATOM = 1<<3,
-    INVOKED_LOCAL = 1<<4,
-    INVOKED_PERGRID = 1<<5,
+    INVOKED_SCALAR = 1 << 0,
+    INVOKED_VECTOR = 1 << 1,
+    INVOKED_ARRAY = 1 << 2,
+    INVOKED_PERATOM = 1 << 3,
+    INVOKED_LOCAL = 1 << 4,
+    INVOKED_PERGRID = 1 << 5,
   };
   static int instance_total;
   char *id, *style;
@@ -88,7 +89,9 @@ class Compute : protected Pointers {
   virtual void reset_grid(){};
   virtual int get_grid_by_name(const std::string &, int &) { return -1; };
   virtual void *get_grid_by_index(int) { return nullptr; };
-  virtual int get_griddata_by_name(int, const std::string &, int &) { return -1; };
+  virtual int get_griddata_by_name(int, const std::string &, int &) {
+    return -1;
+  };
   virtual void *get_griddata_by_index(int) { return nullptr; };
   virtual void dof_remove_pre() {}
   virtual int dof_remove(int) { return 0; }
@@ -110,11 +113,10 @@ class Compute : protected Pointers {
   int matchstep(bigint);
   void clearstep();
   virtual void pair_setup_callback(int, int) {}
-  virtual void pair_tally_callback(int, int, int, int, double, double, double, double, double,
-                                   double)
-  {
-  }
- protected:
+  virtual void pair_tally_callback(int, int, int, int, double, double, double,
+                                   double, double, double) {}
+
+protected:
   int instance_me;
   double natoms_temp;
   double extra_dof;
@@ -127,5 +129,5 @@ class Compute : protected Pointers {
   inline int sbmask(int j) const { return j >> SBBITS & 3; }
   void adjust_dof_fix();
 };
-}
+} // namespace LAMMPS_NS
 #endif

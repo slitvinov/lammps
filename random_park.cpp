@@ -7,22 +7,21 @@ using namespace LAMMPS_NS;
 #define AM (1.0 / IM)
 #define IQ 127773
 #define IR 2836
-RanPark::RanPark(LAMMPS *lmp, int seed_init) : Pointers(lmp)
-{
-  if (seed_init <= 0) error->one(FLERR, "Invalid seed for Park random # generator");
+RanPark::RanPark(LAMMPS *lmp, int seed_init) : Pointers(lmp) {
+  if (seed_init <= 0)
+    error->one(FLERR, "Invalid seed for Park random # generator");
   seed = seed_init;
   save = 0;
 }
-double RanPark::uniform()
-{
+double RanPark::uniform() {
   int k = seed / IQ;
   seed = IA * (seed - k * IQ) - IR * k;
-  if (seed < 0) seed += IM;
+  if (seed < 0)
+    seed += IM;
   double ans = AM * seed;
   return ans;
 }
-double RanPark::gaussian()
-{
+double RanPark::gaussian() {
   double first, v1, v2, rsq, fac;
   if (!save) {
     do {
@@ -40,16 +39,15 @@ double RanPark::gaussian()
   }
   return first;
 }
-void RanPark::reset(int seed_init)
-{
-  if (seed_init <= 0) error->all(FLERR, "Invalid seed for Park random # generator");
+void RanPark::reset(int seed_init) {
+  if (seed_init <= 0)
+    error->all(FLERR, "Invalid seed for Park random # generator");
   seed = seed_init;
   save = 0;
 }
-void RanPark::reset(int ibase, double *coord)
-{
+void RanPark::reset(int ibase, double *coord) {
   int i;
-  auto str = (char *) &ibase;
+  auto str = (char *)&ibase;
   int n = sizeof(int);
   unsigned int hash = 0;
   for (i = 0; i < n; i++) {
@@ -57,7 +55,7 @@ void RanPark::reset(int ibase, double *coord)
     hash += (hash << 10);
     hash ^= (hash >> 6);
   }
-  str = (char *) coord;
+  str = (char *)coord;
   n = 3 * sizeof(double);
   for (i = 0; i < n; i++) {
     hash += str[i];
@@ -68,11 +66,10 @@ void RanPark::reset(int ibase, double *coord)
   hash ^= (hash >> 11);
   hash += (hash << 15);
   seed = hash & 0x7ffffff;
-  if (!seed) seed = 1;
-  for (i = 0; i < 5; i++) uniform();
+  if (!seed)
+    seed = 1;
+  for (i = 0; i < 5; i++)
+    uniform();
   save = 0;
 }
-int RanPark::state()
-{
-  return seed;
-}
+int RanPark::state() { return seed; }

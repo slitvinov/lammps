@@ -1,9 +1,9 @@
 #ifndef LMP_COMM_BRICK_H
-#define LMP_COMM_BRICK_H 
+#define LMP_COMM_BRICK_H
 #include "comm.h"
 namespace LAMMPS_NS {
 class CommBrick : public Comm {
- public:
+public:
   CommBrick(class LAMMPS *);
   CommBrick(class LAMMPS *, class Comm *);
   ~CommBrick() override;
@@ -22,7 +22,8 @@ class CommBrick : public Comm {
   int exchange_variable(int, double *, double *&) override;
   int exchange_variable_all2all(int, double *, double *&) override;
   void *extract(const char *, int &) override;
- protected:
+
+protected:
   int nswap;
   int recvneed[3][2];
   int sendneed[3][2];
@@ -61,5 +62,5 @@ class CommBrick : public Comm {
   virtual void free_multi();
   virtual void free_multiold();
 };
-}
+} // namespace LAMMPS_NS
 #endif
