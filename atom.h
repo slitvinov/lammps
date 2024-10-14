@@ -106,8 +106,6 @@ public:
   ~Atom() override;
   void peratom_create();
   void add_peratom(const std::string &, void *, int, int, int threadflag = 0);
-  void add_peratom_vary(const std::string &, void *, int, int *, void *,
-                        int collength = 0);
   void create_avec(const std::string &, int, char **, int);
   virtual AtomVec *new_avec(const std::string &);
   void init();

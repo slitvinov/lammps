@@ -190,12 +190,6 @@ void Atom::add_peratom(const std::string &name, void *address, int datatype,
                   datatype, cols,    0,       threadflag};
   peratom.push_back(item);
 }
-void Atom::add_peratom_vary(const std::string &name, void *address,
-                            int datatype, int *cols, void *length,
-                            int collength) {
-  PerAtom item = {name, address, length, cols, datatype, -1, collength, 0};
-  peratom.push_back(item);
-}
 void Atom::set_atomflag_defaults() {
   quat_flag = 0;
   peri_flag = electron_flag = 0;
