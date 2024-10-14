@@ -17,7 +17,6 @@ public:
   int *uni2orig;
   Universe(class LAMMPS *, MPI_Comm);
   ~Universe() override;
-  void reorder(char *, char *);
   void add_world(char *);
   int consistent();
 };
