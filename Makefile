@@ -36,7 +36,6 @@ lattice.o \
 main.o \
 math_eigen.o \
 math_extra.o \
-math_special.o \
 memory.o \
 modify.o \
 my_page.o \

@@ -7,7 +7,6 @@
 #include "error.h"
 #include "force.h"
 #include "math_const.h"
-#include "math_special.h"
 #include "memory.h"
 #include "neighbor.h"
 #include "update.h"
@@ -18,7 +17,6 @@
 using namespace LAMMPS_NS;
 using MathConst::MY_ISPI4;
 using MathConst::THIRD;
-using MathSpecial::powint;
 enum { NONE, RLINEAR, RSQ, BMP };
 static const std::string mixing_rule_names[Pair::SIXTHPOWER + 1] = {
     "geometric", "arithmetic", "sixthpower"};
@@ -157,29 +155,6 @@ void Pair::init() {
 }
 void Pair::init_style() { neighbor->add_request(this); }
 void Pair::init_list(int, NeighList *ptr) { list = ptr; }
-double Pair::mix_energy(double eps1, double eps2, double sig1, double sig2) {
-  did_mix = true;
-  if (mix_flag == GEOMETRIC)
-    return sqrt(eps1 * eps2);
-  else if (mix_flag == ARITHMETIC)
-    return sqrt(eps1 * eps2);
-  else if (mix_flag == SIXTHPOWER)
-    return (2.0 * sqrt(eps1 * eps2) * powint(sig1, 3) * powint(sig2, 3) /
-            (powint(sig1, 6) + powint(sig2, 6)));
-  else
-    did_mix = false;
-  return 0.0;
-}
-double Pair::mix_distance(double sig1, double sig2) {
-  if (mix_flag == GEOMETRIC)
-    return sqrt(sig1 * sig2);
-  else if (mix_flag == ARITHMETIC)
-    return (0.5 * (sig1 + sig2));
-  else if (mix_flag == SIXTHPOWER)
-    return pow((0.5 * (powint(sig1, 6) + powint(sig2, 6))), 1.0 / 6.0);
-  else
-    return 0.0;
-}
 void Pair::compute_dummy(int eflag, int vflag) { ev_init(eflag, vflag); }
 void Pair::add_tally_callback(Compute *ptr) {
   int i, found = -1;

@@ -83,8 +83,6 @@ public:
   ~Pair() override;
   void init();
   virtual void setup() {}
-  double mix_energy(double, double, double, double);
-  double mix_distance(double, double);
   void compute_dummy(int, int);
   void ev_tally(int, int, int, int, double, double, double, double, double,
                 double);
