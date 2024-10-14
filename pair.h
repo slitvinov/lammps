@@ -98,11 +98,6 @@ public:
   virtual void compute_inner() {}
   virtual void compute_middle() {}
   virtual void compute_outer(int, int) {}
-  virtual double single(int, int, int, int, double, double, double,
-                        double &fforce) {
-    fforce = 0.0;
-    return 0.0;
-  }
   virtual void born_matrix(int, int, int, int, double, double, double,
                            double &du, double &du2) {
     du = du2 = 0.0;

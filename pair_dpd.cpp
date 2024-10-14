@@ -185,17 +185,4 @@ double PairDPD::init_one(int i, int j) {
   sigma[j][i] = sigma[i][j];
   return cut[i][j];
 }
-double PairDPD::single(int, int, int itype, int jtype, double rsq, double,
-                       double factor_dpd, double &fforce) {
-  double r, rinv, wd, phi;
-  r = sqrt(rsq);
-  if (r < EPSILON) {
-    fforce = 0.0;
-    return 0.0;
-  }
-  rinv = 1.0 / r;
-  wd = 1.0 - r / cut[itype][jtype];
-  fforce = a0[itype][jtype] * wd * factor_dpd * rinv;
-  phi = 0.5 * a0[itype][jtype] * cut[itype][jtype] * wd * wd;
-  return factor_dpd * phi;
-}
+
