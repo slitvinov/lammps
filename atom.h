@@ -124,7 +124,6 @@ public:
   void set_mass(const char *, int, int, char **);
   void set_mass(double *);
   void check_mass(const char *, int);
-  int radius_consistency(int, double &);
   void first_reorder();
   virtual void sort();
   void add_callback(int);

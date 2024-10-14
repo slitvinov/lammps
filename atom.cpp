@@ -478,24 +478,6 @@ void Atom::check_mass(const char *file, int line) {
       error->all(file, line,
                  "Not all per-type masses are set. Type {} is missing.", itype);
 }
-int Atom::radius_consistency(int itype, double &rad) {
-  double value = -1.0;
-  int flag = 0;
-  for (int i = 0; i < nlocal; i++) {
-    if (type[i] != itype)
-      continue;
-    if (value < 0.0)
-      value = radius[i];
-    else if (value != radius[i])
-      flag = 1;
-  }
-  int flagall;
-  MPI_Allreduce(&flag, &flagall, 1, MPI_INT, MPI_SUM, world);
-  if (flagall)
-    return 0;
-  MPI_Allreduce(&value, &rad, 1, MPI_DOUBLE, MPI_MAX, world);
-  return 1;
-}
 void Atom::first_reorder() {
   if (nlocal == nmax)
     avec->grow(0);
