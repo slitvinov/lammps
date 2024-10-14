@@ -55,7 +55,6 @@ random_park.o \
 region_block.o \
 region.o \
 run.o \
-text_file_reader.o \
 tokenizer.o \
 universe.o \
 update.o \

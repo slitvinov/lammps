@@ -9,13 +9,6 @@ namespace platform {
 double cputime();
 double walltime();
 void usleep(int usec);
-std::string os_info();
-std::string cxx_standard();
-std::string compiler_info();
-std::string openmp_standard();
-std::string mpi_vendor();
-std::string mpi_info(int &major, int &minor);
-std::string compress_info();
 int putenv(const std::string &vardef);
 int unsetenv(const std::string &variable);
 std::vector<std::string> list_pathenv(const std::string &var);

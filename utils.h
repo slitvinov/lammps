@@ -74,24 +74,14 @@ size_t trim_and_count_words(const std::string &text,
 std::string join_words(const std::vector<std::string> &words,
                        const std::string &sep);
 std::vector<std::string> split_words(const std::string &text);
-std::vector<std::string> split_lines(const std::string &text);
 bool is_integer(const std::string &str);
 bool is_double(const std::string &str);
 bool is_id(const std::string &str);
 int is_type(const std::string &str);
-std::string get_potential_file_path(const std::string &path);
-std::string get_potential_date(const std::string &path,
-                               const std::string &potential_name);
-std::string get_potential_units(const std::string &path,
-                                const std::string &potential_name);
 enum { NOCONVERT = 0, METAL2REAL = 1, REAL2METAL = 1 << 1 };
 enum { UNKNOWN = 0, ENERGY };
 int get_supported_conversions(const int property);
 double get_conversion_factor(const int property, const int conversion);
-FILE *open_potential(const std::string &name, LAMMPS *lmp, int *auto_convert);
-double timespec2seconds(const std::string &timespec);
-int date2num(const std::string &date);
-std::string current_date();
 int binary_search(const double needle, const int n, const double *haystack);
 void merge_sort(int *index, int num, void *ptr, int (*comp)(int, int, void *));
 } // namespace utils

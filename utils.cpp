@@ -9,7 +9,6 @@
 #include "label_map.h"
 #include "memory.h"
 #include "modify.h"
-#include "text_file_reader.h"
 #include "universe.h"
 #include "update.h"
 #include <cctype>
@@ -615,9 +614,6 @@ std::vector<std::string> utils::split_words(const std::string &text) {
   }
   return list;
 }
-std::vector<std::string> utils::split_lines(const std::string &text) {
-  return Tokenizer(text, "\r\n").as_vector();
-}
 bool utils::is_integer(const std::string &str) {
   if (str.empty())
     return false;
@@ -665,51 +661,6 @@ int utils::is_type(const std::string &str) {
     return -1;
   return 1;
 }
-std::string utils::get_potential_file_path(const std::string &path) {
-  if (platform::file_is_readable(path)) {
-    return path;
-  } else {
-    for (const auto &dir : platform::list_pathenv("LAMMPS_POTENTIALS")) {
-      auto pot = platform::path_basename(path);
-      auto filepath = platform::path_join(dir, pot);
-      if (platform::file_is_readable(filepath))
-        return filepath;
-    }
-  }
-  return "";
-}
-std::string utils::get_potential_date(const std::string &path,
-                                      const std::string &potential_name) {
-  TextFileReader reader(path, potential_name);
-  reader.ignore_comments = false;
-  char *line = reader.next_line();
-  if (line == nullptr)
-    return "";
-  Tokenizer words(line);
-  while (words.has_next()) {
-    if (words.next() == "DATE:") {
-      if (words.has_next())
-        return words.next();
-    }
-  }
-  return "";
-}
-std::string utils::get_potential_units(const std::string &path,
-                                       const std::string &potential_name) {
-  TextFileReader reader(path, potential_name);
-  reader.ignore_comments = false;
-  char *line = reader.next_line();
-  if (line == nullptr)
-    return "";
-  Tokenizer words(line);
-  while (words.has_next()) {
-    if (words.next() == "UNITS:") {
-      if (words.has_next())
-        return words.next();
-    }
-  }
-  return "";
-}
 int utils::get_supported_conversions(const int property) {
   if (property == ENERGY)
     return METAL2REAL | REAL2METAL;
@@ -727,115 +678,6 @@ double utils::get_conversion_factor(const int property, const int conversion) {
     }
   }
   return 0.0;
-}
-FILE *utils::open_potential(const std::string &name, LAMMPS *lmp,
-                            int *auto_convert) {
-  auto error = lmp->error;
-  auto me = lmp->comm->me;
-  std::string filepath = get_potential_file_path(name);
-  if (!filepath.empty()) {
-    std::string unit_style = lmp->update->unit_style;
-    std::string date = get_potential_date(filepath, "potential");
-    std::string units = get_potential_units(filepath, "potential");
-    if (!date.empty() && (me == 0))
-      logmesg(lmp, "Reading potential file {} with DATE: {}\n", name, date);
-    if (auto_convert == nullptr) {
-      if (!units.empty() && (units != unit_style) && (me == 0)) {
-        error->one(
-            FLERR,
-            "Potential file {} requires {} units but {} units are in use", name,
-            units, unit_style);
-        return nullptr;
-      }
-    } else {
-      if (units.empty() || units == unit_style) {
-        *auto_convert = NOCONVERT;
-      } else {
-        if ((units == "metal") && (unit_style == "real") &&
-            (*auto_convert & METAL2REAL)) {
-          *auto_convert = METAL2REAL;
-        } else if ((units == "real") && (unit_style == "metal") &&
-                   (*auto_convert & REAL2METAL)) {
-          *auto_convert = REAL2METAL;
-        } else {
-          error->one(
-              FLERR,
-              "Potential file {} requires {} units but {} units are in use",
-              name, units, unit_style);
-          return nullptr;
-        }
-      }
-      if ((*auto_convert != NOCONVERT) && (me == 0))
-        error->warning(FLERR,
-                       "Converting potential file in {} units to {} units",
-                       units, unit_style);
-    }
-    return fopen(filepath.c_str(), "r");
-  }
-  return nullptr;
-}
-double utils::timespec2seconds(const std::string &timespec) {
-  double vals[3];
-  int i = 0;
-  if (timespec == "off")
-    return -1.0;
-  if (timespec == "unlimited")
-    return -1.0;
-  vals[0] = vals[1] = vals[2] = 0;
-  ValueTokenizer values(timespec, ":");
-  try {
-    for (i = 0; i < 3; i++) {
-      if (!values.has_next())
-        break;
-      vals[i] = values.next_int();
-    }
-  } catch (TokenizerException &) {
-    return -1.0;
-  }
-  if (i == 3)
-    return (vals[0] * 60 + vals[1]) * 60 + vals[2];
-  else if (i == 2)
-    return vals[0] * 60 + vals[1];
-  return vals[0];
-}
-int utils::date2num(const std::string &date) {
-  std::size_t found = date.find_first_not_of("0123456789 ");
-  int num = strtol(date.substr(0, found).c_str(), nullptr, 10);
-  auto month = date.substr(found);
-  found = month.find_first_of("0123456789 ");
-  num += strtol(month.substr(found).c_str(), nullptr, 10) * 10000;
-  if (num < 1000000)
-    num += 20000000;
-  if (strmatch(month, "^Jan"))
-    num += 100;
-  else if (strmatch(month, "^Feb"))
-    num += 200;
-  else if (strmatch(month, "^Mar"))
-    num += 300;
-  else if (strmatch(month, "^Apr"))
-    num += 400;
-  else if (strmatch(month, "^May"))
-    num += 500;
-  else if (strmatch(month, "^Jun"))
-    num += 600;
-  else if (strmatch(month, "^Jul"))
-    num += 700;
-  else if (strmatch(month, "^Aug"))
-    num += 800;
-  else if (strmatch(month, "^Sep"))
-    num += 900;
-  else if (strmatch(month, "^Oct"))
-    num += 1000;
-  else if (strmatch(month, "^Nov"))
-    num += 1100;
-  else if (strmatch(month, "^Dec"))
-    num += 1200;
-  return num;
-}
-std::string utils::current_date() {
-  time_t tv = time(nullptr);
-  std::tm today = fmt::localtime(tv);
-  return fmt::format("{:%Y-%m-%d}", today);
 }
 int utils::binary_search(const double needle, const int n,
                          const double *haystack) {
