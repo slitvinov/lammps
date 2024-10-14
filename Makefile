@@ -10,7 +10,6 @@ FLAGS = \
 -DOMPI_SKIP_MPICXX \
 
 S = \
-arg_info.o \
 atom_map.o \
 atom.o \
 atom_vec_atomic.o \

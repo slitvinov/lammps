@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "arg_info.h"
 #include "atom.h"
 #include "comm.h"
 #include "compute.h"
