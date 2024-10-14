@@ -54,7 +54,6 @@ public:
   void post_constructor(class NeighRequest *);
   void setup_pages(int, int);
   void grow(int, int);
-  void print_attributes();
   int get_maxlocal() { return maxatom; }
 };
 } // namespace LAMMPS_NS

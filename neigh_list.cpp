@@ -158,39 +158,4 @@ void NeighList::grow(int nlocal, int nall) {
                                                 "neighlist:firstneigh_middle");
   }
 }
-void NeighList::print_attributes() {
-  if (comm->me != 0)
-    return;
-  NeighRequest *rq = neighbor->requests[index];
-  printf("Neighbor list/request %d:\n", index);
-  printf("  %p = requestor ptr (instance %d id %d)\n", rq->requestor,
-         rq->requestor_instance, rq->id);
-  printf("  %d = pair\n", rq->pair);
-  printf("  %d = fix\n", rq->fix);
-  printf("  %d = compute\n", rq->compute);
-  printf("  %d = command\n", rq->command);
-  printf("  %d = neigh\n", rq->neigh);
-  printf("\n");
-  printf("  %d = half\n", rq->half);
-  printf("  %d = full\n", rq->full);
-  printf("\n");
-  printf("  %d = occasional\n", occasional);
-  printf("  %d = newton\n", rq->newton);
-  printf("  %d = ghost flag\n", ghost);
-  printf("  %d = size\n", rq->size);
-  printf("  %d = history\n", rq->history);
-  printf("  %d = granonesided\n", rq->granonesided);
-  printf("  %d = respaouter\n", rq->respaouter);
-  printf("  %d = respamiddle\n", rq->respamiddle);
-  printf("  %d = respainner\n", rq->respainner);
-  printf("  %d = bond\n", rq->bond);
-  printf("  %d = omp\n", rq->omp);
-  printf("  %d = ssa flag\n", ssa);
-  printf("\n");
-  printf("  %d = skip flag\n", rq->skip);
-  printf("  %d = off2on\n", rq->off2on);
-  printf("  %d = copy flag\n", rq->copy);
-  printf("  %d = trim flag\n", rq->trim);
-  printf("  %d = half/full\n", rq->halffull);
-  printf("\n");
-}
+
