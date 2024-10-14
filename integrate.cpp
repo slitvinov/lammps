@@ -42,21 +42,11 @@ void Integrate::ev_set(bigint ntimestep) {
   int tdflag = 0;
   flag = 0;
   int eflag_global = 0;
-  if (flag)
-    eflag_global = ENERGY_GLOBAL;
   flag = 0;
   int eflag_atom = 0;
-  if (flag || (tdflag && nelist_atom))
-    eflag_atom = ENERGY_ATOM;
-  if (eflag_global)
-    update->eflag_global = ntimestep;
-  if (eflag_atom)
-    update->eflag_atom = ntimestep;
   eflag = eflag_global + eflag_atom;
   flag = 0;
   int vflag_global = 0;
-  if (flag)
-    vflag_global = virial_style;
   flag = 0;
   int vflag_atom = 0;
   flag = 0;
