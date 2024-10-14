@@ -24,13 +24,9 @@ void *Memory::smalloc(bigint nbytes, const char *name) {
     return nullptr;
 #if defined(LAMMPS_MEMALIGN)
   void *ptr;
-#if defined(LMP_USE_TBB_ALLOCATOR)
-  ptr = scalable_aligned_malloc(nbytes, LAMMPS_MEMALIGN);
-#else
   int retval = posix_memalign(&ptr, LAMMPS_MEMALIGN, nbytes);
   if (retval)
     ptr = nullptr;
-#endif
 #else
   void *ptr = malloc(nbytes);
 #endif
@@ -43,9 +39,7 @@ void *Memory::srealloc(void *ptr, bigint nbytes, const char *name) {
     destroy(ptr);
     return nullptr;
   }
-#if defined(LMP_USE_TBB_ALLOCATOR)
-  ptr = scalable_aligned_realloc(ptr, nbytes, LAMMPS_MEMALIGN);
-#elif defined(LMP_INTEL_NO_TBB) && defined(LAMMPS_MEMALIGN) &&                 \
+#if   defined(LMP_INTEL_NO_TBB) && defined(LAMMPS_MEMALIGN) &&                 \
     (defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER))
   ptr = realloc(ptr, nbytes);
   uintptr_t offset = ((uintptr_t)(const void *)(ptr)) % LAMMPS_MEMALIGN;
@@ -70,11 +64,7 @@ void *Memory::srealloc(void *ptr, bigint nbytes, const char *name) {
 void Memory::sfree(void *ptr) {
   if (ptr == nullptr)
     return;
-#if defined(LMP_USE_TBB_ALLOCATOR)
-  scalable_aligned_free(ptr);
-#else
   free(ptr);
-#endif
 }
 void Memory::fail(const char *name) {
   error->one(FLERR, "Cannot create/grow a vector/array of pointers for {}",
