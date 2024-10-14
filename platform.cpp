@@ -5,20 +5,6 @@
 #include <deque>
 #include <exception>
 #include <mpi.h>
-#if defined(_WIN32)
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#if defined(_WIN32_WINNT)
-#undef _WIN32_WINNT
-#endif
-#define _WIN32_WINNT _WIN32_WINNT_WIN7
-#define PSAPI_VERSION 2
-#include <direct.h>
-#include <io.h>
-#include <sys/stat.h>
-#include <windows.h>
-#else
 #include <dirent.h>
 #include <dlfcn.h>
 #include <sys/resource.h>
@@ -26,7 +12,6 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
-#endif
 #if defined(__APPLE__)
 #include <fcntl.h>
 #include <sys/syslimits.h>
@@ -73,23 +58,11 @@ using namespace LAMMPS_NS;
 double
 platform::cputime() {
   double rv = 0.0;
-#ifdef _WIN32
-  FILETIME ct, et, kt, ut;
-  union {
-    FILETIME ft;
-    uint64_t ui;
-  } cpu;
-  if (GetProcessTimes(GetCurrentProcess(), &ct, &et, &kt, &ut)) {
-    cpu.ft = ut;
-    rv = cpu.ui * 0.0000001;
-  }
-#else
   struct rusage ru;
   if (getrusage(RUSAGE_SELF, &ru) == 0) {
     rv = (double)ru.ru_utime.tv_sec;
     rv += (double)ru.ru_utime.tv_usec * 0.000001;
   }
-#endif
   return rv;
 }
 #if defined(__clang__)
@@ -106,93 +79,6 @@ void platform::usleep(int usec) {
 }
 std::string platform::os_info() {
   std::string buf;
-#if defined(_WIN32)
-  char value[1024];
-  DWORD value_length = 1024;
-  const char *subkey = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
-  const char *entry = "CurrentBuild";
-  RegGetValue(HKEY_LOCAL_MACHINE, subkey, entry, RRF_RT_REG_SZ, nullptr, &value,
-              (LPDWORD)&value_length);
-  value[1023] = '\0';
-  auto build = std::string(value);
-  if (build == "6002") {
-    buf = "Windows Vista";
-  } else if (build == "6003") {
-    buf = "Windows Server 2008";
-  } else if (build == "7601") {
-    buf = "Windows 7";
-  } else if (build == "9200") {
-    buf = "Windows 8";
-  } else if (build == "9600") {
-    buf = "Windows 8.1";
-  } else if (build == "10240") {
-    buf = "Windows 10 1507";
-  } else if (build == "10586") {
-    buf = "Windows 10 1511";
-  } else if (build == "14393") {
-    buf = "Windows 10 1607";
-  } else if (build == "15063") {
-    buf = "Windows 10 1703";
-  } else if (build == "16299") {
-    buf = "Windows 10 1709";
-  } else if (build == "17134") {
-    buf = "Windows 10 1803";
-  } else if (build == "17763") {
-    buf = "Windows 10 1809";
-  } else if (build == "18362") {
-    buf = "Windows 10 1903";
-  } else if (build == "18363") {
-    buf = "Windows 10 1909";
-  } else if (build == "19041") {
-    buf = "Windows 10 2004";
-  } else if (build == "19042") {
-    buf = "Windows 10 20H2";
-  } else if (build == "19043") {
-    buf = "Windows 10 21H1";
-  } else if (build == "19044") {
-    buf = "Windows 10 21H2";
-  } else if (build == "19045") {
-    buf = "Windows 10 22H2";
-  } else if (build == "20348") {
-    buf = "Windows Server 2022";
-  } else if (build == "22000") {
-    buf = "Windows 11 21H2";
-  } else if (build == "22621") {
-    buf = "Windows 11 22H2";
-  } else {
-    const char *entry = "ProductName";
-    RegGetValue(HKEY_LOCAL_MACHINE, subkey, entry, RRF_RT_REG_SZ, nullptr,
-                &value, (LPDWORD)&value_length);
-    value[1023] = '\0';
-    buf = value;
-  }
-  DWORD fullversion, majorv, minorv, buildv = 0;
-  fullversion = GetVersion();
-  majorv = (DWORD)(LOBYTE(LOWORD(fullversion)));
-  minorv = (DWORD)(HIBYTE(LOWORD(fullversion)));
-  if (fullversion < 0x80000000)
-    buildv = (DWORD)(HIWORD(fullversion));
-  buf += ", Windows ABI " + std::to_string(majorv) + "." +
-         std::to_string(minorv) + " (" + std::to_string(buildv) + ") on ";
-  SYSTEM_INFO si;
-  GetSystemInfo(&si);
-  switch (si.wProcessorArchitecture) {
-  case PROCESSOR_ARCHITECTURE_AMD64:
-    buf += "x86_64";
-    break;
-  case PROCESSOR_ARCHITECTURE_ARM:
-    buf += "arm";
-    break;
-  case PROCESSOR_ARCHITECTURE_IA64:
-    buf += "ia64";
-    break;
-  case PROCESSOR_ARCHITECTURE_INTEL:
-    buf += "i386";
-    break;
-  default:
-    buf += "(unknown)";
-  }
-#else
   struct utsname ut;
   uname(&ut);
   buf = ut.sysname;
@@ -211,7 +97,6 @@ std::string platform::os_info() {
     }
   }
   buf += std::string(" ") + ut.release + " " + ut.machine;
-#endif
   return buf;
 }
 std::string platform::cxx_standard() {
@@ -377,32 +262,17 @@ int platform::putenv(const std::string &vardef) {
   if (vardef.size() == 0)
     return -1;
   auto found = vardef.find_first_of('=');
-#ifdef _WIN32
-  if (found == std::string::npos)
-    return _putenv_s(vardef.c_str(), "1");
-  else
-    return _putenv_s(vardef.substr(0, found).c_str(),
-                     vardef.substr(found + 1).c_str());
-#else
   if (found == std::string::npos)
     return setenv(vardef.c_str(), "", 1);
   else
     return setenv(vardef.substr(0, found).c_str(),
                   vardef.substr(found + 1).c_str(), 1);
-#endif
   return -1;
 }
 int platform::unsetenv(const std::string &variable) {
   if (variable.size() == 0)
     return -1;
-#ifdef _WIN32
-  const char *ptr = getenv(variable.c_str());
-  if (!ptr)
-    return -1;
-  return _putenv_s(variable.c_str(), "");
-#else
   return ::unsetenv(variable.c_str());
-#endif
 }
 std::vector<std::string> platform::list_pathenv(const std::string &var) {
   std::vector<std::string> dirs;
@@ -427,42 +297,17 @@ std::string platform::find_exe_path(const std::string &cmd) {
   if (cmd.size() == 0)
     return "";
   auto pathdirs = list_pathenv("PATH");
-#ifdef _WIN32
-  pathdirs.insert(pathdirs.begin(), ".");
-#else
   struct stat info;
-#endif
   for (const auto &dir : pathdirs) {
     std::string exe = path_join(dir, cmd);
-#ifdef _WIN32
-    const char *extensions[] = {".exe", ".com", ".bat", nullptr};
-    for (auto ext = extensions; *ext != nullptr; ++ext) {
-      auto exe_path = exe + *ext;
-      if (file_is_readable(exe_path))
-        return exe_path;
-    }
-#else
     memset(&info, 0, sizeof(info));
     if (stat(exe.c_str(), &info) != 0)
       continue;
     if ((info.st_mode & (S_IXOTH | S_IXGRP | S_IXUSR)) != 0)
       return exe;
-#endif
   }
   return "";
 }
-#ifdef _WIN32
-void *platform::dlopen(const std::string &fname) {
-  return (void *)LoadLibrary(fname.c_str());
-}
-std::string platform::dlerror() { return ""; }
-int platform::dlclose(void *handle) {
-  return (FreeLibrary((HINSTANCE)handle) == 0);
-}
-void *platform::dlsym(void *handle, const std::string &symbol) {
-  return (void *)GetProcAddress((HINSTANCE)handle, symbol.c_str());
-}
-#else
 void *platform::dlopen(const std::string &fname) {
   return ::dlopen(fname.c_str(), RTLD_NOW | RTLD_GLOBAL);
 }
@@ -477,7 +322,6 @@ int platform::dlclose(void *handle) { return ::dlclose(handle); }
 void *platform::dlsym(void *handle, const std::string &symbol) {
   return ::dlsym(handle, symbol.c_str());
 }
-#endif
 const char *platform::guesspath(FILE *fp, char *buf, int len) {
   if ((buf == nullptr) || (len < 16))
     return nullptr;
@@ -495,14 +339,6 @@ const char *platform::guesspath(FILE *fp, char *buf, int len) {
     strncpy(buf, filepath, len);
   else
     strncpy(buf, "(unknown)", len);
-#elif defined(_WIN32)
-  char filepath[MAX_PATH];
-  HANDLE h = (HANDLE)_get_osfhandle(_fileno(fp));
-  if (GetFinalPathNameByHandleA(h, filepath, MAX_PATH, FILE_NAME_NORMALIZED) >
-      0)
-    strncpy(buf, filepath, len);
-  else
-    strncpy(buf, "(unknown)", len);
 #else
   strncpy(buf, "(unknown)", len);
 #endif
@@ -511,62 +347,28 @@ const char *platform::guesspath(FILE *fp, char *buf, int len) {
 bool platform::is_console(FILE *fp) {
   if (!fp)
     return false;
-#if defined(_WIN32)
-  return (_isatty(_fileno(fp)) == 1);
-#else
   return (isatty(fileno(fp)) == 1);
-#endif
 }
 std::string platform::current_directory() {
   std::string cwd;
-#if defined(_WIN32)
-  char *buf = new char[MAX_PATH];
-  if (_getcwd(buf, MAX_PATH)) {
-    cwd = buf;
-  }
-  delete[] buf;
-#else
   auto buf = new char[PATH_MAX];
   if (::getcwd(buf, PATH_MAX)) {
     cwd = buf;
   }
   delete[] buf;
-#endif
   return cwd;
 }
 bool platform::path_is_directory(const std::string &path) {
-#if defined(_WIN32)
-  struct _stat info;
-  memset(&info, 0, sizeof(info));
-  if (_stat(path.c_str(), &info) != 0)
-    return false;
-#else
   struct stat info;
   memset(&info, 0, sizeof(info));
   if (stat(path.c_str(), &info) != 0)
     return false;
-#endif
   return ((info.st_mode & S_IFDIR) != 0);
 }
 std::vector<std::string> platform::list_directory(const std::string &dir) {
   std::vector<std::string> files;
   if (!path_is_directory(dir))
     return files;
-#if defined(_WIN32)
-  HANDLE handle;
-  WIN32_FIND_DATA fd;
-  std::string searchname = dir + filepathsep[0] + "*";
-  handle = FindFirstFile(searchname.c_str(), &fd);
-  if (handle == ((HANDLE)-1))
-    return files;
-  while (FindNextFile(handle, &fd)) {
-    std::string entry(fd.cFileName);
-    if ((entry == "..") || (entry == "."))
-      continue;
-    files.push_back(entry);
-  }
-  FindClose(handle);
-#else
   std::string dirname = dir + filepathsep[0];
   DIR *handle = opendir(dirname.c_str());
   if (handle == nullptr)
@@ -579,15 +381,10 @@ std::vector<std::string> platform::list_directory(const std::string &dir) {
     files.push_back(entry);
   }
   closedir(handle);
-#endif
   return files;
 }
 int platform::chdir(const std::string &path) {
-#if defined(_WIN32)
-  return ::_chdir(path.c_str());
-#else
   return ::chdir(path.c_str());
-#endif
 }
 int platform::mkdir(const std::string &path) {
   std::deque<std::string> dirlist = {path};
@@ -599,11 +396,7 @@ int platform::mkdir(const std::string &path) {
   int rv;
   for (const auto &dir : dirlist) {
     if (!path_is_directory(dir)) {
-#if defined(_WIN32)
-      rv = ::_mkdir(dir.c_str());
-#else
       rv = ::mkdir(dir.c_str(), S_IRWXU | S_IRGRP | S_IXGRP);
-#endif
       if (rv != 0)
         return rv;
     }
@@ -619,77 +412,34 @@ int platform::rmdir(const std::string &path) {
     else
       unlink(newpath);
   }
-#if defined(_WIN32)
-  return ::_rmdir(path.c_str());
-#else
   return ::rmdir(path.c_str());
-#endif
 }
 int platform::unlink(const std::string &path) {
-#if defined(_WIN32)
-  return ::_unlink(path.c_str());
-#else
   return ::unlink(path.c_str());
-#endif
 }
 bigint platform::ftell(FILE *fp) {
-#if defined(_WIN32)
-  return (bigint)::_ftelli64(fp);
-#else
   return (bigint)::ftell(fp);
-#endif
 }
 int platform::fseek(FILE *fp, bigint pos) {
-#if defined(_WIN32)
-  if (pos == platform::END_OF_FILE)
-    return ::_fseeki64(fp, 0, SEEK_END);
-  else
-    return ::_fseeki64(fp, (__int64)pos, SEEK_SET);
-#else
   if (pos == platform::END_OF_FILE)
     return ::fseek(fp, 0, SEEK_END);
   else
     return ::fseek(fp, (long)pos, SEEK_SET);
-#endif
 }
 int platform::ftruncate(FILE *fp, bigint length) {
-#if defined(_WIN32)
-  HANDLE h = (HANDLE)_get_osfhandle(_fileno(fp));
-  LARGE_INTEGER li_start, li_length;
-  li_start.QuadPart = (int64_t)0;
-  li_length.QuadPart = (int64_t)length;
-  if (SetFilePointerEx(h, li_start, NULL, FILE_CURRENT) &&
-      SetFilePointerEx(h, li_length, NULL, FILE_BEGIN) && SetEndOfFile(h)) {
-    return 0;
-  } else {
-    return 1;
-  }
-#else
   platform::fseek(fp, length);
   return ::ftruncate(fileno(fp), (off_t)length);
-#endif
 }
 FILE *platform::popen(const std::string &cmd, const std::string &mode) {
   FILE *fp = nullptr;
-#if defined(_WIN32)
-  if (mode == "r")
-    fp = ::_popen(cmd.c_str(), "rb");
-  else if (mode == "w")
-    fp = ::_popen(cmd.c_str(), "wb");
-#else
   if (mode == "r")
     fp = ::popen(cmd.c_str(), "r");
   else if (mode == "w")
     fp = ::popen(cmd.c_str(), "w");
-#endif
   return fp;
 }
 int platform::pclose(FILE *fp) {
-#if defined(_WIN32)
-  return ::_pclose(fp);
-#else
   return ::pclose(fp);
-#endif
 }
 std::string platform::path_basename(const std::string &path) {
   size_t start = path.find_last_of(platform::filepathsep);
