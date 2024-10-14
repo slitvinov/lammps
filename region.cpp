@@ -38,8 +38,6 @@ void Region::prematch() {
     shape_update();
 }
 int Region::match(double x, double y, double z) {
-  if (dynamic)
-    inverse_transform(x, y, z);
   if (openflag)
     return 1;
   return !(inside(x, y, z) ^ interior);
