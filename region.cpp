@@ -33,11 +33,6 @@ Region::~Region() {
   delete[] tstr;
 }
 void Region::init() { vel_timestep = -1; }
-int Region::dynamic_check() {
-  if (dynamic || varshape)
-    return 1;
-  return 0;
-}
 void Region::prematch() {
   if (varshape)
     shape_update();
@@ -48,48 +43,6 @@ int Region::match(double x, double y, double z) {
   if (openflag)
     return 1;
   return !(inside(x, y, z) ^ interior);
-}
-void Region::forward_transform(double &x, double &y, double &z) {
-  if (rotateflag)
-    rotate(x, y, z, theta);
-  if (moveflag) {
-    x += dx;
-    y += dy;
-    z += dz;
-  }
-}
-void Region::inverse_transform(double &x, double &y, double &z) {
-  if (moveflag) {
-    x -= dx;
-    y -= dy;
-    z -= dz;
-  }
-  if (rotateflag)
-    rotate(x, y, z, -theta);
-}
-void Region::rotate(double &x, double &y, double &z, double angle) {
-  double a[3], b[3], c[3], d[3], disp[3];
-  double sine = sin(angle);
-  double cosine = cos(angle);
-  d[0] = x - point[0];
-  d[1] = y - point[1];
-  d[2] = z - point[2];
-  double x0dotr = d[0] * runit[0] + d[1] * runit[1] + d[2] * runit[2];
-  c[0] = x0dotr * runit[0];
-  c[1] = x0dotr * runit[1];
-  c[2] = x0dotr * runit[2];
-  a[0] = d[0] - c[0];
-  a[1] = d[1] - c[1];
-  a[2] = d[2] - c[2];
-  b[0] = runit[1] * a[2] - runit[2] * a[1];
-  b[1] = runit[2] * a[0] - runit[0] * a[2];
-  b[2] = runit[0] * a[1] - runit[1] * a[0];
-  disp[0] = a[0] * cosine + b[0] * sine;
-  disp[1] = a[1] * cosine + b[1] * sine;
-  disp[2] = a[2] * cosine + b[2] * sine;
-  x = point[0] + c[0] + disp[0];
-  y = point[1] + c[1] + disp[1];
-  z = point[2] + c[2] + disp[2];
 }
 void Region::options(int narg, char **arg) {
   if (narg < 0)
@@ -142,24 +95,6 @@ void Region::options(int narg, char **arg) {
     dynamic = 1;
   else
     dynamic = 0;
-}
-int Region::restart(char *buf, int &n) {
-  int size = *((int *)(&buf[n]));
-  n += sizeof(int);
-  if ((size <= 0) || (strcmp(&buf[n], id) != 0))
-    return 0;
-  n += size;
-  size = *((int *)(&buf[n]));
-  n += sizeof(int);
-  if ((size <= 0) || (strcmp(&buf[n], style) != 0))
-    return 0;
-  n += size;
-  int restart_nreg = *((int *)(&buf[n]));
-  n += sizeof(int);
-  if (restart_nreg != nregion)
-    return 0;
-  memcpy(prev, &buf[n], size_restart * sizeof(double));
-  return 1;
 }
 void Region::reset_vel() {
   for (int i = 0; i < size_restart; i++)

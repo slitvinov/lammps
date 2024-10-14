@@ -42,25 +42,20 @@ public:
   Region(class LAMMPS *, int, char **);
   ~Region() override;
   virtual void init();
-  int dynamic_check();
   void prematch();
   int match(double, double, double);
-  virtual int restart(char *, int &);
   virtual void reset_vel();
   virtual int inside(double, double, double) = 0;
   virtual void shape_update() {}
 
 protected:
   void options(int, char **);
-  void forward_transform(double &, double &, double &);
   double point[3], runit[3];
 
 private:
   char *xstr, *ystr, *zstr, *tstr;
   int xvar, yvar, zvar, tvar;
   double axis[3];
-  void inverse_transform(double &, double &, double &);
-  void rotate(double &, double &, double &, double);
 };
 } // namespace LAMMPS_NS
 #endif
