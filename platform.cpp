@@ -12,10 +12,6 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
-#if defined(__APPLE__)
-#include <fcntl.h>
-#include <sys/syslimits.h>
-#endif
 #include <chrono>
 #include <cstring>
 #include <thread>
@@ -331,13 +327,6 @@ const char *platform::guesspath(FILE *fp, char *buf, int len) {
   int fd = fileno(fp);
   if (readlink((std::string("/proc/self/fd/") + std::to_string(fd)).c_str(),
                buf, len) <= 0)
-    strncpy(buf, "(unknown)", len);
-#elif defined(__APPLE__)
-  int fd = fileno(fp);
-  char filepath[PATH_MAX];
-  if (fcntl(fd, F_GETPATH, filepath) != -1)
-    strncpy(buf, filepath, len);
-  else
     strncpy(buf, "(unknown)", len);
 #else
   strncpy(buf, "(unknown)", len);

@@ -7,11 +7,7 @@
 #include "tbb/scalable_allocator.h"
 #else
 #include <cstring>
-#if defined(__APPLE__)
-#include <malloc/malloc.h>
-#else
 #include <malloc.h>
-#endif
 #endif
 #endif
 #if defined(LMP_INTEL) && !defined(LAMMPS_MEMALIGN) && !defined(_WIN32)
@@ -46,11 +42,7 @@ void *Memory::srealloc(void *ptr, bigint nbytes, const char *name) {
   if (offset) {
     void *optr = ptr;
     ptr = smalloc(nbytes, name);
-#if defined(__APPLE__)
-    memcpy(ptr, optr, MIN(nbytes, malloc_size(optr)));
-#else
     memcpy(ptr, optr, MIN(nbytes, malloc_usable_size(optr)));
-#endif
     free(optr);
   }
 #else
