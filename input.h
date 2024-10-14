@@ -17,7 +17,6 @@ public:
   ~Input() override;
   void file();
   void substitute(char *&, char *&, int &, int &, int);
-  void write_echo(const std::string &);
 
 protected:
   char *command;
@@ -45,11 +44,8 @@ private:
   int numtriple(char *);
   void reallocate(char *&, int &, int);
   int execute_command();
-  void log();
   void comm_modify();
   void fix();
-  void fix_modify();
-  void lattice();
   void mass();
   void neigh_modify();
   void neighbor_command();

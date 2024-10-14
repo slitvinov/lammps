@@ -123,14 +123,6 @@ void Input::file() {
       error->all(FLERR, "Unknown command: {}", line);
   }
 }
-void Input::write_echo(const std::string &txt) {
-  if (me == 0) {
-    if (echo_screen && screen)
-      fputs(txt.c_str(), screen);
-    if (echo_log && logfile)
-      fputs(txt.c_str(), logfile);
-  }
-}
 void Input::parse() {
   int n = strlen(line) + 1;
   if (n > maxcopy)
@@ -211,16 +203,10 @@ void Input::reallocate(char *&str, int &max, int n) {
 int Input::execute_command() {
   int flag = 1;
   std::string mycmd = command;
-  if (mycmd == "log")
-    log();
-  else if (mycmd == "comm_modify")
+  if (mycmd == "comm_modify")
     comm_modify();
   else if (mycmd == "fix")
     fix();
-  else if (mycmd == "fix_modify")
-    fix_modify();
-  else if (mycmd == "lattice")
-    lattice();
   else if (mycmd == "mass")
     mass();
   else if (mycmd == "neigh_modify")
@@ -248,40 +234,8 @@ int Input::execute_command() {
   }
   return -1;
 }
-void Input::log() {
-  if ((narg < 1) || (narg > 2))
-    error->all(FLERR,
-               "Illegal log command: expected 1 or 2 argument(s) but found {}",
-               narg);
-  int appendflag = 0;
-  if (narg == 2) {
-    if (strcmp(arg[1], "append") == 0)
-      appendflag = 1;
-    else
-      error->all(FLERR, "Unknown log keyword: {}", arg[1]);
-  }
-  if (me == 0) {
-    if (logfile)
-      fclose(logfile);
-    if (strcmp(arg[0], "none") == 0)
-      logfile = nullptr;
-    else {
-      if (appendflag)
-        logfile = fopen(arg[0], "a");
-      else
-        logfile = fopen(arg[0], "w");
-      if (logfile == nullptr)
-        error->one(FLERR, "Cannot open logfile {}: {}", arg[0],
-                   utils::getsyserror());
-    }
-    if (universe->nworlds == 1)
-      universe->ulogfile = logfile;
-  }
-}
 void Input::comm_modify() { comm->modify_params(narg, arg); }
 void Input::fix() { modify->add_fix(narg, arg); }
-void Input::fix_modify() { modify->modify_fix(narg, arg); }
-void Input::lattice() { domain->set_lattice(narg, arg); }
 void Input::mass() {
   if (narg != 2)
     error->all(FLERR, "Illegal mass command: expected 2 arguments but found {}",
@@ -318,16 +272,6 @@ void Input::pair_coeff() {
 void Input::pair_style() {
   if (narg < 1)
     utils::missing_cmd_args(FLERR, "pair_style", error);
-  if (force->pair) {
-    std::string style = arg[0];
-    int match = 0;
-    if (style == force->pair_style)
-      match = 1;
-    if (match) {
-      force->pair->settings(narg - 1, &arg[1]);
-      return;
-    }
-  }
   force->create_pair(arg[0], 1);
   if (force->pair)
     force->pair->settings(narg - 1, &arg[1]);
@@ -339,15 +283,4 @@ void Input::timestep() {
   update->update_time();
   update->dt = utils::numeric(FLERR, arg[0], false, lmp);
   update->dt_default = 0;
-  if (update->first_update == 0)
-    return;
-  int respaflag = 0;
-  if (utils::strmatch(update->integrate_style, "^respa"))
-    respaflag = 1;
-  if (respaflag)
-    update->integrate->reset_dt();
-  if (force->pair)
-    force->pair->reset_dt();
-  for (auto &ifix : modify->get_fix_list())
-    ifix->reset_dt();
 }
