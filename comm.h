@@ -54,8 +54,6 @@ public:
   virtual int exchange_variable_all2all(int, double *, double *&) = 0;
   virtual void coord2proc_setup() {}
   virtual int coord2proc(double *, int &, int &, int &);
-  void ring(int, int, void *, int, void (*)(int, char *, void *), void *,
-            void *, int self = 1);
   virtual void *extract(const char *, int &) { return nullptr; }
 
 protected:
