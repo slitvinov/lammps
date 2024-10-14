@@ -60,9 +60,6 @@ public:
   void minimum_image(double *delta) const {
     minimum_image(delta[0], delta[1], delta[2]);
   }
-  int closest_image(int, int);
-  int closest_image(const double *const, int);
-  void closest_image(const double *const, const double *const, double *const);
   void remap(double *, imageint &);
   void remap(double *);
   void remap_near(double *, double *);
