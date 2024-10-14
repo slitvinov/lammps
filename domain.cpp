@@ -120,19 +120,6 @@ void Domain::init() {
     reg->init();
 }
 void Domain::set_initial_box(int expandflag) {
-  if (boxlo[0] >= boxhi[0] || boxlo[1] >= boxhi[1] || boxlo[2] >= boxhi[2])
-    error->one(FLERR, "Box bounds are invalid or missing");
-  if (dimension == 2 && (xz != 0.0 || yz != 0.0))
-    error->all(FLERR, "Cannot skew triclinic box in z for 2d simulation");
-  if (triclinic) {
-    if ((fabs(xy / (boxhi[1] - boxlo[1])) > 0.5 && yperiodic) ||
-        ((fabs(xz) + fabs(yz)) / (boxhi[2] - boxlo[2]) > 0.5 && zperiodic)) {
-      if (comm->me == 0)
-        error->warning(
-            FLERR,
-            "Triclinic box skew is large. LAMMPS will run inefficiently.");
-    }
-  }
   small[0] = SMALL * (boxhi[0] - boxlo[0]);
   small[1] = SMALL * (boxhi[1] - boxlo[1]);
   small[2] = SMALL * (boxhi[2] - boxlo[2]);
@@ -176,22 +163,6 @@ void Domain::set_global_box() {
   prd_half[0] = xprd_half = 0.5 * xprd;
   prd_half[1] = yprd_half = 0.5 * yprd;
   prd_half[2] = zprd_half = 0.5 * zprd;
-  if (triclinic) {
-    h[3] = yz;
-    h[4] = xz;
-    h[5] = xy;
-    h_inv[3] = -h[3] / (h[1] * h[2]);
-    h_inv[4] = (h[3] * h[5] - h[1] * h[4]) / (h[0] * h[1] * h[2]);
-    h_inv[5] = -h[5] / (h[0] * h[1]);
-    boxlo_bound[0] = MIN(boxlo[0], boxlo[0] + xy);
-    boxlo_bound[0] = MIN(boxlo_bound[0], boxlo_bound[0] + xz);
-    boxlo_bound[1] = MIN(boxlo[1], boxlo[1] + yz);
-    boxlo_bound[2] = boxlo[2];
-    boxhi_bound[0] = MAX(boxhi[0], boxhi[0] + xy);
-    boxhi_bound[0] = MAX(boxhi_bound[0], boxhi_bound[0] + xz);
-    boxhi_bound[1] = MAX(boxhi[1], boxhi[1] + yz);
-    boxhi_bound[2] = boxhi[2];
-  }
 }
 void Domain::set_lamda_box() {
   if (comm->layout != Comm::LAYOUT_TILED) {
@@ -216,8 +187,6 @@ void Domain::set_lamda_box() {
   }
 }
 void Domain::set_local_box() {
-  if (triclinic)
-    return;
   if (comm->layout != Comm::LAYOUT_TILED) {
     int *myloc = comm->myloc;
     int *procgrid = comm->procgrid;
@@ -261,127 +230,6 @@ void Domain::set_local_box() {
 void Domain::reset_box() {
   if (atom->natoms == 0)
     return;
-  if (nonperiodic == 2) {
-    double extent[3][2], all[3][2];
-    extent[2][0] = extent[1][0] = extent[0][0] = BIG;
-    extent[2][1] = extent[1][1] = extent[0][1] = -BIG;
-    double **x = atom->x;
-    int nlocal = atom->nlocal;
-    for (int i = 0; i < nlocal; i++) {
-      extent[0][0] = MIN(extent[0][0], x[i][0]);
-      extent[0][1] = MAX(extent[0][1], x[i][0]);
-      extent[1][0] = MIN(extent[1][0], x[i][1]);
-      extent[1][1] = MAX(extent[1][1], x[i][1]);
-      extent[2][0] = MIN(extent[2][0], x[i][2]);
-      extent[2][1] = MAX(extent[2][1], x[i][2]);
-    }
-    extent[0][0] = -extent[0][0];
-    extent[1][0] = -extent[1][0];
-    extent[2][0] = -extent[2][0];
-    MPI_Allreduce(extent, all, 6, MPI_DOUBLE, MPI_MAX, world);
-    if (triclinic)
-      lamda2x(atom->nlocal);
-    if (triclinic == 0) {
-      if (xperiodic == 0) {
-        if (boundary[0][0] == 2)
-          boxlo[0] = -all[0][0] - small[0];
-        else if (boundary[0][0] == 3)
-          boxlo[0] = MIN(-all[0][0] - small[0], minxlo);
-        if (boundary[0][1] == 2)
-          boxhi[0] = all[0][1] + small[0];
-        else if (boundary[0][1] == 3)
-          boxhi[0] = MAX(all[0][1] + small[0], minxhi);
-        if (boxlo[0] > boxhi[0])
-          error->all(FLERR, "Illegal simulation box");
-      }
-      if (yperiodic == 0) {
-        if (boundary[1][0] == 2)
-          boxlo[1] = -all[1][0] - small[1];
-        else if (boundary[1][0] == 3)
-          boxlo[1] = MIN(-all[1][0] - small[1], minylo);
-        if (boundary[1][1] == 2)
-          boxhi[1] = all[1][1] + small[1];
-        else if (boundary[1][1] == 3)
-          boxhi[1] = MAX(all[1][1] + small[1], minyhi);
-        if (boxlo[1] > boxhi[1])
-          error->all(FLERR, "Illegal simulation box");
-      }
-      if (zperiodic == 0) {
-        if (boundary[2][0] == 2)
-          boxlo[2] = -all[2][0] - small[2];
-        else if (boundary[2][0] == 3)
-          boxlo[2] = MIN(-all[2][0] - small[2], minzlo);
-        if (boundary[2][1] == 2)
-          boxhi[2] = all[2][1] + small[2];
-        else if (boundary[2][1] == 3)
-          boxhi[2] = MAX(all[2][1] + small[2], minzhi);
-        if (boxlo[2] > boxhi[2])
-          error->all(FLERR, "Illegal simulation box");
-      }
-    } else {
-      double lo[3], hi[3];
-      if (xperiodic == 0) {
-        lo[0] = -all[0][0];
-        lo[1] = 0.0;
-        lo[2] = 0.0;
-        lamda2x(lo, lo);
-        hi[0] = all[0][1];
-        hi[1] = 0.0;
-        hi[2] = 0.0;
-        lamda2x(hi, hi);
-        if (boundary[0][0] == 2)
-          boxlo[0] = lo[0] - small[0];
-        else if (boundary[0][0] == 3)
-          boxlo[0] = MIN(lo[0] - small[0], minxlo);
-        if (boundary[0][1] == 2)
-          boxhi[0] = hi[0] + small[0];
-        else if (boundary[0][1] == 3)
-          boxhi[0] = MAX(hi[0] + small[0], minxhi);
-        if (boxlo[0] > boxhi[0])
-          error->all(FLERR, "Illegal simulation box");
-      }
-      if (yperiodic == 0) {
-        lo[0] = 0.0;
-        lo[1] = -all[1][0];
-        lo[2] = 0.0;
-        lamda2x(lo, lo);
-        hi[0] = 0.0;
-        hi[1] = all[1][1];
-        hi[2] = 0.0;
-        lamda2x(hi, hi);
-        if (boundary[1][0] == 2)
-          boxlo[1] = lo[1] - small[1];
-        else if (boundary[1][0] == 3)
-          boxlo[1] = MIN(lo[1] - small[1], minylo);
-        if (boundary[1][1] == 2)
-          boxhi[1] = hi[1] + small[1];
-        else if (boundary[1][1] == 3)
-          boxhi[1] = MAX(hi[1] + small[1], minyhi);
-        if (boxlo[1] > boxhi[1])
-          error->all(FLERR, "Illegal simulation box");
-      }
-      if (zperiodic == 0) {
-        lo[0] = 0.0;
-        lo[1] = 0.0;
-        lo[2] = -all[2][0];
-        lamda2x(lo, lo);
-        hi[0] = 0.0;
-        hi[1] = 0.0;
-        hi[2] = all[2][1];
-        lamda2x(hi, hi);
-        if (boundary[2][0] == 2)
-          boxlo[2] = lo[2] - small[2];
-        else if (boundary[2][0] == 3)
-          boxlo[2] = MIN(lo[2] - small[2], minzlo);
-        if (boundary[2][1] == 2)
-          boxhi[2] = hi[2] + small[2];
-        else if (boundary[2][1] == 3)
-          boxhi[2] = MAX(hi[2] + small[2], minzhi);
-        if (boxlo[2] > boxhi[2])
-          error->all(FLERR, "Illegal simulation box");
-      }
-    }
-  }
   set_global_box();
   set_local_box();
   if (nonperiodic == 2 && triclinic) {
