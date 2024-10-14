@@ -136,7 +136,6 @@ protected:
   void morph_granular();
   void morph_halffull();
   void morph_copy_trim();
-  void print_pairwise_info();
   void requests_new2old();
   int choose_bin(class NeighRequest *);
   int choose_pair(class NeighRequest *);
