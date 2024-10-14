@@ -52,8 +52,6 @@ public:
   virtual void forward_comm_array(int, double **) = 0;
   virtual int exchange_variable(int, double *, double *&) = 0;
   virtual int exchange_variable_all2all(int, double *, double *&) = 0;
-  virtual void coord2proc_setup() {}
-  virtual int coord2proc(double *, int &, int &, int &);
   virtual void *extract(const char *, int &) { return nullptr; }
 
 protected:

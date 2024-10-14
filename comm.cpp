@@ -278,45 +278,4 @@ double Comm::get_comm_cutoff() {
   }
   return maxcommcutoff;
 }
-int Comm::coord2proc(double *x, int &igx, int &igy, int &igz) {
-  double *prd = domain->prd;
-  double *boxlo = domain->boxlo;
-  triclinic = domain->triclinic;
-  if (layout == Comm::LAYOUT_UNIFORM) {
-    if (triclinic == 0) {
-      igx = static_cast<int>(procgrid[0] * (x[0] - boxlo[0]) / prd[0]);
-      igy = static_cast<int>(procgrid[1] * (x[1] - boxlo[1]) / prd[1]);
-      igz = static_cast<int>(procgrid[2] * (x[2] - boxlo[2]) / prd[2]);
-    } else {
-      igx = static_cast<int>(procgrid[0] * x[0]);
-      igy = static_cast<int>(procgrid[1] * x[1]);
-      igz = static_cast<int>(procgrid[2] * x[2]);
-    }
-  } else if (layout == Comm::LAYOUT_NONUNIFORM) {
-    if (triclinic == 0) {
-      igx =
-          utils::binary_search((x[0] - boxlo[0]) / prd[0], procgrid[0], xsplit);
-      igy =
-          utils::binary_search((x[1] - boxlo[1]) / prd[1], procgrid[1], ysplit);
-      igz =
-          utils::binary_search((x[2] - boxlo[2]) / prd[2], procgrid[2], zsplit);
-    } else {
-      igx = utils::binary_search(x[0], procgrid[0], xsplit);
-      igy = utils::binary_search(x[1], procgrid[1], ysplit);
-      igz = utils::binary_search(x[2], procgrid[2], zsplit);
-    }
-  }
-  if (igx < 0)
-    igx = 0;
-  if (igx >= procgrid[0])
-    igx = procgrid[0] - 1;
-  if (igy < 0)
-    igy = 0;
-  if (igy >= procgrid[1])
-    igy = procgrid[1] - 1;
-  if (igz < 0)
-    igz = 0;
-  if (igz >= procgrid[2])
-    igz = procgrid[2] - 1;
-  return grid2proc[igx][igy][igz];
-}
+
