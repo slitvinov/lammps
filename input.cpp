@@ -36,8 +36,6 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp) {
   arg = nullptr;
   echo_screen = 0;
   echo_log = 1;
-  label_active = 0;
-  labelstr = nullptr;
   jump_skip = 0;
   utf8_warn = true;
   if (me == 0) {
@@ -58,7 +56,6 @@ Input::~Input() {
   memory->sfree(line);
   memory->sfree(copy);
   memory->sfree(work);
-  delete[] labelstr;
   memory->sfree(arg);
   delete[] infiles;
   delete command_map;
@@ -71,10 +68,6 @@ void Input::file() {
       endfile = 0;
       m = 0;
       while (true) {
-        if (infile == nullptr) {
-          n = 0;
-          break;
-        }
         mstart = m;
         while (true) {
           if (maxline - m < 2)
@@ -112,14 +105,12 @@ void Input::file() {
     }
     MPI_Bcast(&n, 1, MPI_INT, 0, world);
     if (n == 0) {
-      if (label_active)
-        error->all(FLERR, "Label wasn't found in input script");
       break;
     }
     if (n > maxline)
       reallocate(line, maxline, n);
     MPI_Bcast(line, n, MPI_CHAR, 0, world);
-    if (me == 0 && label_active == 0) {
+    if (me == 0) {
       if (echo_screen && screen)
         fprintf(screen, "%s\n", line);
       if (echo_log && logfile)
@@ -127,8 +118,6 @@ void Input::file() {
     }
     parse();
     if (command == nullptr)
-      continue;
-    if (label_active && strcmp(command, "label") != 0)
       continue;
     if (execute_command() && line)
       error->all(FLERR, "Unknown command: {}", line);
@@ -152,8 +141,7 @@ void Input::parse() {
   while (*ptr) {
     ptr++;
   }
-  if (!label_active)
-    substitute(copy, work, maxcopy, maxwork, 1);
+  substitute(copy, work, maxcopy, maxwork, 1);
   char *next;
   command = nextword(copy, &next);
   if (command == nullptr)

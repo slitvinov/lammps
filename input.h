@@ -30,8 +30,6 @@ private:
   char *line, *copy, *work;
   int maxline, maxcopy, maxwork;
   int nfile, maxfile;
-  int label_active;
-  char *labelstr;
   int jump_skip;
   bool utf8_warn;
   FILE **infiles;
