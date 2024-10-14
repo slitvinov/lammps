@@ -119,23 +119,6 @@ Atom::~Atom() {
   memory->destroy(x);
   memory->destroy(v);
   memory->destroy(f);
-  for (int i = 0; i < nivector; i++) {
-    delete[] ivname[i];
-    memory->destroy(ivector[i]);
-  }
-  for (int i = 0; i < ndvector; i++) {
-    delete[] dvname[i];
-    if (dvector)
-      memory->destroy(dvector[i]);
-  }
-  for (int i = 0; i < niarray; i++) {
-    delete[] ianame[i];
-    memory->destroy(iarray[i]);
-  }
-  for (int i = 0; i < ndarray; i++) {
-    delete[] daname[i];
-    memory->destroy(darray[i]);
-  }
   memory->sfree(ivname);
   memory->sfree(dvname);
   memory->sfree(ianame);
@@ -154,15 +137,6 @@ Atom::~Atom() {
   memory->destroy(extra);
   Atom::map_delete();
   delete unique_tags;
-}
-void Atom::settings(Atom *old) {
-  tag_enable = old->tag_enable;
-  map_user = old->map_user;
-  map_style = old->map_style;
-  sortfreq = old->sortfreq;
-  userbinsize = old->userbinsize;
-  if (old->firstgroupname)
-    firstgroupname = utils::strdup(old->firstgroupname);
 }
 void Atom::peratom_create() {
   peratom.clear();
@@ -215,16 +189,6 @@ void Atom::add_peratom(const std::string &name, void *address, int datatype,
   PerAtom item = {name,     address, nullptr, nullptr,
                   datatype, cols,    0,       threadflag};
   peratom.push_back(item);
-}
-void Atom::add_peratom_change_columns(const std::string &name, int cols) {
-  auto match =
-      std::find_if(peratom.begin(), peratom.end(),
-                   [&name](const PerAtom &p) { return p.name == name; });
-  if (match != peratom.end())
-    (*match).cols = cols;
-  else
-    error->all(FLERR, "Could not find per-atom array name {} for column change",
-               name);
 }
 void Atom::add_peratom_vary(const std::string &name, void *address,
                             int datatype, int *cols, void *length,
@@ -284,10 +248,6 @@ void Atom::init() {
 void Atom::setup() {
   if (sortfreq > 0)
     setup_sort_bins();
-}
-std::string Atom::get_style() {
-  std::string retval = atom_style;
-  return retval;
 }
 AtomVec *Atom::style_match(const char *style) {
   if (strcmp(atom_style, style) == 0)
@@ -739,30 +699,6 @@ void Atom::update_callback(int ifix) {
 int Atom::find_custom(const char *name, int &flag, int &cols) {
   if (name == nullptr)
     return -1;
-  for (int i = 0; i < nivector; i++)
-    if (ivname[i] && strcmp(ivname[i], name) == 0) {
-      flag = 0;
-      cols = 0;
-      return i;
-    }
-  for (int i = 0; i < ndvector; i++)
-    if (dvname[i] && strcmp(dvname[i], name) == 0) {
-      flag = 1;
-      cols = 0;
-      return i;
-    }
-  for (int i = 0; i < niarray; i++)
-    if (ianame[i] && strcmp(ianame[i], name) == 0) {
-      flag = 0;
-      cols = icols[i];
-      return i;
-    }
-  for (int i = 0; i < ndarray; i++)
-    if (daname[i] && strcmp(daname[i], name) == 0) {
-      flag = 1;
-      cols = dcols[i];
-      return i;
-    }
   return -1;
 }
 int Atom::add_custom(const char *name, int flag, int cols) {

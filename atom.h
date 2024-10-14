@@ -104,17 +104,14 @@ public:
   AtomVecCreatorMap *avec_map;
   Atom(class LAMMPS *);
   ~Atom() override;
-  void settings(class Atom *);
   void peratom_create();
   void add_peratom(const std::string &, void *, int, int, int threadflag = 0);
-  void add_peratom_change_columns(const std::string &, int);
   void add_peratom_vary(const std::string &, void *, int, int *, void *,
                         int collength = 0);
   void create_avec(const std::string &, int, char **, int);
   virtual AtomVec *new_avec(const std::string &);
   void init();
   void setup();
-  std::string get_style();
   AtomVec *style_match(const char *);
   void modify_params(int, char **);
   void tag_check();
