@@ -54,8 +54,6 @@ void *Memory::srealloc(void *ptr, bigint nbytes, const char *name) {
     ptr = smalloc(nbytes, name);
 #if defined(__APPLE__)
     memcpy(ptr, optr, MIN(nbytes, malloc_size(optr)));
-#elif defined(_WIN32) || defined(__MINGW32__)
-    memcpy(ptr, optr, MIN(nbytes, _msize(optr)));
 #else
     memcpy(ptr, optr, MIN(nbytes, malloc_usable_size(optr)));
 #endif
