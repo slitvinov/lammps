@@ -27,7 +27,6 @@ fmtlib_format.o \
 fmtlib_os.o \
 force.o \
 group.o \
-hashlittle.o \
 input.o \
 integrate.o \
 label_map.o \
