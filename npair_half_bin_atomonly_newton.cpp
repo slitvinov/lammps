@@ -41,8 +41,6 @@ void NPairHalfBinAtomonlyNewton::build(NeighList *list) {
         }
       }
       jtype = type[j];
-      if (exclude && exclusion(i, j, itype, jtype, mask))
-        continue;
       delx = xtmp - x[j][0];
       dely = ytmp - x[j][1];
       delz = ztmp - x[j][2];
