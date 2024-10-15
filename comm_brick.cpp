@@ -33,10 +33,6 @@ CommBrick::~CommBrick() {
     CommBrick::free_multi();
     memory->destroy(cutghostmulti);
   }
-  if (mode == Comm::MULTIOLD) {
-    CommBrick::free_multiold();
-    memory->destroy(cutghostmultiold);
-  }
   if (sendlist)
     for (int i = 0; i < maxswap; i++)
       memory->destroy(sendlist[i]);
@@ -100,14 +96,9 @@ void CommBrick::init() {
       memory->create(cutghostmulti, ncollections, 3, "comm:cutghostmulti");
     }
   }
-  if ((mode == Comm::SINGLE || mode == Comm::MULTIOLD) && multilo) {
+  if ((mode == Comm::SINGLE) && multilo) {
     free_multi();
     memory->destroy(cutghostmulti);
-  }
-  if (mode == Comm::MULTIOLD && multioldlo == nullptr) {
-    allocate_multiold(maxswap);
-    memory->create(cutghostmultiold, atom->ntypes + 1, 3,
-                   "comm:cutghostmultiold");
   }
   if ((mode == Comm::SINGLE || mode == Comm::MULTI) && multioldlo) {
     free_multiold();
@@ -147,17 +138,6 @@ void CommBrick::setup() {
       }
     }
   }
-  if (mode == Comm::MULTIOLD) {
-    double *cuttype = neighbor->cuttype;
-    for (i = 1; i <= ntypes; i++) {
-      double tmp = 0.0;
-      if (cutusermultiold)
-        tmp = cutusermultiold[i];
-      cutghostmultiold[i][0] = MAX(tmp, cuttype[i]);
-      cutghostmultiold[i][1] = MAX(tmp, cuttype[i]);
-      cutghostmultiold[i][2] = MAX(tmp, cuttype[i]);
-    }
-  }
   if (triclinic == 0) {
     prd = domain->prd;
     sublo = domain->sublo;
@@ -181,13 +161,6 @@ void CommBrick::setup() {
         cutghostmulti[i][0] *= length0;
         cutghostmulti[i][1] *= length1;
         cutghostmulti[i][2] *= length2;
-      }
-    }
-    if (mode == Comm::MULTIOLD) {
-      for (i = 1; i <= ntypes; i++) {
-        cutghostmultiold[i][0] *= length0;
-        cutghostmultiold[i][1] *= length1;
-        cutghostmultiold[i][2] *= length2;
       }
     }
   }
@@ -1020,10 +993,6 @@ void CommBrick::grow_swap(int n) {
   if (mode == Comm::MULTI) {
     free_multi();
     allocate_multi(n);
-  }
-  if (mode == Comm::MULTIOLD) {
-    free_multiold();
-    allocate_multiold(n);
   }
   sendlist =
       (int **)memory->srealloc(sendlist, n * sizeof(int *), "comm:sendlist");

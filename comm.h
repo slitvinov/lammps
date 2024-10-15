@@ -8,7 +8,7 @@ public:
   int style;
   enum { LAYOUT_UNIFORM, LAYOUT_NONUNIFORM, LAYOUT_TILED };
   int layout;
-  enum { SINGLE, MULTI, MULTIOLD };
+  enum { SINGLE, MULTI };
   int mode;
   int me, nprocs;
   int ghost_velocity;
