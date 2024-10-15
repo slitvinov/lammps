@@ -98,52 +98,6 @@ char *utils::fgets_trunc(char *buf, int size, FILE *fp) {
   } while (n == MAXDUMMY - 1 && ptr[MAXDUMMY - 1] != '\n');
   return buf;
 }
-void utils::sfgets(const char *srcname, int srcline, char *s, int size,
-                   FILE *fp, const char *filename, Error *error) {
-  constexpr int MAXPATHLENBUF = 1024;
-  char *rv = fgets(s, size, fp);
-  if (rv == nullptr) {
-    char buf[MAXPATHLENBUF];
-    std::string errmsg;
-    if (!filename)
-      filename = platform::guesspath(fp, buf, MAXPATHLENBUF);
-    if (feof(fp)) {
-      errmsg = "Unexpected end of file while reading file '";
-    } else if (ferror(fp)) {
-      errmsg = "Unexpected error while reading file '";
-    } else {
-      errmsg = "Unexpected short read while reading file '";
-    }
-    errmsg += filename;
-    errmsg += "'";
-    if (error)
-      error->one(srcname, srcline, errmsg);
-    if (s)
-      *s = '\0';
-  }
-}
-void utils::sfread(const char *srcname, int srcline, void *s, size_t size,
-                   size_t num, FILE *fp, const char *filename, Error *error) {
-  constexpr int MAXPATHLENBUF = 1024;
-  size_t rv = fread(s, size, num, fp);
-  if (rv != num) {
-    char buf[MAXPATHLENBUF];
-    std::string errmsg;
-    if (!filename)
-      filename = platform::guesspath(fp, buf, MAXPATHLENBUF);
-    if (feof(fp)) {
-      errmsg = "Unexpected end of file while reading file '";
-    } else if (ferror(fp)) {
-      errmsg = "Unexpected error while reading file '";
-    } else {
-      errmsg = "Unexpected short read while reading file '";
-    }
-    errmsg += filename;
-    errmsg += "'";
-    if (error)
-      error->one(srcname, srcline, errmsg);
-  }
-}
 int utils::read_lines_from_file(FILE *fp, int nlines, int nmax, char *buffer,
                                 int me, MPI_Comm comm) {
   char *ptr = buffer;

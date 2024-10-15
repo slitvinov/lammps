@@ -184,16 +184,6 @@ bool LabelMap::is_complete(int mode) const {
   }
   return false;
 }
-char *LabelMap::read_string(FILE *fp) {
-  int n = read_int(fp);
-  if (n < 0)
-    error->all(FLERR, "Illegal size string or corrupt restart");
-  char *value = new char[n];
-  if (comm->me == 0)
-    utils::sfread(FLERR, value, sizeof(char), n, fp, nullptr, error);
-  MPI_Bcast(value, n, MPI_CHAR, 0, world);
-  return value;
-}
 void LabelMap::write_string(const std::string &str, FILE *fp) {
   const char *cstr = str.c_str();
   int n = strlen(cstr) + 1;
