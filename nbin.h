@@ -47,7 +47,6 @@ protected:
   int maxcollections;
   int *maxbins_multi;
   int coord2bin(double *);
-  int coord2bin_multi(double *, int);
 };
 } // namespace LAMMPS_NS
 #endif
