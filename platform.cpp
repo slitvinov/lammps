@@ -32,17 +32,6 @@ static const std::vector<compress_info> compress_styles = {
      compress_info::LZMA},
     {"lz4", "lz4", " > ", " -cdf ", compress_info::LZ4},
 };
-static const compress_info &find_compress_type(const std::string &file) {
-  std::size_t dot = file.find_last_of('.');
-  if (dot != std::string::npos) {
-    const std::string ext = file.substr(dot + 1);
-    for (const auto &i : compress_styles) {
-      if (i.extension == ext)
-        return i;
-    }
-  }
-  return compress_styles[0];
-}
 static auto initial_time = std::chrono::steady_clock::now();
 using namespace LAMMPS_NS;
 #if defined(__clang__)
