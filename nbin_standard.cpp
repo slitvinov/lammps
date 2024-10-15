@@ -120,28 +120,10 @@ void NBinStandard::bin_atoms() {
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
   int nall = nlocal + atom->nghost;
-  if (includegroup) {
-    int bitmask = group->bitmask[includegroup];
-    for (i = nall - 1; i >= nlocal; i--) {
-      if (mask[i] & bitmask) {
-        ibin = coord2bin(x[i]);
-        atom2bin[i] = ibin;
-        bins[i] = binhead[ibin];
-        binhead[ibin] = i;
-      }
-    }
-    for (i = atom->nfirst - 1; i >= 0; i--) {
-      ibin = coord2bin(x[i]);
-      atom2bin[i] = ibin;
-      bins[i] = binhead[ibin];
-      binhead[ibin] = i;
-    }
-  } else {
-    for (i = nall - 1; i >= 0; i--) {
-      ibin = coord2bin(x[i]);
-      atom2bin[i] = ibin;
-      bins[i] = binhead[ibin];
-      binhead[ibin] = i;
-    }
+  for (i = nall - 1; i >= 0; i--) {
+    ibin = coord2bin(x[i]);
+    atom2bin[i] = ibin;
+    bins[i] = binhead[ibin];
+    binhead[ibin] = i;
   }
 }
