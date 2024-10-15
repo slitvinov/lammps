@@ -4,7 +4,7 @@
 namespace LAMMPS_NS {
 class Comm : protected Pointers {
 public:
-  enum { BRICK, TILED };
+  enum { BRICK };
   int style;
   enum { LAYOUT_UNIFORM, LAYOUT_NONUNIFORM, LAYOUT_TILED };
   int layout;
@@ -34,7 +34,6 @@ public:
   int rcbcutdim;
   Comm(class LAMMPS *);
   ~Comm() override;
-  void copy_arrays(class Comm *);
   virtual void init();
   void modify_params(int, char **);
   virtual void set_proc_grid(int outflag = 1);

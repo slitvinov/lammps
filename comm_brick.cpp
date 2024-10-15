@@ -39,14 +39,6 @@ CommBrick::~CommBrick() {
   memory->destroy(buf_send);
   memory->destroy(buf_recv);
 }
-CommBrick::CommBrick(LAMMPS *, Comm *oldcomm) : Comm(*oldcomm) {
-  if (oldcomm->layout == Comm::LAYOUT_TILED)
-    error->all(FLERR, "Cannot change to comm_style brick from tiled layout");
-  style = Comm::BRICK;
-  layout = oldcomm->layout;
-  Comm::copy_arrays(oldcomm);
-  init_buffers();
-}
 void CommBrick::init_buffers() {
   multilo = multihi = nullptr;
   cutghostmulti = nullptr;

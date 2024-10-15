@@ -5,7 +5,6 @@ namespace LAMMPS_NS {
 class CommBrick : public Comm {
 public:
   CommBrick(class LAMMPS *);
-  CommBrick(class LAMMPS *, class Comm *);
   ~CommBrick() override;
   void init() override;
   void setup() override;

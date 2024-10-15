@@ -73,34 +73,6 @@ Comm::~Comm() {
   delete[] customfile;
   delete[] outfile;
 }
-void Comm::copy_arrays(Comm *oldcomm) {
-  if (oldcomm->grid2proc) {
-    memory->create(grid2proc, procgrid[0], procgrid[1], procgrid[2],
-                   "comm:grid2proc");
-    memcpy(&grid2proc[0][0][0], &oldcomm->grid2proc[0][0][0],
-           (procgrid[0] * procgrid[1] * procgrid[2]) * sizeof(int));
-    memory->create(xsplit, procgrid[0] + 1, "comm:xsplit");
-    memory->create(ysplit, procgrid[1] + 1, "comm:ysplit");
-    memory->create(zsplit, procgrid[2] + 1, "comm:zsplit");
-    memcpy(xsplit, oldcomm->xsplit, (procgrid[0] + 1) * sizeof(double));
-    memcpy(ysplit, oldcomm->ysplit, (procgrid[1] + 1) * sizeof(double));
-    memcpy(zsplit, oldcomm->zsplit, (procgrid[2] + 1) * sizeof(double));
-  }
-  ncollections = oldcomm->ncollections;
-  ncollections_cutoff = oldcomm->ncollections_cutoff;
-  if (oldcomm->cutusermulti) {
-    memory->create(cutusermulti, ncollections_cutoff, "comm:cutusermulti");
-    memcpy(cutusermulti, oldcomm->cutusermulti, ncollections_cutoff);
-  }
-  if (oldcomm->cutusermultiold) {
-    memory->create(cutusermultiold, atom->ntypes + 1, "comm:cutusermultiold");
-    memcpy(cutusermultiold, oldcomm->cutusermultiold, atom->ntypes + 1);
-  }
-  if (customfile)
-    customfile = utils::strdup(oldcomm->customfile);
-  if (outfile)
-    outfile = utils::strdup(oldcomm->outfile);
-}
 void Comm::init() {
   triclinic = domain->triclinic;
   map_style = atom->map_style;
