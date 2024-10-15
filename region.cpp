@@ -14,7 +14,6 @@ Region::Region(LAMMPS *lmp, int, char **arg)
       tstr(nullptr) {
   id = utils::strdup(arg[0]);
   style = utils::strdup(arg[1]);
-  varshape = 0;
   xstr = ystr = zstr = tstr = nullptr;
   dx = dy = dz = 0.0;
   size_restart = 5;
@@ -30,10 +29,7 @@ Region::~Region() {
   delete[] tstr;
 }
 void Region::init() { vel_timestep = -1; }
-void Region::prematch() {
-  if (varshape)
-    shape_update();
-}
+void Region::prematch() { }
 int Region::match(double x, double y, double z) {
   return !(inside(x, y, z) ^ interior);
 }

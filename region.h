@@ -12,16 +12,7 @@ public:
   double extent_ylo, extent_yhi;
   double extent_zlo, extent_zhi;
   int bboxflag;
-  int varshape;
   int open_faces[6];
-  struct Contact {
-    double r;
-    double delx, dely, delz;
-    double radius;
-    int iwall;
-    int varflag;
-  };
-  Contact *contact;
   int cmax;
   int tmax;
   double dx, dy, dz, theta;
