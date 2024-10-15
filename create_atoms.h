@@ -22,7 +22,7 @@ private:
   double subsetfrac;
   int *basistype;
   double xone[3], quatone[4];
-  double radthresh, radscale, mesh_density;
+  double radscale, mesh_density;
   int varflag, vvar, xvar, yvar, zvar;
   char *vstr, *xstr, *ystr, *zstr;
   char *xstr_copy, *ystr_copy, *zstr_copy;

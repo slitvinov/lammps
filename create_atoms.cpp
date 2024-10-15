@@ -84,7 +84,6 @@ void CreateAtoms::command(int narg, char **arg) {
   int subsetseed;
   maxtry = DEFAULT_MAXTRY;
   radscale = 1.0;
-  radthresh = domain->lattice->xlattice;
   mesh_style = BISECTION;
   mesh_density = 1.0;
   nbasis = domain->lattice->nbasis;
