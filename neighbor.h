@@ -78,17 +78,10 @@ public:
   void set(int, char **);
   void modify_params(int, char **);
   void modify_params(const std::string &);
-  void exclusion_group_group_delete(int, int);
-  int exclude_setting();
   int overlap_topo;
-  void set_overlap_topo(int);
   NeighList *find_list(void *, const int id = 0) const;
   NeighRequest *find_request(void *, const int id = 0) const;
   const std::vector<NeighRequest *> get_pair_requests() const;
-  int any_full();
-  void build_collection(int);
-  bigint get_nneigh_full();
-  bigint get_nneigh_half();
   bigint last_setup_bins;
 
 protected:

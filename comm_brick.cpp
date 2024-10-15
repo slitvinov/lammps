@@ -612,8 +612,6 @@ void CommBrick::borders() {
       firstrecv[iswap] = atom->nlocal + atom->nghost;
       nprior = atom->nlocal + atom->nghost;
       atom->nghost += nrecv;
-      if (neighbor->style == Neighbor::MULTI)
-        neighbor->build_collection(nprior);
       iswap++;
     }
   }

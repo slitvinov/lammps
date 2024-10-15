@@ -1023,8 +1023,6 @@ void Neighbor::build(int topoflag) {
   lastcall = update->ntimestep;
   int nlocal = atom->nlocal;
   int nall = nlocal + atom->nghost;
-  if (style == Neighbor::MULTI)
-    build_collection(0);
   if (nall > NEIGHMASK)
     error->one(FLERR, "Too many local+ghost atoms for neighbor list");
   if (dist_check) {
@@ -1332,91 +1330,4 @@ void Neighbor::modify_params(const std::string &modcmd) {
   }
   modify_params(args.size(), newarg);
   delete[] newarg;
-}
-void Neighbor::exclusion_group_group_delete(int group1, int group2) {
-  int m, mlast;
-  for (m = 0; m < nex_group; m++)
-    if (ex1_group[m] == group1 && ex2_group[m] == group2)
-      break;
-  mlast = m;
-  if (mlast == nex_group)
-    error->all(FLERR, "Unable to find group-group exclusion");
-  for (m = mlast + 1; m < nex_group; m++) {
-    ex1_group[m - 1] = ex1_group[m];
-    ex2_group[m - 1] = ex2_group[m];
-    ex1_bit[m - 1] = ex1_bit[m];
-    ex2_bit[m - 1] = ex2_bit[m];
-  }
-  nex_group--;
-}
-int Neighbor::exclude_setting() { return exclude; }
-void Neighbor::set_overlap_topo(int s) { overlap_topo = s; }
-int Neighbor::any_full() {
-  int any_full = 0;
-  for (int i = 0; i < old_nrequest; i++) {
-    if (old_requests[i]->full)
-      any_full = 1;
-  }
-  return any_full;
-}
-void Neighbor::build_collection(int istart) {
-  if (style != Neighbor::MULTI)
-    error->all(FLERR,
-               "Cannot define atom collections without neighbor style multi");
-  int nmax = atom->nlocal + atom->nghost;
-  if (nmax > nmax_collection) {
-    nmax_collection = nmax + DELTA_PERATOM;
-    memory->grow(collection, nmax_collection, "neigh:collection");
-  }
-  if (finite_cut_flag) {
-    double cut;
-    int icollection;
-    for (int i = istart; i < nmax; i++) {
-      cut = force->pair->atom2cut(i);
-      collection[i] = -1;
-      for (icollection = 0; icollection < ncollections; icollection++) {
-        if (collection2cut[icollection] >= cut) {
-          collection[i] = icollection;
-          break;
-        }
-      }
-      if (collection[i] == -1)
-        error->one(FLERR, "Atom cutoff exceeds interval cutoffs for multi");
-    }
-  } else {
-    int *type = atom->type;
-    for (int i = istart; i < nmax; i++) {
-      collection[i] = type2collection[type[i]];
-    }
-  }
-}
-bigint Neighbor::get_nneigh_full() {
-  int m;
-  for (m = 0; m < old_nrequest; m++)
-    if (old_requests[m]->full && !old_requests[m]->skip)
-      break;
-  bigint nneighfull = -1;
-  if (m < old_nrequest) {
-    nneighfull = 0;
-    if (lists[m]->numneigh) {
-      int inum = neighbor->lists[m]->inum;
-      int *ilist = neighbor->lists[m]->ilist;
-      int *numneigh = neighbor->lists[m]->numneigh;
-      for (int i = 0; i < inum; i++)
-        nneighfull += numneigh[ilist[i]];
-    };
-  }
-  return nneighfull;
-}
-bigint Neighbor::get_nneigh_half() {
-  int m;
-  for (m = 0; m < old_nrequest; m++)
-    if (old_requests[m]->half && !old_requests[m]->skip && lists[m] &&
-        lists[m]->numneigh)
-      break;
-  bigint nneighhalf = -1;
-  if (m < old_nrequest) {
-    nneighhalf = 0;
-  }
-  return nneighhalf;
 }
