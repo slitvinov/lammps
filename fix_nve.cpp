@@ -87,19 +87,3 @@ void FixNVE::final_integrate() {
       }
   }
 }
-void FixNVE::initial_integrate_respa(int vflag, int ilevel, int) {
-  dtv = step_respa[ilevel];
-  dtf = 0.5 * step_respa[ilevel] * force->ftm2v;
-  if (ilevel == 0)
-    initial_integrate(vflag);
-  else
-    final_integrate();
-}
-void FixNVE::final_integrate_respa(int ilevel, int) {
-  dtf = 0.5 * step_respa[ilevel] * force->ftm2v;
-  final_integrate();
-}
-void FixNVE::reset_dt() {
-  dtv = update->dt;
-  dtf = 0.5 * update->dt * force->ftm2v;
-}

@@ -12,10 +12,6 @@ public:
   void init() override;
   void initial_integrate(int) override;
   void final_integrate() override;
-  void initial_integrate_respa(int, int, int) override;
-  void final_integrate_respa(int, int) override;
-  void reset_dt() override;
-
 protected:
   double dtv, dtf;
   double *step_respa;
