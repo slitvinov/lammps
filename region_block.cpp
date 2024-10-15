@@ -105,8 +105,6 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
   MathExtra::copy3(corners[0][2], corners[5][3]);
 }
 RegBlock::~RegBlock() {
-  if (copymode)
-    return;
   delete[] xlostr;
   delete[] xhistr;
   delete[] ylostr;

@@ -18,7 +18,6 @@ public:
   int moveflag, rotateflag;
   int openflag;
   int open_faces[6];
-  int copymode;
   struct Contact {
     double r;
     double delx, dely, delz;

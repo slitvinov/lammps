@@ -19,12 +19,9 @@ Region::Region(LAMMPS *lmp, int, char **arg)
   dx = dy = dz = 0.0;
   size_restart = 5;
   Region::reset_vel();
-  copymode = 0;
   nregion = 1;
 }
 Region::~Region() {
-  if (copymode)
-    return;
   delete[] id;
   delete[] style;
   delete[] xstr;
