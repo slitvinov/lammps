@@ -47,12 +47,8 @@ void Region::options(int narg, char **arg) {
   int iarg = 0;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "units") == 0) {
-      if (iarg + 2 > narg)
-        utils::missing_cmd_args(FLERR, "region units", error);
       if (strcmp(arg[iarg + 1], "box") == 0)
         scaleflag = 0;
-      else if (strcmp(arg[iarg + 1], "lattice") == 0)
-        scaleflag = 1;
       else
         error->all(FLERR, "Illegal region units: {}", arg[iarg + 1]);
       iarg += 2;
