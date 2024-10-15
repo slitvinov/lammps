@@ -783,29 +783,6 @@ void Neighbor::requests_new2old() {
   old_pgsize = pgsize;
   old_oneatom = oneatom;
 }
-NeighRequest *Neighbor::find_request(void *classptr, const int id) const {
-  if (classptr == nullptr)
-    return nullptr;
-  for (int i = 0; i < nrequest; i++)
-    if ((requests[i]->requestor == classptr) && (requests[i]->id == id))
-      return requests[i];
-  return nullptr;
-}
-const std::vector<NeighRequest *> Neighbor::get_pair_requests() const {
-  std::vector<NeighRequest *> matches;
-  for (int i = 0; i < nrequest; ++i)
-    if (requests[i]->pair)
-      matches.push_back(requests[i]);
-  return matches;
-}
-NeighList *Neighbor::find_list(void *classptr, const int id) const {
-  if (classptr == nullptr)
-    return nullptr;
-  for (int i = 0; i < nlist; i++)
-    if ((lists[i]->requestor == classptr) && (lists[i]->id == id))
-      return lists[i];
-  return nullptr;
-}
 int Neighbor::choose_bin(NeighRequest *rq) {
   if (style == Neighbor::NSQ)
     return 0;

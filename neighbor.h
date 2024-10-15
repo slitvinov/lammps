@@ -77,9 +77,6 @@ public:
   void set(int, char **);
   void modify_params(int, char **);
   int overlap_topo;
-  NeighList *find_list(void *, const int id = 0) const;
-  NeighRequest *find_request(void *, const int id = 0) const;
-  const std::vector<NeighRequest *> get_pair_requests() const;
   bigint last_setup_bins;
 
 protected:
