@@ -1044,7 +1044,7 @@ void Neighbor::set(int narg, char **arg) {
   else if (strcmp(arg[1], "multi") == 0) {
     style = Neighbor::MULTI;
     ncollections = atom->ntypes;
-  else
+  } else
     error->all(FLERR, "Unknown neighbor {} argument: {}", arg[0], arg[1]);
 }
 void Neighbor::modify_params(int narg, char **arg) {
