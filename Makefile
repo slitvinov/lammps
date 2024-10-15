@@ -37,7 +37,6 @@ math_extra.o \
 memory.o \
 modify.o \
 my_page.o \
-my_pool_chunk.o \
 nbin.o \
 nbin_standard.o \
 neighbor.o \
