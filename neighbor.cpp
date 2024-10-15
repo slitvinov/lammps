@@ -874,9 +874,6 @@ int Neighbor::choose_pair(NeighRequest *rq) {
     if (style == Neighbor::BIN) {
       if (!(mask & NP_BIN))
         continue;
-    } else if (style == Neighbor::MULTI_OLD) {
-      if (!(mask & NP_MULTI_OLD))
-        continue;
     } else if (style == Neighbor::MULTI) {
       if (!(mask & NP_MULTI))
         continue;
@@ -1047,8 +1044,6 @@ void Neighbor::set(int narg, char **arg) {
   else if (strcmp(arg[1], "multi") == 0) {
     style = Neighbor::MULTI;
     ncollections = atom->ntypes;
-  } else if (strcmp(arg[1], "multi/old") == 0)
-    style = Neighbor::MULTI_OLD;
   else
     error->all(FLERR, "Unknown neighbor {} argument: {}", arg[0], arg[1]);
 }
