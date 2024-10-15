@@ -77,7 +77,6 @@ public:
   void build_one(class NeighList *list, int preflag = 0);
   void set(int, char **);
   void modify_params(int, char **);
-  void modify_params(const std::string &);
   int overlap_topo;
   NeighList *find_list(void *, const int id = 0) const;
   NeighRequest *find_request(void *, const int id = 0) const;

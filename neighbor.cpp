@@ -1321,13 +1321,3 @@ void Neighbor::modify_params(int narg, char **arg) {
       error->all(FLERR, "Unknown neigh_modify keyword: {}", arg[iarg]);
   }
 }
-void Neighbor::modify_params(const std::string &modcmd) {
-  auto args = utils::split_words(modcmd);
-  auto newarg = new char *[args.size()];
-  int i = 0;
-  for (const auto &arg : args) {
-    newarg[i++] = (char *)arg.c_str();
-  }
-  modify_params(args.size(), newarg);
-  delete[] newarg;
-}
