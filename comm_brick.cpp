@@ -29,10 +29,6 @@ CommBrick::CommBrick(LAMMPS *lmp)
 }
 CommBrick::~CommBrick() {
   CommBrick::free_swap();
-  if (mode == Comm::MULTI) {
-    CommBrick::free_multi();
-    memory->destroy(cutghostmulti);
-  }
   if (sendlist)
     for (int i = 0; i < maxswap; i++)
       memory->destroy(sendlist[i]);
@@ -76,31 +72,11 @@ void CommBrick::init() {
   init_exchange();
   if (bufextra > bufextra_old)
     grow_send(maxsend + bufextra, 2);
-  if (mode == Comm::MULTI) {
-    if (ncollections != neighbor->ncollections) {
-      ncollections = neighbor->ncollections;
-      if (multilo != nullptr) {
-        free_multi();
-        memory->destroy(cutghostmulti);
-      }
-    }
-    if (cutusermulti && ncollections != ncollections_cutoff) {
-      if (me == 0)
-        error->warning(FLERR, "cutoff/multi settings discarded, must be defined"
-                              " after customizing collections in neigh_modify");
-      memory->destroy(cutusermulti);
-      cutusermulti = nullptr;
-    }
-    if (multilo == nullptr) {
-      allocate_multi(maxswap);
-      memory->create(cutghostmulti, ncollections, 3, "comm:cutghostmulti");
-    }
-  }
   if ((mode == Comm::SINGLE) && multilo) {
     free_multi();
     memory->destroy(cutghostmulti);
   }
-  if ((mode == Comm::SINGLE || mode == Comm::MULTI) && multioldlo) {
+  if ((mode == Comm::SINGLE) && multioldlo) {
     free_multiold();
     memory->destroy(cutghostmultiold);
   }
@@ -113,31 +89,6 @@ void CommBrick::setup() {
   if ((cut == 0.0) && (me == 0))
     error->warning(FLERR, "Communication cutoff is 0.0. No ghost atoms "
                           "will be generated. Atoms may get lost.");
-  if (mode == Comm::MULTI) {
-    double **cutcollectionsq = neighbor->cutcollectionsq;
-    neighbor->build_collection(0);
-    for (i = 0; i < ncollections; i++) {
-      if (cutusermulti) {
-        cutghostmulti[i][0] = cutusermulti[i];
-        cutghostmulti[i][1] = cutusermulti[i];
-        cutghostmulti[i][2] = cutusermulti[i];
-      } else {
-        cutghostmulti[i][0] = 0.0;
-        cutghostmulti[i][1] = 0.0;
-        cutghostmulti[i][2] = 0.0;
-      }
-      for (j = 0; j < ncollections; j++) {
-        if (multi_reduce && (cutcollectionsq[j][j] > cutcollectionsq[i][i]))
-          continue;
-        cutghostmulti[i][0] =
-            MAX(cutghostmulti[i][0], sqrt(cutcollectionsq[i][j]));
-        cutghostmulti[i][1] =
-            MAX(cutghostmulti[i][1], sqrt(cutcollectionsq[i][j]));
-        cutghostmulti[i][2] =
-            MAX(cutghostmulti[i][2], sqrt(cutcollectionsq[i][j]));
-      }
-    }
-  }
   if (triclinic == 0) {
     prd = domain->prd;
     sublo = domain->sublo;
@@ -156,13 +107,6 @@ void CommBrick::setup() {
     cutghost[1] = cut * length1;
     length2 = h_inv[2];
     cutghost[2] = cut * length2;
-    if (mode == Comm::MULTI) {
-      for (i = 0; i < ncollections; i++) {
-        cutghostmulti[i][0] *= length0;
-        cutghostmulti[i][1] *= length1;
-        cutghostmulti[i][2] *= length2;
-      }
-    }
   }
   int *periodicity = domain->periodicity;
   int left, right;
@@ -279,14 +223,6 @@ void CommBrick::setup() {
           else
             slablo[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
           slabhi[iswap] = sublo[dim] + cutghost[dim];
-        } else if (mode == Comm::MULTI) {
-          for (i = 0; i < ncollections; i++) {
-            if (ineed < 2)
-              multilo[iswap][i] = -BIG;
-            else
-              multilo[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
-            multihi[iswap][i] = sublo[dim] + cutghostmulti[i][dim];
-          }
         } else {
           for (i = 1; i <= ntypes; i++) {
             if (ineed < 2)
@@ -315,14 +251,6 @@ void CommBrick::setup() {
             slabhi[iswap] = BIG;
           else
             slabhi[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
-        } else if (mode == Comm::MULTI) {
-          for (i = 0; i < ncollections; i++) {
-            multilo[iswap][i] = subhi[dim] - cutghostmulti[i][dim];
-            if (ineed < 2)
-              multihi[iswap][i] = BIG;
-            else
-              multihi[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
-          }
         } else {
           for (i = 1; i <= ntypes; i++) {
             multioldlo[iswap][i] = subhi[dim] - cutghostmultiold[i][dim];
@@ -574,8 +502,6 @@ void CommBrick::borders() {
   double *buf, *mlo, *mhi;
   MPI_Request request;
   AtomVec *avec = atom->avec;
-  if (mode == Comm::MULTI)
-    neighbor->build_collection(0);
   iswap = 0;
   smax = rmax = 0;
   for (dim = 0; dim < 3; dim++) {
@@ -586,10 +512,6 @@ void CommBrick::borders() {
       if (mode == Comm::SINGLE) {
         lo = slablo[iswap];
         hi = slabhi[iswap];
-      } else if (mode == Comm::MULTI) {
-        collection = neighbor->collection;
-        mlo = multilo[iswap];
-        mhi = multihi[iswap];
       } else {
         type = atom->type;
         mlo = multioldlo[iswap];
@@ -613,16 +535,6 @@ void CommBrick::borders() {
                   grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
-          } else if (mode == Comm::MULTI) {
-            for (i = nfirst; i < nlast; i++) {
-              icollection = collection[i];
-              if (x[i][dim] >= mlo[icollection] &&
-                  x[i][dim] <= mhi[icollection]) {
-                if (nsend == maxsendlist[iswap])
-                  grow_list(iswap, nsend);
-                sendlist[iswap][nsend++] = i;
-              }
-            }
           } else {
             for (i = nfirst; i < nlast; i++) {
               itype = type[i];
@@ -648,26 +560,6 @@ void CommBrick::borders() {
                   grow_list(iswap, nsend);
                 sendlist[iswap][nsend++] = i;
               }
-          } else if (mode == Comm::MULTI) {
-            ngroup = atom->nfirst;
-            for (i = 0; i < ngroup; i++) {
-              icollection = collection[i];
-              if (x[i][dim] >= mlo[icollection] &&
-                  x[i][dim] <= mhi[icollection]) {
-                if (nsend == maxsendlist[iswap])
-                  grow_list(iswap, nsend);
-                sendlist[iswap][nsend++] = i;
-              }
-            }
-            for (i = atom->nlocal; i < nlast; i++) {
-              icollection = collection[i];
-              if (x[i][dim] >= mlo[icollection] &&
-                  x[i][dim] <= mhi[icollection]) {
-                if (nsend == maxsendlist[iswap])
-                  grow_list(iswap, nsend);
-                sendlist[iswap][nsend++] = i;
-              }
-            }
           } else {
             ngroup = atom->nfirst;
             for (i = 0; i < ngroup; i++) {
@@ -990,10 +882,6 @@ void CommBrick::grow_list(int iswap, int n) {
 void CommBrick::grow_swap(int n) {
   free_swap();
   allocate_swap(n);
-  if (mode == Comm::MULTI) {
-    free_multi();
-    allocate_multi(n);
-  }
   sendlist =
       (int **)memory->srealloc(sendlist, n * sizeof(int *), "comm:sendlist");
   memory->grow(maxsendlist, n, "comm:maxsendlist");

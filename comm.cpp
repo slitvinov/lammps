@@ -138,9 +138,6 @@ void Comm::init() {
   for (const auto &fix : fix_list)
     if (fix->maxexchange_dynamic)
       maxexchange_fix_dynamic = 1;
-  if ((mode == Comm::MULTI) && (neighbor->style != Neighbor::MULTI))
-    error->all(FLERR,
-               "Cannot use comm mode multi without multi-style neighbor lists");
 }
 void Comm::init_exchange() {
   maxexchange_fix = 0;
