@@ -8,13 +8,6 @@ public:
   ~RanMars() override;
   double uniform();
   double gaussian();
-  double gaussian(double mu, double sigma);
-  double rayleigh(double sigma);
-  double besselexp(double theta, double alpha, double cp);
-  void select_subset(bigint, int, int *, int *);
-  void get_state(double *);
-  void set_state(double *);
-
 private:
   char padding[1024];
   int save;
