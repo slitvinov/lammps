@@ -7,7 +7,6 @@ public:
   char *id, *style;
   Region **reglist;
   int interior;
-  int scaleflag;
   double xscale, yscale, zscale;
   double extent_xlo, extent_xhi;
   double extent_ylo, extent_yhi;

@@ -41,26 +41,9 @@ void Region::options(int narg, char **arg) {
   if (narg < 0)
     utils::missing_cmd_args(FLERR, "region", error);
   interior = 1;
-  scaleflag = 1;
   for (int i = 0; i < 6; i++)
     open_faces[i] = 0;
-  int iarg = 0;
-  while (iarg < narg) {
-    if (strcmp(arg[iarg], "units") == 0) {
-      if (strcmp(arg[iarg + 1], "box") == 0)
-        scaleflag = 0;
-      else
-        error->all(FLERR, "Illegal region units: {}", arg[iarg + 1]);
-      iarg += 2;
-    } else
-      error->all(FLERR, "Illegal region command argument: {}", arg[iarg]);
-  }
-  if (scaleflag) {
-    xscale = domain->lattice->xlattice;
-    yscale = domain->lattice->ylattice;
-    zscale = domain->lattice->zlattice;
-  } else
-    xscale = yscale = zscale = 1.0;
+  xscale = yscale = zscale = 1.0;
 }
 void Region::reset_vel() {
   for (int i = 0; i < size_restart; i++)
