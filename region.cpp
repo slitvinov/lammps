@@ -35,8 +35,6 @@ void Region::prematch() {
     shape_update();
 }
 int Region::match(double x, double y, double z) {
-  if (openflag)
-    return 1;
   return !(inside(x, y, z) ^ interior);
 }
 void Region::options(int narg, char **arg) {
@@ -44,8 +42,6 @@ void Region::options(int narg, char **arg) {
     utils::missing_cmd_args(FLERR, "region", error);
   interior = 1;
   scaleflag = 1;
-  moveflag = 0;
-  openflag = 0;
   for (int i = 0; i < 6; i++)
     open_faces[i] = 0;
   int iarg = 0;
@@ -63,19 +59,12 @@ void Region::options(int narg, char **arg) {
     } else
       error->all(FLERR, "Illegal region command argument: {}", arg[iarg]);
   }
-  if ((moveflag) &&
-      (strcmp(style, "union") == 0 || strcmp(style, "intersect") == 0))
-    error->all(FLERR, "Region union or intersect cannot be dynamic");
   if (scaleflag) {
     xscale = domain->lattice->xlattice;
     yscale = domain->lattice->ylattice;
     zscale = domain->lattice->zlattice;
   } else
     xscale = yscale = zscale = 1.0;
-  if (moveflag)
-    dynamic = 1;
-  else
-    dynamic = 0;
 }
 void Region::reset_vel() {
   for (int i = 0; i < size_restart; i++)

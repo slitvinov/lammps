@@ -14,9 +14,6 @@ public:
   double extent_zlo, extent_zhi;
   int bboxflag;
   int varshape;
-  int dynamic;
-  int moveflag;
-  int openflag;
   int open_faces[6];
   struct Contact {
     double r;
