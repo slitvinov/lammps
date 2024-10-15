@@ -6,7 +6,6 @@
 #include <vector>
 namespace LAMMPS_NS {
 namespace platform {
-double cputime();
 double walltime();
 #if !defined(_WIN32)
 constexpr char filepathsep[] = "/";

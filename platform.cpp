@@ -40,15 +40,6 @@ using namespace LAMMPS_NS;
 #pragma optimize("", off)
 #endif
 double
-platform::cputime() {
-  double rv = 0.0;
-  struct rusage ru;
-  if (getrusage(RUSAGE_SELF, &ru) == 0) {
-    rv = (double)ru.ru_utime.tv_sec;
-    rv += (double)ru.ru_utime.tv_usec * 0.000001;
-  }
-  return rv;
-}
 #if defined(__clang__)
 #elif defined(_MSC_VER)
 #pragma optimize("", on)
