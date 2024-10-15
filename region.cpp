@@ -10,7 +10,7 @@
 using namespace LAMMPS_NS;
 Region::Region(LAMMPS *lmp, int, char **arg)
     : Pointers(lmp), id(nullptr), style(nullptr), reglist(nullptr),
-      contact(nullptr), xstr(nullptr), ystr(nullptr), zstr(nullptr),
+      xstr(nullptr), ystr(nullptr), zstr(nullptr),
       tstr(nullptr) {
   id = utils::strdup(arg[0]);
   style = utils::strdup(arg[1]);

@@ -40,7 +40,6 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
   } else
     bboxflag = 0;
   cmax = 6;
-  contact = new Contact[cmax];
   if (interior)
     tmax = 3;
   else
@@ -111,7 +110,6 @@ RegBlock::~RegBlock() {
   delete[] yhistr;
   delete[] zlostr;
   delete[] zhistr;
-  delete[] contact;
 }
 void RegBlock::init() { Region::init(); }
 int RegBlock::inside(double x, double y, double z) {
