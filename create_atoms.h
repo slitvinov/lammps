@@ -16,7 +16,6 @@ private:
   int remapflag;
   int maxtry;
   int quat_user;
-  int overlapflag;
   double overlap;
   int subsetflag;
   bigint nsubset;

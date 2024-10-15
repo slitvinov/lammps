@@ -56,31 +56,12 @@ public:
   virtual void reset_box();
   virtual void pbc();
   void subbox_too_small_check(double);
-  void minimum_image(double &, double &, double &) const;
-  void minimum_image(double *delta) const {
-    minimum_image(delta[0], delta[1], delta[2]);
-  }
-  void remap(double *, imageint &);
-  void remap(double *);
-  void remap_near(double *, double *);
-  void unmap(double *, imageint);
-  void unmap(const double *, imageint, double *);
-  void image_flip(int, int, int);
-  int ownatom(int, double *, imageint *, int);
   void set_lattice(int, char **);
   void add_region(int, char **);
   Region *get_region_by_id(const std::string &) const;
   const std::vector<Region *> get_region_by_style(const std::string &) const;
   const std::vector<Region *> get_region_list();
-  void set_boundary(int, char **, int);
   void print_box(const std::string &);
-  void boundary_string(char *);
-  virtual void lamda2x(int);
-  virtual void x2lamda(int);
-  virtual void lamda2x(double *, double *);
-  virtual void x2lamda(double *, double *);
-  void x2lamda(double *, double *, double *, double *);
-  void bbox(double *, double *, double *, double *);
   void box_corners();
   inline int minimum_image_check(double dx, double dy, double dz) {
     if (xperiodic && fabs(dx) > xprd_half)

@@ -28,23 +28,12 @@ void NBinStandard::bin_atoms_setup(int nall) {
 void NBinStandard::setup_bins(int style) {
   double bbox[3], bsubboxlo[3], bsubboxhi[3];
   double *cutghost = comm->cutghost;
-  if (triclinic == 0) {
-    bsubboxlo[0] = domain->sublo[0] - cutghost[0];
-    bsubboxlo[1] = domain->sublo[1] - cutghost[1];
-    bsubboxlo[2] = domain->sublo[2] - cutghost[2];
-    bsubboxhi[0] = domain->subhi[0] + cutghost[0];
-    bsubboxhi[1] = domain->subhi[1] + cutghost[1];
-    bsubboxhi[2] = domain->subhi[2] + cutghost[2];
-  } else {
-    double lo[3], hi[3];
-    lo[0] = domain->sublo_lamda[0] - cutghost[0];
-    lo[1] = domain->sublo_lamda[1] - cutghost[1];
-    lo[2] = domain->sublo_lamda[2] - cutghost[2];
-    hi[0] = domain->subhi_lamda[0] + cutghost[0];
-    hi[1] = domain->subhi_lamda[1] + cutghost[1];
-    hi[2] = domain->subhi_lamda[2] + cutghost[2];
-    domain->bbox(lo, hi, bsubboxlo, bsubboxhi);
-  }
+  bsubboxlo[0] = domain->sublo[0] - cutghost[0];
+  bsubboxlo[1] = domain->sublo[1] - cutghost[1];
+  bsubboxlo[2] = domain->sublo[2] - cutghost[2];
+  bsubboxhi[0] = domain->subhi[0] + cutghost[0];
+  bsubboxhi[1] = domain->subhi[1] + cutghost[1];
+  bsubboxhi[2] = domain->subhi[2] + cutghost[2];
   bbox[0] = bboxhi[0] - bboxlo[0];
   bbox[1] = bboxhi[1] - bboxlo[1];
   bbox[2] = bboxhi[2] - bboxlo[2];

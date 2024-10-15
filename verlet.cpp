@@ -83,15 +83,11 @@ void Verlet::run(int n) {
       if (n_pre_exchange) {
         modify->pre_exchange();
       }
-      if (triclinic)
-        domain->x2lamda(atom->nlocal);
       domain->pbc();
       comm->exchange();
       if (sortflag && ntimestep >= atom->nextsort)
         atom->sort();
       comm->borders();
-      if (triclinic)
-        domain->lamda2x(atom->nlocal + atom->nghost);
       if (n_pre_neighbor) {
         modify->pre_neighbor();
       }

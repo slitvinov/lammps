@@ -423,16 +423,12 @@ void Atom::setup_sort_bins() {
     return;
   }
   double bininv = 1.0 / binsize;
-  if (domain->triclinic)
-    domain->bbox(domain->sublo_lamda, domain->subhi_lamda, bboxlo, bboxhi);
-  else {
-    bboxlo[0] = domain->sublo[0];
-    bboxlo[1] = domain->sublo[1];
-    bboxlo[2] = domain->sublo[2];
-    bboxhi[0] = domain->subhi[0];
-    bboxhi[1] = domain->subhi[1];
-    bboxhi[2] = domain->subhi[2];
-  }
+  bboxlo[0] = domain->sublo[0];
+  bboxlo[1] = domain->sublo[1];
+  bboxlo[2] = domain->sublo[2];
+  bboxhi[0] = domain->subhi[0];
+  bboxhi[1] = domain->subhi[1];
+  bboxhi[2] = domain->subhi[2];
   nbinx = static_cast<int>((bboxhi[0] - bboxlo[0]) * bininv);
   nbiny = static_cast<int>((bboxhi[1] - bboxlo[1]) * bininv);
   nbinz = static_cast<int>((bboxhi[2] - bboxlo[2]) * bininv);

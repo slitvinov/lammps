@@ -82,7 +82,6 @@ void CreateAtoms::command(int narg, char **arg) {
   quatone[0] = quatone[1] = quatone[2] = quatone[3] = 0.0;
   subsetflag = NONE;
   int subsetseed;
-  overlapflag = 0;
   maxtry = DEFAULT_MAXTRY;
   radscale = 1.0;
   radthresh = domain->lattice->xlattice;
@@ -162,10 +161,6 @@ void CreateAtoms::add_random() {
   double delx, dely, delz, distsq, odistsq;
   double lamda[3], *coord;
   double *boxlo, *boxhi;
-  if (overlapflag) {
-    double odist = overlap;
-    odistsq = odist * odist;
-  }
   auto random = new RanPark(lmp, seed);
   for (int ii = 0; ii < 30; ii++)
     random->uniform();
@@ -201,26 +196,6 @@ void CreateAtoms::add_random() {
       if (region && (region->match(xone[0], xone[1], xone[2]) == 0))
         continue;
       coord = xone;
-      if (overlapflag) {
-        double **x = atom->x;
-        int nlocal = atom->nlocal;
-        int reject = 0;
-        for (int i = 0; i < nlocal; i++) {
-          delx = xone[0] - x[i][0];
-          dely = xone[1] - x[i][1];
-          delz = xone[2] - x[i][2];
-          domain->minimum_image(delx, dely, delz);
-          distsq = delx * delx + dely * dely + delz * delz;
-          if (distsq < odistsq) {
-            reject = 1;
-            break;
-          }
-        }
-        int reject_any;
-        MPI_Allreduce(&reject, &reject_any, 1, MPI_INT, MPI_MAX, world);
-        if (reject_any)
-          continue;
-      }
       success = 1;
       break;
     }
