@@ -27,7 +27,6 @@ NBin::NBin(LAMMPS *lmp) : Pointers(lmp) {
   bininvx_multi = nullptr;
   bininvy_multi = nullptr;
   bininvz_multi = nullptr;
-  binhead_multi = nullptr;
   maxbins_multi = nullptr;
   maxcollections = 0;
   neighbor->last_setup_bins = -1;
@@ -38,29 +37,6 @@ NBin::~NBin() {
   memory->destroy(binhead);
   memory->destroy(bins);
   memory->destroy(atom2bin);
-  if (!binhead_multi)
-    return;
-  memory->destroy(nbinx_multi);
-  memory->destroy(nbiny_multi);
-  memory->destroy(nbinz_multi);
-  memory->destroy(mbins_multi);
-  memory->destroy(mbinx_multi);
-  memory->destroy(mbiny_multi);
-  memory->destroy(mbinz_multi);
-  memory->destroy(mbinxlo_multi);
-  memory->destroy(mbinylo_multi);
-  memory->destroy(mbinzlo_multi);
-  memory->destroy(binsizex_multi);
-  memory->destroy(binsizey_multi);
-  memory->destroy(binsizez_multi);
-  memory->destroy(bininvx_multi);
-  memory->destroy(bininvy_multi);
-  memory->destroy(bininvz_multi);
-  for (int n = 0; n < maxcollections; n++) {
-    memory->destroy(binhead_multi[n]);
-  }
-  delete[] binhead_multi;
-  memory->destroy(maxbins_multi);
 }
 void NBin::post_constructor(NeighRequest *nrq) {
   cutoff_custom = 0.0;

@@ -92,7 +92,6 @@ void NPair::copy_bin_info() {
   bininvx_multi = nb->bininvx_multi;
   bininvy_multi = nb->bininvy_multi;
   bininvz_multi = nb->bininvz_multi;
-  binhead_multi = nb->binhead_multi;
 }
 void NPair::build_setup() {
   if (nb)

@@ -51,7 +51,6 @@ protected:
   int *mbinx_multi, *mbiny_multi, *mbinz_multi;
   int *mbinxlo_multi, *mbinylo_multi, *mbinzlo_multi;
   double *bininvx_multi, *bininvy_multi, *bininvz_multi;
-  int **binhead_multi;
   double **distsq_multi_old;
   virtual void copy_bin_info();
   inline int find_special(const tagint *list, const int *nspecial,

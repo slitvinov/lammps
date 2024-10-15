@@ -22,7 +22,6 @@ public:
   int *mbinxlo_multi, *mbinylo_multi, *mbinzlo_multi;
   double *binsizex_multi, *binsizey_multi, *binsizez_multi;
   double *bininvx_multi, *bininvy_multi, *bininvz_multi;
-  int **binhead_multi;
   NBin(class LAMMPS *);
   ~NBin() override;
   void post_constructor(class NeighRequest *);
