@@ -18,7 +18,7 @@
 using namespace LAMMPS_NS;
 static constexpr int MAX_GROUP = 32;
 static constexpr double EPSILON = 1.0e-6;
-enum { NONE, TYPE, MOLECULE, ID };
+enum { NONE, TYPE, ID };
 enum { LT, LE, GT, GE, EQ, NEQ, BETWEEN };
 #define BIG 1.0e20
 Group::Group(LAMMPS *lmp) : Pointers(lmp) {
