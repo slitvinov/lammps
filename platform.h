@@ -12,10 +12,6 @@ void usleep(int usec);
 int putenv(const std::string &vardef);
 int unsetenv(const std::string &variable);
 std::vector<std::string> list_pathenv(const std::string &var);
-void *dlopen(const std::string &fname);
-std::string dlerror();
-int dlclose(void *handle);
-void *dlsym(void *handle, const std::string &symbol);
 #if !defined(_WIN32)
 constexpr char filepathsep[] = "/";
 #else

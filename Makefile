@@ -59,7 +59,7 @@ utils.o \
 verlet.o \
 
 main: $(S:.cpp=.o)
-	$(MPICXX) -o main $(S:.cpp=.o) $(LDFLAGS) -ldl
+	$(MPICXX) -o main $(S:.cpp=.o) $(LDFLAGS)
 .cpp.o:
 	$(MPICXX) -o $@ -c $< $(FLAGS) $(CXXFLAGS)
 clean:

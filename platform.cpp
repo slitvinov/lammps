@@ -122,20 +122,6 @@ std::string platform::find_exe_path(const std::string &cmd) {
   }
   return "";
 }
-void *platform::dlopen(const std::string &fname) {
-  return ::dlopen(fname.c_str(), RTLD_NOW | RTLD_GLOBAL);
-}
-std::string platform::dlerror() {
-  const char *errmesg = ::dlerror();
-  if (errmesg)
-    return {errmesg};
-  else
-    return {""};
-}
-int platform::dlclose(void *handle) { return ::dlclose(handle); }
-void *platform::dlsym(void *handle, const std::string &symbol) {
-  return ::dlsym(handle, symbol.c_str());
-}
 const char *platform::guesspath(FILE *fp, char *buf, int len) {
   if ((buf == nullptr) || (len < 16))
     return nullptr;
