@@ -12,7 +12,6 @@
 #include "memory.h"
 #include "modify.h"
 #include "region.h"
-#include "tokenizer.h"
 #include <cmath>
 #include <cstring>
 #include <map>

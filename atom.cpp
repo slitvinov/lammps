@@ -14,7 +14,6 @@
 #include "modify.h"
 #include "neighbor.h"
 #include "style_atom.h"
-#include "tokenizer.h"
 #include "update.h"
 #include <algorithm>
 #include <cstring>
