@@ -1,19 +1,19 @@
 #include "platform.h"
 #include "fmt/format.h"
 #include "utils.h"
+#include <chrono>
+#include <cstring>
 #include <deque>
-#include <exception>
-#include <mpi.h>
 #include <dirent.h>
 #include <dlfcn.h>
+#include <exception>
+#include <mpi.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
-#include <unistd.h>
-#include <chrono>
-#include <cstring>
 #include <thread>
+#include <unistd.h>
 struct compress_info {
   enum styles { NONE, GZIP, BZIP2, ZSTD, XZ, LZMA, LZ4 };
   const std::string extension;
@@ -33,19 +33,3 @@ static const std::vector<compress_info> compress_styles = {
     {"lz4", "lz4", " > ", " -cdf ", compress_info::LZ4},
 };
 static auto initial_time = std::chrono::steady_clock::now();
-using namespace LAMMPS_NS;
-#if defined(__clang__)
-[[clang::optnone]]
-#elif defined(_MSC_VER)
-#pragma optimize("", off)
-#endif
-double
-#if defined(__clang__)
-#elif defined(_MSC_VER)
-#pragma optimize("", on)
-#endif
-double platform::walltime() {
-  return std::chrono::duration<double>(std::chrono::steady_clock::now() -
-                                       initial_time)
-      .count();
-}

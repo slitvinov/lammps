@@ -221,4 +221,3 @@ double Comm::get_comm_cutoff() {
   }
   return maxcommcutoff;
 }
-

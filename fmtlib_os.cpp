@@ -9,7 +9,7 @@
 #include <unistd.h>
 #endif
 namespace {
-#if   FMT_USE_FCNTL
+#if FMT_USE_FCNTL
 using rwresult = ssize_t;
 inline std::size_t convert_rwcount(std::size_t count) { return count; }
 #endif

@@ -463,5 +463,3 @@ void Atom::update_callback(int ifix) {
     if (extra_border[i] > ifix)
       extra_border[i]--;
 }
-
-

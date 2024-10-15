@@ -8,6 +8,7 @@ public:
   ~RanMars() override;
   double uniform();
   double gaussian();
+
 private:
   char padding[1024];
   int save;

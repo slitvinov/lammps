@@ -48,7 +48,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   screen = nullptr;
   logfile = nullptr;
   infile = nullptr;
-  initclock = platform::walltime();
   int iarg = 1;
   int inflag = 0;
   int screenflag = 0;
@@ -196,15 +195,6 @@ LAMMPS::~LAMMPS() {
   destroy();
   num_package = 0;
   packargs = nullptr;
-  double totalclock = platform::walltime() - initclock;
-  if ((me == 0) && (screen || logfile)) {
-    int seconds = fmod(totalclock, 60.0);
-    totalclock = (totalclock - seconds) / 60.0;
-    int minutes = fmod(totalclock, 60.0);
-    int hours = (totalclock - minutes) / 60.0;
-    utils::logmesg(this, fmt::format("Total wall time: {}:{:02d}:{:02d}\n",
-                                     hours, minutes, seconds));
-  }
   if (universe->nworlds == 1) {
     if (screen && screen != stdout)
       fclose(screen);

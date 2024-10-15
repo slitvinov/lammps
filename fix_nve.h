@@ -12,6 +12,7 @@ public:
   void init() override;
   void initial_integrate(int) override;
   void final_integrate() override;
+
 protected:
   double dtv, dtf;
   double *step_respa;

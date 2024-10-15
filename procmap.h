@@ -7,6 +7,7 @@ public:
   ProcMap(class LAMMPS *);
   void onelevel_grid(int, int *, int *, int, int, int *, int *);
   void cart_map(int, int *, int *, int[3][2], int ***);
+
 private:
   int procs_per_node;
   int procs_per_numa;

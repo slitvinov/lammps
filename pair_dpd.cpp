@@ -185,4 +185,3 @@ double PairDPD::init_one(int i, int j) {
   sigma[j][i] = sigma[i][j];
   return cut[i][j];
 }
-

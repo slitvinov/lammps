@@ -10,8 +10,7 @@
 using namespace LAMMPS_NS;
 Region::Region(LAMMPS *lmp, int, char **arg)
     : Pointers(lmp), id(nullptr), style(nullptr), reglist(nullptr),
-      xstr(nullptr), ystr(nullptr), zstr(nullptr),
-      tstr(nullptr) {
+      xstr(nullptr), ystr(nullptr), zstr(nullptr), tstr(nullptr) {
   id = utils::strdup(arg[0]);
   style = utils::strdup(arg[1]);
   xstr = ystr = zstr = tstr = nullptr;
@@ -29,7 +28,7 @@ Region::~Region() {
   delete[] tstr;
 }
 void Region::init() { vel_timestep = -1; }
-void Region::prematch() { }
+void Region::prematch() {}
 int Region::match(double x, double y, double z) {
   return !(inside(x, y, z) ^ interior);
 }

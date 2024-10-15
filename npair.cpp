@@ -98,4 +98,3 @@ void NPair::build_setup() {
     copy_bin_info();
   last_build = update->ntimestep;
 }
-

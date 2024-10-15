@@ -6,6 +6,7 @@ class RanPark : protected Pointers {
 public:
   RanPark(class LAMMPS *, int);
   double uniform();
+
 private:
   int seed, save;
   double second;

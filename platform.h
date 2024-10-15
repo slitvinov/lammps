@@ -5,19 +5,6 @@
 #include <string>
 #include <vector>
 namespace LAMMPS_NS {
-namespace platform {
-double walltime();
-#if !defined(_WIN32)
-constexpr char filepathsep[] = "/";
-#else
-constexpr char filepathsep[] = "\\/";
-#endif
-#if !defined(_WIN32)
-constexpr char pathvarsep = ':';
-#else
-constexpr char pathvarsep = ';';
-#endif
-constexpr bigint END_OF_FILE = -1;
-} // namespace platform
+namespace platform {} // namespace platform
 } // namespace LAMMPS_NS
 #endif

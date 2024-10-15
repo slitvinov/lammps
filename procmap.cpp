@@ -190,4 +190,3 @@ int ProcMap::best_factors(int npossible, int **factors, int *best, const int sx,
   }
   return index;
 }
-

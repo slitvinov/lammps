@@ -117,7 +117,6 @@ void CreateAtoms::command(int narg, char **arg) {
   sublo[2] = domain->sublo[2];
   subhi[2] = domain->subhi[2];
   MPI_Barrier(world);
-  double time1 = platform::walltime();
   if (atom->map_style != Atom::MAP_NONE)
     atom->map_clear();
   atom->nghost = 0;
@@ -151,8 +150,6 @@ void CreateAtoms::command(int narg, char **arg) {
       domain->print_box("  using lattice units in ");
     else
       domain->print_box("  using box units in ");
-    utils::logmesg(lmp, "  create_atoms CPU = {:.3f} seconds\n",
-                   platform::walltime() - time1);
   }
 }
 void CreateAtoms::add_random() {

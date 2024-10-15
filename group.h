@@ -14,6 +14,7 @@ public:
   Group(class LAMMPS *);
   ~Group() override;
   int find(const std::string &);
+
 private:
   int me;
   std::map<tagint, int> *hash;

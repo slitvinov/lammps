@@ -22,7 +22,6 @@ public:
   FILE *infile;
   FILE *screen;
   FILE *logfile;
-  double initclock;
   int skiprunflag;
   int pair_only_flag;
   char *exename;

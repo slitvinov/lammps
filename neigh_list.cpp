@@ -158,4 +158,3 @@ void NeighList::grow(int nlocal, int nall) {
                                                 "neighlist:firstneigh_middle");
   }
 }
-

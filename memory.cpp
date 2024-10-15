@@ -35,7 +35,7 @@ void *Memory::srealloc(void *ptr, bigint nbytes, const char *name) {
     destroy(ptr);
     return nullptr;
   }
-#if   defined(LMP_INTEL_NO_TBB) && defined(LAMMPS_MEMALIGN) &&                 \
+#if defined(LMP_INTEL_NO_TBB) && defined(LAMMPS_MEMALIGN) &&                   \
     (defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER))
   ptr = realloc(ptr, nbytes);
   uintptr_t offset = ((uintptr_t)(const void *)(ptr)) % LAMMPS_MEMALIGN;
