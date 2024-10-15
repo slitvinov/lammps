@@ -19,20 +19,9 @@ void Verlet::init() {
   for (const auto &fix : modify->get_fix_list())
     if (fix->time_integrate)
       do_time_integrate = true;
-  if (!do_time_integrate && (comm->me == 0))
-    error->warning(FLERR, "No fixes with time integration, atoms won't move");
-  if (force->newton_pair)
-    virial_style = VIRIAL_FDOTR;
-  else
-    virial_style = VIRIAL_PAIR;
+  virial_style = VIRIAL_FDOTR;
   ev_setup();
-  if (modify->get_fix_by_id("package_omp"))
-    external_force_clear = 1;
   torqueflag = extraflag = 0;
-  if (atom->torque_flag)
-    torqueflag = 1;
-  if (atom->avec->forceclearflag)
-    extraflag = 1;
   triclinic = domain->triclinic;
 }
 void Verlet::setup(int flag) {
@@ -42,8 +31,6 @@ void Verlet::setup(int flag) {
   update->setupflag = 1;
   atom->setup();
   modify->setup_pre_exchange();
-  if (triclinic)
-    domain->x2lamda(atom->nlocal);
   domain->pbc();
   domain->reset_box();
   comm->setup();
@@ -53,8 +40,6 @@ void Verlet::setup(int flag) {
   if (atom->sortfreq > 0)
     atom->sort();
   comm->borders();
-  if (triclinic)
-    domain->lamda2x(atom->nlocal + atom->nghost);
   modify->setup_pre_neighbor();
   neighbor->build(1);
   modify->setup_post_neighbor();
@@ -63,10 +48,7 @@ void Verlet::setup(int flag) {
   ev_set(update->ntimestep);
   force_clear();
   modify->setup_pre_force(vflag);
-  if (pair_compute_flag)
-    force->pair->compute(eflag, vflag);
-  else if (force->pair)
-    force->pair->compute_dummy(eflag, vflag);
+  force->pair->compute(eflag, vflag);
   modify->setup_pre_reverse(eflag, vflag);
   if (force->newton)
     comm->reverse_comm();
@@ -144,8 +126,6 @@ void Verlet::cleanup() {
 }
 void Verlet::force_clear() {
   size_t nbytes;
-  if (external_force_clear)
-    return;
   int nlocal = atom->nlocal;
   if (neighbor->includegroup == 0) {
     nbytes = sizeof(double) * nlocal;
@@ -153,10 +133,6 @@ void Verlet::force_clear() {
       nbytes += sizeof(double) * atom->nghost;
     if (nbytes) {
       memset(&atom->f[0][0], 0, 3 * nbytes);
-      if (torqueflag)
-        memset(&atom->torque[0][0], 0, 3 * nbytes);
-      if (extraflag)
-        atom->avec->force_clear(0, nbytes);
     }
   }
 }
