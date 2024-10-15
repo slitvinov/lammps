@@ -29,7 +29,6 @@ force.o \
 group.o \
 input.o \
 integrate.o \
-label_map.o \
 lattice.o \
 main.o \
 math_extra.o \

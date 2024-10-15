@@ -5,7 +5,6 @@
 #include "error.h"
 #include "fix.h"
 #include "force.h"
-#include "label_map.h"
 #include "memory.h"
 #include "modify.h"
 using namespace LAMMPS_NS;

@@ -11,7 +11,6 @@
 #include "force.h"
 #include "group.h"
 #include "integrate.h"
-#include "label_map.h"
 #include "memory.h"
 #include "modify.h"
 #include "neighbor.h"

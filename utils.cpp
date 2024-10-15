@@ -6,7 +6,6 @@
 #include "fix.h"
 #include "fmt/chrono.h"
 #include "input.h"
-#include "label_map.h"
 #include "memory.h"
 #include "modify.h"
 #include "universe.h"
