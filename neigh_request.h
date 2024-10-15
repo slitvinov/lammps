@@ -7,9 +7,6 @@ class NeighRequest : protected Pointers {
   friend class NBin;
   friend class NeighList;
   friend class NPair;
-  friend class NeighborKokkos;
-  friend class NPairSkipIntel;
-  friend class FixIntel;
 
 protected:
   void *requestor;

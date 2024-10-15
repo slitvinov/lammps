@@ -3,13 +3,9 @@
 #include "pointers.h"
 namespace LAMMPS_NS {
 class Pair : protected Pointers {
-  friend class FixGPU;
-  friend class FixIntel;
-  friend class FixOMP;
   friend class FixQEq;
   friend class PairHybrid;
   friend class PairHybridScaled;
-  friend class ThrOMP;
   friend class Info;
   friend class Neighbor;
 
