@@ -48,62 +48,6 @@ NeighRequest::~NeighRequest() {
   delete[] iskip;
   memory->destroy(ijskip);
 }
-int NeighRequest::identical(NeighRequest *other) {
-  int same = 1;
-  if (requestor != other->requestor)
-    same = 0;
-  if (requestor_instance != other->requestor_instance)
-    same = 0;
-  if (id != other->id)
-    same = 0;
-  if (pair != other->pair)
-    same = 0;
-  if (fix != other->fix)
-    same = 0;
-  if (compute != other->compute)
-    same = 0;
-  if (command != other->command)
-    same = 0;
-  if (neigh != other->neigh)
-    same = 0;
-  if (half != other->half)
-    same = 0;
-  if (full != other->full)
-    same = 0;
-  if (occasional != other->occasional)
-    same = 0;
-  if (newton != other->newton)
-    same = 0;
-  if (ghost != other->ghost)
-    same = 0;
-  if (size != other->size)
-    same = 0;
-  if (history != other->history)
-    same = 0;
-  if (granonesided != other->granonesided)
-    same = 0;
-  if (respainner != other->respainner)
-    same = 0;
-  if (respamiddle != other->respamiddle)
-    same = 0;
-  if (respaouter != other->respaouter)
-    same = 0;
-  if (bond != other->bond)
-    same = 0;
-  if (omp != other->omp)
-    same = 0;
-  if (ssa != other->ssa)
-    same = 0;
-  if (copy != other->copy)
-    same = 0;
-  if (cutoff != other->cutoff)
-    same = 0;
-  if (skip != other->skip)
-    same = 0;
-  if (same && skip && other->skip)
-    same = same_skip(other);
-  return same;
-}
 int NeighRequest::same_skip(NeighRequest *other) {
   const int ntypes = atom->ntypes;
   int same = 1;

@@ -57,7 +57,6 @@ public:
   NeighRequest(NeighRequest *);
   ~NeighRequest() override;
   void archive();
-  int identical(NeighRequest *);
   int same_skip(NeighRequest *);
   void copy_request(NeighRequest *, int);
   void apply_flags(int);

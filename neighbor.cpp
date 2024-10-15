@@ -321,14 +321,6 @@ int Neighbor::init_pair() {
     same = 0;
   if (nrequest != old_nrequest)
     same = 0;
-  else
-    for (i = 0; i < nrequest; i++)
-      if (requests[i]->identical(old_requests[i]) == 0)
-        same = 0;
-#ifdef NEIGH_LIST_DEBUG
-  if (comm->me == 0)
-    printf("SAME flag %d\n", same);
-#endif
   if (same)
     return same;
   requests_new2old();
@@ -480,10 +472,6 @@ int Neighbor::init_pair() {
         break;
     }
   }
-#ifdef NEIGH_LIST_DEBUG
-  for (i = 0; i < nrequest; i++)
-    lists[i]->print_attributes();
-#endif
   return same;
 }
 void Neighbor::sort_requests() {
