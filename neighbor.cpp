@@ -1064,31 +1064,6 @@ void Neighbor::build(int topoflag) {
     neigh_pair[m]->build(lists[m]);
   }
 }
-void Neighbor::build_one(class NeighList *mylist, int preflag) {
-  if (mylist == nullptr)
-    error->all(FLERR, "Trying to build an occasional neighbor list before "
-                      "initialization complete");
-  if (!mylist->occasional)
-    error->all(FLERR, "Neighbor::build_one() invoked on perpetual list");
-  NPair *np = neigh_pair[mylist->index];
-  if (preflag) {
-    if (np->last_build > lastcall)
-      return;
-  } else {
-    if (np->last_build >= lastcall)
-      return;
-  }
-  if (mylist->listcopy && mylist->listcopy->occasional)
-    build_one(mylist->listcopy, preflag);
-  if (mylist->listfull && mylist->listfull->occasional)
-    build_one(mylist->listfull, preflag);
-  if (mylist->listskip && mylist->listskip->occasional)
-    build_one(mylist->listskip, preflag);
-  if (!mylist->copy || mylist->trim)
-    mylist->grow(atom->nlocal, atom->nlocal + atom->nghost);
-  np->build_setup();
-  np->build(mylist);
-}
 void Neighbor::set(int narg, char **arg) {
   if (narg != 2)
     error->all(FLERR,

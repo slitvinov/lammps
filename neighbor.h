@@ -74,7 +74,6 @@ public:
   virtual int check_distance();
   void setup_bins();
   virtual void build(int);
-  void build_one(class NeighList *list, int preflag = 0);
   void set(int, char **);
   void modify_params(int, char **);
   int overlap_topo;
