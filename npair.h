@@ -54,10 +54,6 @@ protected:
   int **binhead_multi;
   double **distsq_multi_old;
   virtual void copy_bin_info();
-  int exclusion(int, int, int, int, int *) const;
-  int coord2bin(double *);
-  int coord2bin(double *, int &, int &, int &);
-  int coord2bin(double *, int);
   inline int find_special(const tagint *list, const int *nspecial,
                           const tagint tag) const {
     const int n1 = nspecial[0];
