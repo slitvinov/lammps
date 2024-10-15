@@ -136,18 +136,3 @@ void NeighRequest::apply_flags(int flags) {
     ssa = 1;
   }
 }
-void NeighRequest::set_cutoff(double _cutoff) {
-  cut = 1;
-  cutoff = _cutoff;
-}
-void NeighRequest::set_id(int _id) { id = _id; }
-void NeighRequest::set_skip(int *_iskip, int **_ijskip) {
-  skip = 1;
-  iskip = _iskip;
-  ijskip = _ijskip;
-}
-void NeighRequest::enable_full() {
-  half = 0;
-  full = 1;
-}
-void NeighRequest::enable_ghost() { ghost = 1; }

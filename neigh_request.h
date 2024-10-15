@@ -60,11 +60,6 @@ public:
   int same_skip(NeighRequest *);
   void copy_request(NeighRequest *, int);
   void apply_flags(int);
-  void set_cutoff(double);
-  void set_id(int);
-  void set_skip(int *, int **);
-  void enable_full();
-  void enable_ghost();
   int get_size() const { return size; }
   void *get_requestor() const { return requestor; }
 };
