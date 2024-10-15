@@ -110,25 +110,16 @@ public:
   virtual AtomVec *new_avec(const std::string &);
   void init();
   void setup();
-  AtomVec *style_match(const char *);
-  void modify_params(int, char **);
   void tag_check();
   void tag_extend();
   int tag_consecutive();
   int parse_data(const char *);
   virtual void allocate_type_arrays();
-  void set_mass(const char *, int, const char *, int, int, int *);
-  void set_mass(const char *, int, int, double);
   void set_mass(const char *, int, int, char **);
-  void set_mass(double *);
   void check_mass(const char *, int);
   void first_reorder();
   virtual void sort();
-  void add_callback(int);
-  void delete_callback(const char *, int);
   void update_callback(int);
-  int find_custom(const char *, int &, int &);
-  virtual int add_custom(const char *, int, int);
   virtual void sync_modify(ExecutionSpace, unsigned int, unsigned int) {}
   inline int *get_map_array() { return map_array; };
   inline int get_map_size() { return map_tag_max + 1; };

@@ -243,70 +243,6 @@ void Atom::setup() {
   if (sortfreq > 0)
     setup_sort_bins();
 }
-AtomVec *Atom::style_match(const char *style) {
-  if (strcmp(atom_style, style) == 0)
-    return avec;
-  return nullptr;
-}
-void Atom::modify_params(int narg, char **arg) {
-  if (narg == 0)
-    utils::missing_cmd_args(FLERR, "atom_modify", error);
-  int iarg = 0;
-  while (iarg < narg) {
-    if (strcmp(arg[iarg], "id") == 0) {
-      if (iarg + 2 > narg)
-        utils::missing_cmd_args(FLERR, "atom_modify id", error);
-      if (domain->box_exist)
-        error->all(FLERR,
-                   "Atom_modify id command after simulation box is defined");
-      tag_enable = utils::logical(FLERR, arg[iarg + 1], false, lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg], "map") == 0) {
-      if (iarg + 2 > narg)
-        utils::missing_cmd_args(FLERR, "atom_modify map", error);
-      if (domain->box_exist)
-        error->all(FLERR,
-                   "Atom_modify map command after simulation box is defined");
-      if (strcmp(arg[iarg + 1], "array") == 0)
-        map_user = 1;
-      else if (strcmp(arg[iarg + 1], "hash") == 0)
-        map_user = 2;
-      else if (strcmp(arg[iarg + 1], "yes") == 0)
-        map_user = 3;
-      else
-        error->all(FLERR, "Illegal atom_modify map command argument {}",
-                   arg[iarg + 1]);
-      map_style = map_user;
-      iarg += 2;
-    } else if (strcmp(arg[iarg], "first") == 0) {
-      if (iarg + 2 > narg)
-        utils::missing_cmd_args(FLERR, "atom_modify first", error);
-      if (strcmp(arg[iarg + 1], "all") == 0) {
-        delete[] firstgroupname;
-        firstgroupname = nullptr;
-      } else {
-        firstgroupname = utils::strdup(arg[iarg + 1]);
-        sortfreq = 0;
-      }
-      iarg += 2;
-    } else if (strcmp(arg[iarg], "sort") == 0) {
-      if (iarg + 3 > narg)
-        utils::missing_cmd_args(FLERR, "atom_modify sort", error);
-      sortfreq = utils::inumeric(FLERR, arg[iarg + 1], false, lmp);
-      userbinsize = utils::numeric(FLERR, arg[iarg + 2], false, lmp);
-      if (sortfreq < 0)
-        error->all(FLERR, "Illegal atom_modify sort frequency {}", sortfreq);
-      if (userbinsize < 0.0)
-        error->all(FLERR, "Illegal atom_modify sort bin size {}", userbinsize);
-      if ((sortfreq >= 0) && firstgroupname)
-        error->all(
-            FLERR,
-            "Atom_modify sort and first options cannot be used together");
-      iarg += 3;
-    } else
-      error->all(FLERR, "Illegal atom_modify command argument: {}", arg[iarg]);
-  }
-}
 void Atom::tag_check() {
   tagint min = MAXTAGINT;
   tagint max = 0;
@@ -373,71 +309,6 @@ void Atom::allocate_type_arrays() {
       mass_setflag[itype] = 0;
   }
 }
-void Atom::set_mass(const char *file, int line, const char *str,
-                    int type_offset, int labelflag, int *ilabel) {
-  if (mass == nullptr)
-    error->all(file, line, "Cannot set mass for atom style {}", atom_style);
-  int itype;
-  double mass_one;
-  auto location = "Masses section of data file";
-  auto values = Tokenizer(str).as_vector();
-  int nwords = values.size();
-  for (std::size_t i = 0; i < values.size(); ++i) {
-    if (utils::strmatch(values[i], "^#")) {
-      nwords = i;
-      break;
-    }
-  }
-  if (nwords != 2)
-    error->all(file, line, "Invalid format in {}: {}", location, str);
-  auto typestr = utils::utf8_subst(values[0]);
-  switch (utils::is_type(typestr)) {
-  case 0: {
-    itype = utils::inumeric(file, line, typestr, false, lmp);
-    if ((itype < 1) || (itype > ntypes))
-      error->all(file, line, "Invalid atom type {} in {}: {}", itype, location,
-                 utils::trim(str));
-    if (labelflag)
-      itype = ilabel[itype - 1];
-    break;
-  }
-  case 1: {
-    error->all(file, line, "Invalid atom type in {}: {}", location,
-               utils::trim(str));
-    break;
-  }
-  default:
-    itype = -1000000000;
-    error->one(file, line, "Invalid {}: {}", location, utils::trim(str));
-    break;
-  }
-  itype += type_offset;
-  mass_one = utils::numeric(file, line, values[1], false, lmp);
-  if (itype < 1 || itype > ntypes)
-    error->all(file, line, "Invalid atom type {} in {}: {}", itype, location,
-               utils::trim(str));
-  if (mass_one <= 0.0)
-    error->all(file, line, "Invalid mass value {} in {}: {}", mass_one,
-               location, utils::trim(str));
-  mass[itype] = mass_one;
-  mass_setflag[itype] = 1;
-}
-void Atom::set_mass(const char *file, int line, int itype, double value) {
-  if (mass == nullptr)
-    error->all(file, line, "Cannot set per-type mass for atom style {}",
-               atom_style);
-  if (itype < 1 || itype > ntypes)
-    error->all(file, line, "Invalid type {} for atom mass {}", itype, value);
-  if (value <= 0.0) {
-    if (comm->me == 0)
-      error->warning(file, line,
-                     "Ignoring invalid mass value {} for atom type {}", value,
-                     itype);
-    return;
-  }
-  mass[itype] = value;
-  mass_setflag[itype] = 1;
-}
 void Atom::set_mass(const char *file, int line, int, char **arg) {
   if (mass == nullptr)
     error->all(file, line, "Cannot set per-type atom mass for atom style {}",
@@ -453,12 +324,6 @@ void Atom::set_mass(const char *file, int line, int, char **arg) {
                str);
   for (int itype = lo; itype <= hi; itype++) {
     mass[itype] = value;
-    mass_setflag[itype] = 1;
-  }
-}
-void Atom::set_mass(double *values) {
-  for (int itype = 1; itype <= ntypes; itype++) {
-    mass[itype] = values[itype];
     mass_setflag[itype] = 1;
   }
 }
@@ -592,75 +457,6 @@ void Atom::setup_sort_bins() {
     memory->create(binhead, maxbin, "atom:binhead");
   }
 }
-void Atom::add_callback(int flag) {
-  int ifix;
-  for (ifix = 0; ifix < modify->nfix; ifix++)
-    if (modify->fix[ifix] == nullptr)
-      break;
-  if (flag == GROW) {
-    if (nextra_grow == nextra_grow_max) {
-      nextra_grow_max += DELTA;
-      memory->grow(extra_grow, nextra_grow_max, "atom:extra_grow");
-    }
-    extra_grow[nextra_grow] = ifix;
-    nextra_grow++;
-    std::sort(extra_grow, extra_grow + nextra_grow);
-  } else if (flag == RESTART) {
-    if (nextra_restart == nextra_restart_max) {
-      nextra_restart_max += DELTA;
-      memory->grow(extra_restart, nextra_restart_max, "atom:extra_restart");
-    }
-    extra_restart[nextra_restart] = ifix;
-    nextra_restart++;
-    std::sort(extra_restart, extra_restart + nextra_restart);
-  } else if (flag == BORDER) {
-    if (nextra_border == nextra_border_max) {
-      nextra_border_max += DELTA;
-      memory->grow(extra_border, nextra_border_max, "atom:extra_border");
-    }
-    extra_border[nextra_border] = ifix;
-    nextra_border++;
-    std::sort(extra_border, extra_border + nextra_border);
-  }
-}
-void Atom::delete_callback(const char *id, int flag) {
-  if (id == nullptr)
-    return;
-  int ifix = modify->find_fix(id);
-  if (flag == GROW) {
-    int match;
-    for (match = 0; match < nextra_grow; match++)
-      if (extra_grow[match] == ifix)
-        break;
-    if ((nextra_grow == 0) || (match == nextra_grow))
-      error->all(FLERR, "Trying to delete non-existent Atom::grow() callback");
-    for (int i = match; i < nextra_grow - 1; i++)
-      extra_grow[i] = extra_grow[i + 1];
-    nextra_grow--;
-  } else if (flag == RESTART) {
-    int match;
-    for (match = 0; match < nextra_restart; match++)
-      if (extra_restart[match] == ifix)
-        break;
-    if ((nextra_restart == 0) || (match == nextra_restart))
-      error->all(FLERR,
-                 "Trying to delete non-existent Atom::restart() callback");
-    for (int i = match; i < nextra_restart - 1; i++)
-      extra_restart[i] = extra_restart[i + 1];
-    nextra_restart--;
-  } else if (flag == BORDER) {
-    int match;
-    for (match = 0; match < nextra_border; match++)
-      if (extra_border[match] == ifix)
-        break;
-    if ((nextra_border == 0) || (match == nextra_border))
-      error->all(FLERR,
-                 "Trying to delete non-existent Atom::border() callback");
-    for (int i = match; i < nextra_border - 1; i++)
-      extra_border[i] = extra_border[i + 1];
-    nextra_border--;
-  }
-}
 void Atom::update_callback(int ifix) {
   for (int i = 0; i < nextra_grow; i++)
     if (extra_grow[i] > ifix)
@@ -672,56 +468,5 @@ void Atom::update_callback(int ifix) {
     if (extra_border[i] > ifix)
       extra_border[i]--;
 }
-int Atom::find_custom(const char *name, int &flag, int &cols) {
-  if (name == nullptr)
-    return -1;
-  return -1;
-}
-int Atom::add_custom(const char *name, int flag, int cols) {
-  int index = -1;
-  if ((flag == 0) && (cols == 0)) {
-    index = nivector;
-    nivector++;
-    ivname = (char **)memory->srealloc(ivname, nivector * sizeof(char *),
-                                       "atom:ivname");
-    ivname[index] = utils::strdup(name);
-    ivector = (int **)memory->srealloc(ivector, nivector * sizeof(int *),
-                                       "atom:ivector");
-    memory->create(ivector[index], nmax, "atom:ivector");
-  } else if ((flag == 1) && (cols == 0)) {
-    index = ndvector;
-    ndvector++;
-    dvname = (char **)memory->srealloc(dvname, ndvector * sizeof(char *),
-                                       "atom:dvname");
-    dvname[index] = utils::strdup(name);
-    dvector = (double **)memory->srealloc(dvector, ndvector * sizeof(double *),
-                                          "atom:dvector");
-    memory->create(dvector[index], nmax, "atom:dvector");
-  } else if ((flag == 0) && (cols > 0)) {
-    index = niarray;
-    niarray++;
-    ianame = (char **)memory->srealloc(ianame, niarray * sizeof(char *),
-                                       "atom:ianame");
-    ianame[index] = utils::strdup(name);
-    iarray = (int ***)memory->srealloc(iarray, niarray * sizeof(int **),
-                                       "atom:iarray");
-    memory->create(iarray[index], nmax, cols, "atom:iarray");
-    icols = (int *)memory->srealloc(icols, niarray * sizeof(int), "atom:icols");
-    icols[index] = cols;
-  } else if ((flag == 1) && (cols > 0)) {
-    index = ndarray;
-    ndarray++;
-    daname = (char **)memory->srealloc(daname, ndarray * sizeof(char *),
-                                       "atom:daname");
-    daname[index] = utils::strdup(name);
-    darray = (double ***)memory->srealloc(darray, ndarray * sizeof(double **),
-                                          "atom:darray");
-    memory->create(darray[index], nmax, cols, "atom:darray");
-    dcols = (int *)memory->srealloc(dcols, ndarray * sizeof(int), "atom:dcols");
-    dcols[index] = cols;
-  }
-  if (index < 0)
-    error->all(FLERR, "Invalid call to Atom::add_custom()");
-  return index;
-}
+
 
