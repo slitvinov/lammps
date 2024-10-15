@@ -180,14 +180,6 @@ void Comm::set_proc_grid(int outflag) {
   if (gridflag == ONELEVEL) {
     pmap->onelevel_grid(nprocs, user_procgrid, procgrid, otherflag, other_style,
                         other_procgrid, other_coregrid);
-  } else if (gridflag == TWOLEVEL) {
-    pmap->twolevel_grid(nprocs, user_procgrid, procgrid, ncores, user_coregrid,
-                        coregrid, otherflag, other_style, other_procgrid,
-                        other_coregrid);
-  } else if (gridflag == NUMA) {
-    pmap->numa_grid(nprocs, user_procgrid, procgrid, coregrid);
-  } else if (gridflag == CUSTOM) {
-    pmap->custom_grid(customfile, nprocs, user_procgrid, procgrid);
   }
   if (procgrid[0] * procgrid[1] * procgrid[2] != nprocs)
     error->all(FLERR, "Bad grid of processors");
@@ -202,22 +194,6 @@ void Comm::set_proc_grid(int outflag) {
       pmap->cart_map(0, procgrid, myloc, procneigh, grid2proc);
     else if (mapflag == CARTREORDER)
       pmap->cart_map(1, procgrid, myloc, procneigh, grid2proc);
-    else if (mapflag == XYZ)
-      pmap->xyz_map(xyz, procgrid, myloc, procneigh, grid2proc);
-  } else if (gridflag == TWOLEVEL) {
-    if (mapflag == CART)
-      pmap->cart_map(0, procgrid, ncores, coregrid, myloc, procneigh,
-                     grid2proc);
-    else if (mapflag == CARTREORDER)
-      pmap->cart_map(1, procgrid, ncores, coregrid, myloc, procneigh,
-                     grid2proc);
-    else if (mapflag == XYZ)
-      pmap->xyz_map(xyz, procgrid, ncores, coregrid, myloc, procneigh,
-                    grid2proc);
-  } else if (gridflag == NUMA) {
-    pmap->numa_map(0, coregrid, myloc, procneigh, grid2proc);
-  } else if (gridflag == CUSTOM) {
-    pmap->custom_map(procgrid, myloc, procneigh, grid2proc);
   }
   if (outflag && me == 0) {
     auto mesg = fmt::format("  {} by {} by {} MPI processor grid\n",
@@ -227,8 +203,6 @@ void Comm::set_proc_grid(int outflag) {
                           coregrid[0], coregrid[1], coregrid[2]);
     utils::logmesg(lmp, mesg);
   }
-  if (outfile)
-    pmap->output(outfile, procgrid, grid2proc);
   delete pmap;
   memory->destroy(xsplit);
   memory->destroy(ysplit);
