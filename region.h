@@ -15,7 +15,7 @@ public:
   int bboxflag;
   int varshape;
   int dynamic;
-  int moveflag, rotateflag;
+  int moveflag;
   int openflag;
   int open_faces[6];
   struct Contact {

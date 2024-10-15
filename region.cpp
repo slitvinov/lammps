@@ -44,7 +44,7 @@ void Region::options(int narg, char **arg) {
     utils::missing_cmd_args(FLERR, "region", error);
   interior = 1;
   scaleflag = 1;
-  moveflag = rotateflag = 0;
+  moveflag = 0;
   openflag = 0;
   for (int i = 0; i < 6; i++)
     open_faces[i] = 0;
@@ -63,7 +63,7 @@ void Region::options(int narg, char **arg) {
     } else
       error->all(FLERR, "Illegal region command argument: {}", arg[iarg]);
   }
-  if ((moveflag || rotateflag) &&
+  if ((moveflag) &&
       (strcmp(style, "union") == 0 || strcmp(style, "intersect") == 0))
     error->all(FLERR, "Region union or intersect cannot be dynamic");
   if (scaleflag) {
@@ -72,21 +72,7 @@ void Region::options(int narg, char **arg) {
     zscale = domain->lattice->zlattice;
   } else
     xscale = yscale = zscale = 1.0;
-  if (rotateflag) {
-    point[0] *= xscale;
-    point[1] *= yscale;
-    point[2] *= zscale;
-  }
-  if (rotateflag) {
-    double len =
-        sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
-    if (len == 0.0)
-      error->all(FLERR, "Region cannot have 0 length rotation vector");
-    runit[0] = axis[0] / len;
-    runit[1] = axis[1] / len;
-    runit[2] = axis[2] / len;
-  }
-  if (moveflag || rotateflag)
+  if (moveflag)
     dynamic = 1;
   else
     dynamic = 0;
