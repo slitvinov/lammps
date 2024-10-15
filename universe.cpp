@@ -29,40 +29,12 @@ void Universe::add_world(char *str) {
   int n, nper;
   n = 1;
   nper = 0;
-  if (str != nullptr) {
-    bool valid = true;
-    std::string part(str);
-    if (part.size() == 0)
-      valid = false;
-    if (part.find_first_not_of("0123456789x") != std::string::npos)
-      valid = false;
-    if (valid) {
-      std::size_t found = part.find_first_of('x');
-      if ((found == 0) || (found == (part.size() - 1))) {
-        valid = false;
-      } else if (found == std::string::npos) {
-        nper = atoi(part.c_str());
-      } else {
-        n = atoi(part.substr(0, found).c_str());
-        nper = atoi(part.substr(found + 1).c_str());
-      }
-    }
-    if (n < 1 || nper < 1)
-      valid = false;
-    if (!valid)
-      error->universe_all(FLERR,
-                          fmt::format("Invalid partition string '{}'", str));
-  } else
-    nper = nprocs;
+  nper = nprocs;
   memory->grow(procs_per_world, nworlds + n, "universe:procs_per_world");
   memory->grow(root_proc, (nworlds + n), "universe:root_proc");
   for (int i = 0; i < n; i++) {
     procs_per_world[nworlds] = nper;
-    if (nworlds == 0)
-      root_proc[nworlds] = 0;
-    else
-      root_proc[nworlds] =
-          root_proc[nworlds - 1] + procs_per_world[nworlds - 1];
+    root_proc[nworlds] = 0;
     if (me >= root_proc[nworlds])
       iworld = nworlds;
     nworlds++;
