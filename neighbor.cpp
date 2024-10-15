@@ -784,8 +784,6 @@ void Neighbor::requests_new2old() {
   old_oneatom = oneatom;
 }
 int Neighbor::choose_bin(NeighRequest *rq) {
-  if (style == Neighbor::NSQ)
-    return 0;
   if (rq->skip || rq->copy || rq->halffull)
     return 0;
   int mask;
@@ -873,10 +871,7 @@ int Neighbor::choose_pair(NeighRequest *rq) {
       continue;
     if (!rq->off2on != !(mask & NP_OFF2ON))
       continue;
-    if (style == Neighbor::NSQ) {
-      if (!(mask & NP_NSQ))
-        continue;
-    } else if (style == Neighbor::BIN) {
+    if (style == Neighbor::BIN) {
       if (!(mask & NP_BIN))
         continue;
     } else if (style == Neighbor::MULTI_OLD) {
@@ -1025,13 +1020,11 @@ void Neighbor::build(int topoflag) {
       boxhi_hold[2] = bboxhi[2];
     }
   }
-  if (style != Neighbor::NSQ) {
-    if (last_setup_bins < 0)
-      setup_bins();
-    for (i = 0; i < nbin; i++) {
-      neigh_bin[i]->bin_atoms_setup(nall);
-      neigh_bin[i]->bin_atoms();
-    }
+  if (last_setup_bins < 0)
+    setup_bins();
+  for (i = 0; i < nbin; i++) {
+    neigh_bin[i]->bin_atoms_setup(nall);
+    neigh_bin[i]->bin_atoms();
   }
   for (i = 0; i < npair_perpetual; i++) {
     m = plist[i];
@@ -1049,9 +1042,7 @@ void Neighbor::set(int narg, char **arg) {
   skin = utils::numeric(FLERR, arg[0], false, lmp);
   if (skin < 0.0)
     error->all(FLERR, "Invalid neighbor argument: {}", arg[0]);
-  if (strcmp(arg[1], "nsq") == 0)
-    style = Neighbor::NSQ;
-  else if (strcmp(arg[1], "bin") == 0)
+  if (strcmp(arg[1], "bin") == 0)
     style = Neighbor::BIN;
   else if (strcmp(arg[1], "multi") == 0) {
     style = Neighbor::MULTI;

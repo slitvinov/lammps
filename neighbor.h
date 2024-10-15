@@ -6,7 +6,7 @@ class NeighRequest;
 class NeighList;
 class Neighbor : protected Pointers {
 public:
-  enum { NSQ, BIN, MULTI_OLD, MULTI };
+  enum { BIN, MULTI_OLD, MULTI };
   int style;
   int every;
   int delay;
