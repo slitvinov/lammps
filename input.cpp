@@ -9,7 +9,6 @@
 #include "error.h"
 #include "fix.h"
 #include "force.h"
-#include "group.h"
 #include "integrate.h"
 #include "memory.h"
 #include "modify.h"
@@ -110,8 +109,6 @@ void Input::file() {
       reallocate(line, maxline, n);
     MPI_Bcast(line, n, MPI_CHAR, 0, world);
     if (me == 0) {
-      if (echo_screen && screen)
-        fprintf(screen, "%s\n", line);
       if (echo_log && logfile)
         fprintf(logfile, "%s\n", line);
     }
@@ -236,41 +233,19 @@ int Input::execute_command() {
 void Input::comm_modify() { comm->modify_params(narg, arg); }
 void Input::fix() { modify->add_fix(narg, arg); }
 void Input::mass() {
-  if (narg != 2)
-    error->all(FLERR, "Illegal mass command: expected 2 arguments but found {}",
-               narg);
-  if (domain->box_exist == 0)
-    error->all(FLERR, "Mass command before simulation box is defined");
   atom->set_mass(FLERR, narg, arg);
 }
 void Input::neigh_modify() { neighbor->modify_params(narg, arg); }
 void Input::neighbor_command() { neighbor->set(narg, arg); }
 void Input::pair_coeff() {
-  if (domain->box_exist == 0)
-    error->all(FLERR, "Pair_coeff command before simulation box is defined");
-  if (force->pair == nullptr)
-    error->all(FLERR, "Pair_coeff command without a pair style");
-  if (narg < 2)
-    utils::missing_cmd_args(FLERR, "pair_coeff", error);
-  if (force->pair->one_coeff &&
-      ((strcmp(arg[0], "*") != 0) || (strcmp(arg[1], "*") != 0)))
-    error->all(FLERR, "Pair_coeff must start with * * for pair style {}",
-               force->pair_style);
   int itype, jtype;
   if (utils::strmatch(arg[0], "^\\d+$") && utils::strmatch(arg[1], "^\\d+$")) {
     itype = utils::inumeric(FLERR, arg[0], false, lmp);
     jtype = utils::inumeric(FLERR, arg[1], false, lmp);
-    if (jtype < itype) {
-      char *str = arg[0];
-      arg[0] = arg[1];
-      arg[1] = str;
-    }
   }
   force->pair->coeff(narg, arg);
 }
 void Input::pair_style() {
-  if (narg < 1)
-    utils::missing_cmd_args(FLERR, "pair_style", error);
   force->create_pair(arg[0], 1);
   if (force->pair)
     force->pair->settings(narg - 1, &arg[1]);
