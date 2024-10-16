@@ -48,39 +48,7 @@ AtomVec::AtomVec(LAMMPS *lmp) : Pointers(lmp) {
 AtomVec::~AtomVec() {
   int datatype, cols;
   void *pdata;
-  for (int i = 0; i < nargcopy; i++)
-    delete[] argcopy[i];
   delete[] argcopy;
-  for (int i = 0; i < ngrow; i++) {
-    pdata = mgrow.pdata[i];
-    datatype = mgrow.datatype[i];
-    cols = mgrow.cols[i];
-    if (datatype == Atom::DOUBLE) {
-      if (cols == 0)
-        memory->destroy(*((double **)pdata));
-      else if (cols > 0)
-        memory->destroy(*((double ***)pdata));
-      else {
-        memory->destroy(*((double ***)pdata));
-      }
-    } else if (datatype == Atom::INT) {
-      if (cols == 0)
-        memory->destroy(*((int **)pdata));
-      else if (cols > 0)
-        memory->destroy(*((int ***)pdata));
-      else {
-        memory->destroy(*((int ***)pdata));
-      }
-    } else if (datatype == Atom::BIGINT) {
-      if (cols == 0)
-        memory->destroy(*((bigint **)pdata));
-      else if (cols > 0)
-        memory->destroy(*((bigint ***)pdata));
-      else {
-        memory->destroy(*((bigint ***)pdata));
-      }
-    }
-  }
   delete[] threads;
 }
 void AtomVec::store_args(int narg, char **arg) {
