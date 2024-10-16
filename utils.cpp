@@ -1,7 +1,6 @@
 #include "utils.h"
 #include "atom.h"
 #include "comm.h"
-#include "compute.h"
 #include "error.h"
 #include "fix.h"
 #include "fmt/chrono.h"
