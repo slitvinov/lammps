@@ -73,10 +73,10 @@ void CommBrick::setup() {
   if ((cut == 0.0) && (me == 0))
     error->warning(FLERR, "Communication cutoff is 0.0. No ghost atoms "
                           "will be generated. Atoms may get lost.");
-    prd = domain->prd;
-    sublo = domain->sublo;
-    subhi = domain->subhi;
-    cutghost[0] = cutghost[1] = cutghost[2] = cut;
+  prd = domain->prd;
+  sublo = domain->sublo;
+  subhi = domain->subhi;
+  cutghost[0] = cutghost[1] = cutghost[2] = cut;
   int *periodicity = domain->periodicity;
   int left, right;
   if (layout == Comm::LAYOUT_UNIFORM) {
@@ -84,11 +84,11 @@ void CommBrick::setup() {
     maxneed[1] = static_cast<int>(cutghost[1] * procgrid[1] / prd[1]) + 1;
     maxneed[2] = static_cast<int>(cutghost[2] * procgrid[2] / prd[2]) + 1;
     recvneed[0][0] = recvneed[0][1] = sendneed[0][0] = sendneed[0][1] =
-      maxneed[0];
+        maxneed[0];
     recvneed[1][0] = recvneed[1][1] = sendneed[1][0] = sendneed[1][1] =
-      maxneed[1];
+        maxneed[1];
     recvneed[2][0] = recvneed[2][1] = sendneed[2][0] = sendneed[2][1] =
-      maxneed[2];
+        maxneed[2];
   }
   nswap = 2 * (maxneed[0] + maxneed[1] + maxneed[2]);
   if (nswap > maxswap)
@@ -592,109 +592,6 @@ void CommBrick::reverse_comm_variable(Fix *fix) {
       buf = buf_send;
     fix->unpack_reverse_comm(sendnum[iswap], sendlist[iswap], buf);
   }
-}
-void CommBrick::forward_comm_array(int nsize, double **array) {
-  int i, j, k, m, iswap, last;
-  double *buf;
-  MPI_Request request;
-  if (nsize > maxforward) {
-    maxforward = nsize;
-    if (maxforward * smax > maxsend)
-      grow_send(maxforward * smax, 0);
-    if (maxforward * rmax > maxrecv)
-      grow_recv(maxforward * rmax);
-  }
-  for (iswap = 0; iswap < nswap; iswap++) {
-    m = 0;
-    for (i = 0; i < sendnum[iswap]; i++) {
-      j = sendlist[iswap][i];
-      for (k = 0; k < nsize; k++)
-        buf_send[m++] = array[j][k];
-    }
-    if (sendproc[iswap] != me) {
-      if (recvnum[iswap])
-        MPI_Irecv(buf_recv, nsize * recvnum[iswap], MPI_DOUBLE, recvproc[iswap],
-                  0, world, &request);
-      if (sendnum[iswap])
-        MPI_Send(buf_send, nsize * sendnum[iswap], MPI_DOUBLE, sendproc[iswap],
-                 0, world);
-      if (recvnum[iswap])
-        MPI_Wait(&request, MPI_STATUS_IGNORE);
-      buf = buf_recv;
-    } else
-      buf = buf_send;
-    m = 0;
-    last = firstrecv[iswap] + recvnum[iswap];
-    for (i = firstrecv[iswap]; i < last; i++)
-      for (k = 0; k < nsize; k++)
-        array[i][k] = buf[m++];
-  }
-}
-int CommBrick::exchange_variable(int n, double *inbuf, double *&outbuf) {
-  int nsend, nrecv, nrecv1, nrecv2;
-  MPI_Request request;
-  nrecv = n;
-  if (nrecv > maxrecv)
-    grow_recv(nrecv);
-  if (inbuf)
-    memcpy(buf_recv, inbuf, nrecv * sizeof(double));
-  for (int dim = 0; dim < 3; dim++) {
-    if (procgrid[dim] == 1)
-      continue;
-    nsend = nrecv;
-    MPI_Sendrecv(&nsend, 1, MPI_INT, procneigh[dim][0], 0, &nrecv1, 1, MPI_INT,
-                 procneigh[dim][1], 0, world, MPI_STATUS_IGNORE);
-    nrecv += nrecv1;
-    if (procgrid[dim] > 2) {
-      MPI_Sendrecv(&nsend, 1, MPI_INT, procneigh[dim][1], 0, &nrecv2, 1,
-                   MPI_INT, procneigh[dim][0], 0, world, MPI_STATUS_IGNORE);
-      nrecv += nrecv2;
-    } else
-      nrecv2 = 0;
-    if (nrecv > maxrecv) {
-      maxrecv = static_cast<int>(BUFFACTOR * nrecv);
-      memory->grow(buf_recv, maxrecv + bufextra, "comm:buf_recv");
-    }
-    MPI_Irecv(&buf_recv[nsend], nrecv1, MPI_DOUBLE, procneigh[dim][1], 0, world,
-              &request);
-    MPI_Send(buf_recv, nsend, MPI_DOUBLE, procneigh[dim][0], 0, world);
-    MPI_Wait(&request, MPI_STATUS_IGNORE);
-    if (procgrid[dim] > 2) {
-      MPI_Irecv(&buf_recv[nsend + nrecv1], nrecv2, MPI_DOUBLE,
-                procneigh[dim][0], 0, world, &request);
-      MPI_Send(buf_recv, nsend, MPI_DOUBLE, procneigh[dim][1], 0, world);
-      MPI_Wait(&request, MPI_STATUS_IGNORE);
-    }
-  }
-  outbuf = buf_recv;
-  return nrecv;
-}
-int CommBrick::exchange_variable_all2all(int nsend, double *inbuf,
-                                         double *&outbuf) {
-  int i, iswap, iproc, ntotal, *count;
-  double *buf;
-  count = (int *)malloc(nprocs * sizeof *count);
-  if (count == NULL)
-    error->one(FLERR, "malloc failed\n");
-  MPI_Allgather(&nsend, 1, MPI_INT, count, 1, MPI_INT, world);
-  ntotal = 0;
-  for (iproc = 0; iproc < nprocs; iproc++)
-    ntotal += count[iproc];
-  if (ntotal > maxrecv)
-    grow_recv(ntotal);
-  memcpy(buf_recv, inbuf, nsend * sizeof *buf_recv);
-  buf = buf_recv + nsend;
-  for (iproc = 0; iproc < nprocs; iproc++) {
-    if (iproc == me)
-      MPI_Bcast(buf_recv, nsend, MPI_DOUBLE, me, world);
-    else {
-      MPI_Bcast(buf, count[iproc], MPI_DOUBLE, iproc, world);
-      buf += count[iproc];
-    }
-  }
-  free(count);
-  outbuf = buf_recv;
-  return ntotal;
 }
 void CommBrick::grow_send(int n, int flag) {
   if (flag == 0) {

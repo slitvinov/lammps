@@ -1,72 +1,72 @@
 #ifndef FMT_OS_H_
-#define FMT_OS_H_ 
+#define FMT_OS_H_
 #include <cerrno>
 #include <cstddef>
 #include <cstdio>
 #include <system_error>
 #if defined __APPLE__ || defined(__FreeBSD__)
-# include <xlocale.h>
+#include <xlocale.h>
 #endif
 #include "format.h"
 #ifndef FMT_USE_FCNTL
-# if FMT_HAS_INCLUDE("winapifamily.h")
-# include <winapifamily.h>
-# endif
-# if (FMT_HAS_INCLUDE(<fcntl.h>) || defined(__APPLE__) || \
-       defined(__linux__)) && \
-      (!defined(WINAPI_FAMILY) || \
-       (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
-# include <fcntl.h>
+#if FMT_HAS_INCLUDE("winapifamily.h")
+#include <winapifamily.h>
+#endif
+#if (FMT_HAS_INCLUDE(<fcntl.h>) || defined(__APPLE__) ||                       \
+     defined(__linux__)) &&                                                    \
+    (!defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
+#include <fcntl.h>
 #define FMT_USE_FCNTL 1
-# else
+#else
 #define FMT_USE_FCNTL 0
-# endif
+#endif
 #endif
 #ifndef FMT_POSIX
-# if defined(_WIN32) && !defined(__MINGW32__)
-#define FMT_POSIX(call) _ ##call
-# else
+#if defined(_WIN32) && !defined(__MINGW32__)
+#define FMT_POSIX(call) _##call
+#else
 #define FMT_POSIX(call) call
-# endif
+#endif
 #endif
 #ifdef FMT_SYSTEM
 #define FMT_POSIX_CALL(call) FMT_SYSTEM(call)
 #else
 #define FMT_SYSTEM(call) ::call
-# ifdef _WIN32
-#define FMT_POSIX_CALL(call) ::_ ##call
-# else
+#ifdef _WIN32
+#define FMT_POSIX_CALL(call) ::_##call
+#else
 #define FMT_POSIX_CALL(call) ::call
-# endif
+#endif
 #endif
 #ifndef _WIN32
-#define FMT_RETRY_VAL(result,expression,error_result) \
-    do { \
-      (result) = (expression); \
-    } while ((result) == (error_result) && errno == EINTR)
+#define FMT_RETRY_VAL(result, expression, error_result)                        \
+  do {                                                                         \
+    (result) = (expression);                                                   \
+  } while ((result) == (error_result) && errno == EINTR)
 #else
-#define FMT_RETRY_VAL(result,expression,error_result) result = (expression)
+#define FMT_RETRY_VAL(result, expression, error_result) result = (expression)
 #endif
-#define FMT_RETRY(result,expression) FMT_RETRY_VAL(result, expression, -1)
+#define FMT_RETRY(result, expression) FMT_RETRY_VAL(result, expression, -1)
 FMT_BEGIN_NAMESPACE
 FMT_MODULE_EXPORT_BEGIN
 template <typename Char> class basic_cstring_view {
- private:
-  const Char* data_;
- public:
-  basic_cstring_view(const Char* s) : data_(s) {}
-  basic_cstring_view(const std::basic_string<Char>& s) : data_(s.c_str()) {}
-  const Char* c_str() const { return data_; }
+private:
+  const Char *data_;
+
+public:
+  basic_cstring_view(const Char *s) : data_(s) {}
+  basic_cstring_view(const std::basic_string<Char> &s) : data_(s.c_str()) {}
+  const Char *c_str() const { return data_; }
 };
 using cstring_view = basic_cstring_view<char>;
 using wcstring_view = basic_cstring_view<wchar_t>;
 template <typename Char> struct formatter<std::error_code, Char> {
   template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+  FMT_CONSTEXPR auto parse(ParseContext &ctx) -> decltype(ctx.begin()) {
     return ctx.begin();
   }
   template <typename FormatContext>
-  FMT_CONSTEXPR auto format(const std::error_code& ec, FormatContext& ctx) const
+  FMT_CONSTEXPR auto format(const std::error_code &ec, FormatContext &ctx) const
       -> decltype(ctx.out()) {
     auto out = ctx.out();
     out = detail::write_bytes(out, ec.category().name(),
@@ -77,57 +77,60 @@ template <typename Char> struct formatter<std::error_code, Char> {
   }
 };
 #ifdef _WIN32
-FMT_API const std::error_category& system_category() noexcept;
+FMT_API const std::error_category &system_category() noexcept;
 FMT_BEGIN_DETAIL_NAMESPACE
 class utf16_to_utf8 {
- private:
+private:
   memory_buffer buffer_;
- public:
+
+public:
   utf16_to_utf8() {}
   FMT_API explicit utf16_to_utf8(basic_string_view<wchar_t> s);
   operator string_view() const { return string_view(&buffer_[0], size()); }
   size_t size() const { return buffer_.size() - 1; }
-  const char* c_str() const { return &buffer_[0]; }
+  const char *c_str() const { return &buffer_[0]; }
   std::string str() const { return std::string(&buffer_[0], size()); }
   FMT_API int convert(basic_string_view<wchar_t> s);
 };
-FMT_API void format_windows_error(buffer<char>& out, int error_code,
-                                  const char* message) noexcept;
+FMT_API void format_windows_error(buffer<char> &out, int error_code,
+                                  const char *message) noexcept;
 FMT_END_DETAIL_NAMESPACE
 FMT_API std::system_error vwindows_error(int error_code, string_view format_str,
                                          format_args args);
 template <typename... Args>
 std::system_error windows_error(int error_code, string_view message,
-                                const Args&... args) {
+                                const Args &... args) {
   return vwindows_error(error_code, message, fmt::make_format_args(args...));
 }
-FMT_API void report_windows_error(int error_code, const char* message) noexcept;
+FMT_API void report_windows_error(int error_code, const char *message) noexcept;
 #else
-inline const std::error_category& system_category() noexcept {
+inline const std::error_category &system_category() noexcept {
   return std::system_category();
 }
 #endif
 #ifdef __OSX__
 template <typename S, typename... Args, typename Char = char_t<S>>
-void say(const S& format_str, Args&&... args) {
+void say(const S &format_str, Args &&... args) {
   std::system(format("say \"{}\"", format(format_str, args...)).c_str());
 }
 #endif
 class buffered_file {
- private:
-  FILE* file_;
+private:
+  FILE *file_;
   friend class file;
-  explicit buffered_file(FILE* f) : file_(f) {}
- public:
-  buffered_file(const buffered_file&) = delete;
-  void operator=(const buffered_file&) = delete;
+  explicit buffered_file(FILE *f) : file_(f) {}
+
+public:
+  buffered_file(const buffered_file &) = delete;
+  void operator=(const buffered_file &) = delete;
   buffered_file() noexcept : file_(nullptr) {}
   FMT_API ~buffered_file() noexcept;
- public:
-  buffered_file(buffered_file&& other) noexcept : file_(other.file_) {
+
+public:
+  buffered_file(buffered_file &&other) noexcept : file_(other.file_) {
     other.file_ = nullptr;
   }
-  buffered_file& operator=(buffered_file&& other) {
+  buffered_file &operator=(buffered_file &&other) {
     close();
     file_ = other.file_;
     other.file_ = nullptr;
@@ -135,22 +138,23 @@ class buffered_file {
   }
   FMT_API buffered_file(cstring_view filename, cstring_view mode);
   FMT_API void close();
-  FILE* get() const noexcept { return file_; }
+  FILE *get() const noexcept { return file_; }
   FMT_API int descriptor() const;
   void vprint(string_view format_str, format_args args) {
     fmt::vprint(file_, format_str, args);
   }
   template <typename... Args>
-  inline void print(string_view format_str, const Args&... args) {
+  inline void print(string_view format_str, const Args &... args) {
     vprint(format_str, fmt::make_format_args(args...));
   }
 };
 #if FMT_USE_FCNTL
 class FMT_API file {
- private:
+private:
   int fd_;
   explicit file(int fd) : fd_(fd) {}
- public:
+
+public:
   enum {
     RDONLY = FMT_POSIX(O_RDONLY),
     WRONLY = FMT_POSIX(O_WRONLY),
@@ -161,11 +165,12 @@ class FMT_API file {
   };
   file() noexcept : fd_(-1) {}
   file(cstring_view path, int oflag);
- public:
-  file(const file&) = delete;
-  void operator=(const file&) = delete;
-  file(file&& other) noexcept : fd_(other.fd_) { other.fd_ = -1; }
-  file& operator=(file&& other) {
+
+public:
+  file(const file &) = delete;
+  void operator=(const file &) = delete;
+  file(file &&other) noexcept : fd_(other.fd_) { other.fd_ = -1; }
+  file &operator=(file &&other) {
     close();
     fd_ = other.fd_;
     other.fd_ = -1;
@@ -175,13 +180,13 @@ class FMT_API file {
   int descriptor() const noexcept { return fd_; }
   void close();
   long long size() const;
-  size_t read(void* buffer, size_t count);
-  size_t write(const void* buffer, size_t count);
+  size_t read(void *buffer, size_t count);
+  size_t write(const void *buffer, size_t count);
   static file dup(int fd);
   void dup2(int fd);
-  void dup2(int fd, std::error_code& ec) noexcept;
-  static void pipe(file& read_end, file& write_end);
-  buffered_file fdopen(const char* mode);
+  void dup2(int fd, std::error_code &ec) noexcept;
+  static void pipe(file &read_end, file &write_end);
+  buffered_file fdopen(const char *mode);
 };
 long getpagesize();
 FMT_BEGIN_DETAIL_NAMESPACE
@@ -207,23 +212,24 @@ struct ostream_params {
       : ostream_params(params...) {
     this->buffer_size = bs.value;
   }
-# if defined(__INTEL_COMPILER) && __INTEL_COMPILER < 2000
+#if defined(__INTEL_COMPILER) && __INTEL_COMPILER < 2000
   ostream_params(int new_oflag) : oflag(new_oflag) {}
   ostream_params(detail::buffer_size bs) : buffer_size(bs.value) {}
-# endif
+#endif
 };
 FMT_END_DETAIL_NAMESPACE
 constexpr detail::buffer_size buffer_size{};
 class FMT_API ostream final : private detail::buffer<char> {
- private:
+private:
   file file_;
   void grow(size_t) override;
-  ostream(cstring_view path, const detail::ostream_params& params)
+  ostream(cstring_view path, const detail::ostream_params &params)
       : file_(path, params.oflag) {
     set(new char[params.buffer_size], params.buffer_size);
   }
- public:
-  ostream(ostream&& other)
+
+public:
+  ostream(ostream &&other)
       : detail::buffer<char>(other.data(), other.size(), other.capacity()),
         file_(std::move(other.file_)) {
     other.clear();
@@ -234,7 +240,8 @@ class FMT_API ostream final : private detail::buffer<char> {
     delete[] data();
   }
   void flush() {
-    if (size() == 0) return;
+    if (size() == 0)
+      return;
     file_.write(data(), size());
     clear();
   }
@@ -244,7 +251,7 @@ class FMT_API ostream final : private detail::buffer<char> {
     flush();
     file_.close();
   }
-  template <typename... T> void print(format_string<T...> fmt, T&&... args) {
+  template <typename... T> void print(format_string<T...> fmt, T &&... args) {
     vformat_to(detail::buffer_appender<char>(*this), fmt,
                fmt::make_format_args(args...));
   }

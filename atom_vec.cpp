@@ -55,7 +55,7 @@ void AtomVec::store_args(int narg, char **arg) {
   nargcopy = narg;
   argcopy = nullptr;
 }
-void AtomVec::process_args(int narg, char **) { }
+void AtomVec::process_args(int narg, char **) {}
 void AtomVec::init() {
   deform_vremap = domain->deform_vremap;
   deform_groupbit = domain->deform_groupbit;

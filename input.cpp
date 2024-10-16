@@ -230,9 +230,7 @@ int Input::execute_command() {
 }
 void Input::comm_modify() { comm->modify_params(narg, arg); }
 void Input::fix() { modify->add_fix(narg, arg); }
-void Input::mass() {
-  atom->set_mass(FLERR, narg, arg);
-}
+void Input::mass() { atom->set_mass(FLERR, narg, arg); }
 void Input::neigh_modify() { neighbor->modify_params(narg, arg); }
 void Input::neighbor_command() { neighbor->set(narg, arg); }
 void Input::pair_coeff() {

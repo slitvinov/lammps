@@ -66,7 +66,7 @@ public:
   ~Neighbor() override;
   virtual void init();
   int request(void *, int instance = 0);
-  NeighRequest *add_request(class Pair *, int flags = 0);  
+  NeighRequest *add_request(class Pair *, int flags = 0);
   int decide();
   void setup_bins();
   virtual void build(int);

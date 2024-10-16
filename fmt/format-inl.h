@@ -1,5 +1,5 @@
 #ifndef FMT_FORMAT_INL_H_
-#define FMT_FORMAT_INL_H_ 
+#define FMT_FORMAT_INL_H_
 #include <algorithm>
 #include <cctype>
 #include <cerrno>
@@ -10,22 +10,22 @@
 #include <cwchar>
 #include <exception>
 #ifndef FMT_STATIC_THOUSANDS_SEPARATOR
-# include <locale>
+#include <locale>
 #endif
 #ifdef _WIN32
-# include <io.h>
+#include <io.h>
 #endif
 #include "format.h"
 FMT_BEGIN_NAMESPACE
 namespace detail {
-FMT_FUNC void assert_fail(const char* file, int line, const char* message) {
+FMT_FUNC void assert_fail(const char *file, int line, const char *message) {
   std::fprintf(stderr, "%s:%d: assertion failed: %s", file, line, message);
   std::terminate();
 }
-FMT_FUNC void throw_format_error(const char* message) {
+FMT_FUNC void throw_format_error(const char *message) {
   FMT_THROW(format_error(message));
 }
-FMT_FUNC void format_error_code(detail::buffer<char>& out, int error_code,
+FMT_FUNC void format_error_code(detail::buffer<char> &out, int error_code,
                                 string_view message) noexcept {
   out.try_resize(0);
   static const char SEP[] = ": ";
@@ -44,30 +44,30 @@ FMT_FUNC void format_error_code(detail::buffer<char>& out, int error_code,
   FMT_ASSERT(out.size() <= inline_buffer_size, "");
 }
 FMT_FUNC void report_error(format_func func, int error_code,
-                           const char* message) noexcept {
+                           const char *message) noexcept {
   memory_buffer full_message;
   func(full_message, error_code, message);
   if (std::fwrite(full_message.data(), full_message.size(), 1, stderr) > 0)
     std::fputc('\n', stderr);
 }
-inline void fwrite_fully(const void* ptr, size_t size, size_t count,
-                         FILE* stream) {
+inline void fwrite_fully(const void *ptr, size_t size, size_t count,
+                         FILE *stream) {
   size_t written = std::fwrite(ptr, size, count, stream);
   if (written < count)
     FMT_THROW(system_error(errno, FMT_STRING("cannot write to file")));
 }
 #ifndef FMT_STATIC_THOUSANDS_SEPARATOR
 template <typename Locale>
-locale_ref::locale_ref(const Locale& loc) : locale_(&loc) {
+locale_ref::locale_ref(const Locale &loc) : locale_(&loc) {
   static_assert(std::is_same<Locale, std::locale>::value, "");
 }
 template <typename Locale> Locale locale_ref::get() const {
   static_assert(std::is_same<Locale, std::locale>::value, "");
-  return locale_ ? *static_cast<const std::locale*>(locale_) : std::locale();
+  return locale_ ? *static_cast<const std::locale *>(locale_) : std::locale();
 }
 template <typename Char>
 FMT_FUNC auto thousands_sep_impl(locale_ref loc) -> thousands_sep_result<Char> {
-  auto& facet = std::use_facet<std::numpunct<Char>>(loc.get<std::locale>());
+  auto &facet = std::use_facet<std::numpunct<Char>>(loc.get<std::locale>());
   auto grouping = facet.grouping();
   auto thousands_sep = grouping.empty() ? Char() : facet.thousands_sep();
   return {std::move(grouping), thousands_sep};
@@ -85,7 +85,7 @@ template <typename Char> FMT_FUNC Char decimal_point_impl(locale_ref) {
   return '.';
 }
 #endif
-}
+} // namespace detail
 #if !FMT_MSC_VERSION
 FMT_API FMT_FUNC format_error::~format_error() noexcept = default;
 #endif
@@ -176,7 +176,7 @@ static constexpr struct {
   int shift_amount;
 } div_small_pow10_infos[] = {{10, 16}, {100, 16}};
 template <int N>
-bool check_divisibility_and_divide_by_pow10(uint32_t& n) noexcept {
+bool check_divisibility_and_divide_by_pow10(uint32_t &n) noexcept {
   constexpr auto info = div_small_pow10_infos[N - 1];
   FMT_ASSERT(n <= info.divisor * 10, "n is too large");
   constexpr uint32_t magic_number =
@@ -244,38 +244,41 @@ template <> struct cache_accessor<float> {
     bool parity;
     bool is_integer;
   };
-  static compute_mul_result compute_mul(
-      carrier_uint u, const cache_entry_type& cache) noexcept {
+  static compute_mul_result
+  compute_mul(carrier_uint u, const cache_entry_type &cache) noexcept {
     auto r = umul96_upper64(u, cache);
     return {static_cast<carrier_uint>(r >> 32),
             static_cast<carrier_uint>(r) == 0};
   }
-  static uint32_t compute_delta(const cache_entry_type& cache,
+  static uint32_t compute_delta(const cache_entry_type &cache,
                                 int beta) noexcept {
     return static_cast<uint32_t>(cache >> (64 - 1 - beta));
   }
-  static compute_mul_parity_result compute_mul_parity(
-      carrier_uint two_f, const cache_entry_type& cache, int beta) noexcept {
+  static compute_mul_parity_result
+  compute_mul_parity(carrier_uint two_f, const cache_entry_type &cache,
+                     int beta) noexcept {
     FMT_ASSERT(beta >= 1, "");
     FMT_ASSERT(beta < 64, "");
     auto r = umul96_lower64(two_f, cache);
     return {((r >> (64 - beta)) & 1) != 0,
             static_cast<uint32_t>(r >> (32 - beta)) == 0};
   }
-  static carrier_uint compute_left_endpoint_for_shorter_interval_case(
-      const cache_entry_type& cache, int beta) noexcept {
+  static carrier_uint
+  compute_left_endpoint_for_shorter_interval_case(const cache_entry_type &cache,
+                                                  int beta) noexcept {
     return static_cast<carrier_uint>(
         (cache - (cache >> (num_significand_bits<float>() + 2))) >>
         (64 - num_significand_bits<float>() - 1 - beta));
   }
   static carrier_uint compute_right_endpoint_for_shorter_interval_case(
-      const cache_entry_type& cache, int beta) noexcept {
+      const cache_entry_type &cache, int beta) noexcept {
     return static_cast<carrier_uint>(
         (cache + (cache >> (num_significand_bits<float>() + 1))) >>
         (64 - num_significand_bits<float>() - 1 - beta));
   }
-  static carrier_uint compute_round_up_for_shorter_interval_case(
-      const cache_entry_type& cache, int beta) noexcept {
+  static carrier_uint
+  compute_round_up_for_shorter_interval_case(const cache_entry_type &cache,
+                                             int beta) noexcept {
     return (static_cast<carrier_uint>(
                 cache >> (64 - num_significand_bits<float>() - 2 - beta)) +
             1) /
@@ -955,7 +958,8 @@ template <> struct cache_accessor<double> {
     int kb = cache_index * compression_ratio + float_info<double>::min_k;
     int offset = k - kb;
     uint128_fallback base_cache = pow10_significands[cache_index];
-    if (offset == 0) return base_cache;
+    if (offset == 0)
+      return base_cache;
     int alpha = floor_log2_pow10(kb + offset) - floor_log2_pow10(kb) - offset;
     FMT_ASSERT(alpha > 0 && alpha < 64, "shifting error detected");
     uint64_t pow5 = powers_of_5_64[offset];
@@ -979,37 +983,40 @@ template <> struct cache_accessor<double> {
     bool parity;
     bool is_integer;
   };
-  static compute_mul_result compute_mul(
-      carrier_uint u, const cache_entry_type& cache) noexcept {
+  static compute_mul_result
+  compute_mul(carrier_uint u, const cache_entry_type &cache) noexcept {
     auto r = umul192_upper128(u, cache);
     return {r.high(), r.low() == 0};
   }
-  static uint32_t compute_delta(cache_entry_type const& cache,
+  static uint32_t compute_delta(cache_entry_type const &cache,
                                 int beta) noexcept {
     return static_cast<uint32_t>(cache.high() >> (64 - 1 - beta));
   }
-  static compute_mul_parity_result compute_mul_parity(
-      carrier_uint two_f, const cache_entry_type& cache, int beta) noexcept {
+  static compute_mul_parity_result
+  compute_mul_parity(carrier_uint two_f, const cache_entry_type &cache,
+                     int beta) noexcept {
     FMT_ASSERT(beta >= 1, "");
     FMT_ASSERT(beta < 64, "");
     auto r = umul192_lower128(two_f, cache);
     return {((r.high() >> (64 - beta)) & 1) != 0,
             ((r.high() << beta) | (r.low() >> (64 - beta))) == 0};
   }
-  static carrier_uint compute_left_endpoint_for_shorter_interval_case(
-      const cache_entry_type& cache, int beta) noexcept {
+  static carrier_uint
+  compute_left_endpoint_for_shorter_interval_case(const cache_entry_type &cache,
+                                                  int beta) noexcept {
     return (cache.high() -
             (cache.high() >> (num_significand_bits<double>() + 2))) >>
            (64 - num_significand_bits<double>() - 1 - beta);
   }
   static carrier_uint compute_right_endpoint_for_shorter_interval_case(
-      const cache_entry_type& cache, int beta) noexcept {
+      const cache_entry_type &cache, int beta) noexcept {
     return (cache.high() +
             (cache.high() >> (num_significand_bits<double>() + 1))) >>
            (64 - num_significand_bits<double>() - 1 - beta);
   }
-  static carrier_uint compute_round_up_for_shorter_interval_case(
-      const cache_entry_type& cache, int beta) noexcept {
+  static carrier_uint
+  compute_round_up_for_shorter_interval_case(const cache_entry_type &cache,
+                                             int beta) noexcept {
     return ((cache.high() >> (64 - num_significand_bits<double>() - 2 - beta)) +
             1) /
            2;
@@ -1022,14 +1029,15 @@ bool is_left_endpoint_integer_shorter_interval(int exponent) noexcept {
   return exponent >= case_shorter_interval_left_endpoint_lower_threshold &&
          exponent <= case_shorter_interval_left_endpoint_upper_threshold;
 }
-FMT_INLINE int remove_trailing_zeros(uint32_t& n) noexcept {
+FMT_INLINE int remove_trailing_zeros(uint32_t &n) noexcept {
   FMT_ASSERT(n != 0, "");
   const uint32_t mod_inv_5 = 0xcccccccd;
   const uint32_t mod_inv_25 = mod_inv_5 * mod_inv_5;
   int s = 0;
   while (true) {
     auto q = rotr(n * mod_inv_25, 2);
-    if (q > max_value<uint32_t>() / 100) break;
+    if (q > max_value<uint32_t>() / 100)
+      break;
     n = q;
     s += 2;
   }
@@ -1040,7 +1048,7 @@ FMT_INLINE int remove_trailing_zeros(uint32_t& n) noexcept {
   }
   return s;
 }
-FMT_INLINE int remove_trailing_zeros(uint64_t& n) noexcept {
+FMT_INLINE int remove_trailing_zeros(uint64_t &n) noexcept {
   FMT_ASSERT(n != 0, "");
   constexpr uint64_t magic_number = 12379400392853802749ull;
   auto nm = umul128(n, magic_number);
@@ -1051,7 +1059,8 @@ FMT_INLINE int remove_trailing_zeros(uint64_t& n) noexcept {
     int s = 8;
     while (true) {
       auto q = rotr(n32 * mod_inv_25, 2);
-      if (q > max_value<uint32_t>() / 100) break;
+      if (q > max_value<uint32_t>() / 100)
+        break;
       n32 = q;
       s += 2;
     }
@@ -1068,7 +1077,8 @@ FMT_INLINE int remove_trailing_zeros(uint64_t& n) noexcept {
   int s = 0;
   while (true) {
     auto q = rotr(n * mod_inv_25, 2);
-    if (q > max_value<uint64_t>() / 100) break;
+    if (q > max_value<uint64_t>() / 100)
+      break;
     n = q;
     s += 2;
   }
@@ -1090,7 +1100,8 @@ FMT_INLINE decimal_fp<T> shorter_interval_case(int exponent) noexcept {
       cache, beta);
   auto zi = cache_accessor<T>::compute_right_endpoint_for_shorter_interval_case(
       cache, beta);
-  if (!is_left_endpoint_integer_shorter_interval<T>(exponent)) ++xi;
+  if (!is_left_endpoint_integer_shorter_interval<T>(exponent))
+    ++xi;
   ret_value.significand = zi / 10;
   if (ret_value.significand * 10 >= xi) {
     ret_value.exponent = minus_k + 1;
@@ -1122,10 +1133,12 @@ template <typename T> decimal_fp<T> to_decimal(T x) noexcept {
       static_cast<int>((br & exponent_mask<T>()) >> num_significand_bits<T>());
   if (exponent != 0) {
     exponent -= exponent_bias<T>() + num_significand_bits<T>();
-    if (significand == 0) return shorter_interval_case<T>(exponent);
+    if (significand == 0)
+      return shorter_interval_case<T>(exponent);
     significand |= (static_cast<carrier_uint>(1) << num_significand_bits<T>());
   } else {
-    if (significand == 0) return {0, 0};
+    if (significand == 0)
+      return {0, 0};
     exponent =
         std::numeric_limits<T>::min_exponent - num_significand_bits<T>() - 1;
   }
@@ -1168,7 +1181,8 @@ small_divisor_case_label:
   const bool divisible_by_small_divisor =
       check_divisibility_and_divide_by_pow10<float_info<T>::kappa>(dist);
   ret_value.significand += dist;
-  if (!divisible_by_small_divisor) return ret_value;
+  if (!divisible_by_small_divisor)
+    return ret_value;
   const auto y_mul = cache_accessor<T>::compute_mul_parity(two_fc, cache, beta);
   if (y_mul.parity != approx_y_parity)
     --ret_value.significand;
@@ -1176,9 +1190,9 @@ small_divisor_case_label:
     --ret_value.significand;
   return ret_value;
 }
-}
+} // namespace dragonbox
 #ifdef _MSC_VER
-FMT_FUNC auto fmt_snprintf(char* buf, size_t size, const char* fmt, ...)
+FMT_FUNC auto fmt_snprintf(char *buf, size_t size, const char *fmt, ...)
     -> int {
   auto args = va_list();
   va_start(args, fmt);
@@ -1187,14 +1201,14 @@ FMT_FUNC auto fmt_snprintf(char* buf, size_t size, const char* fmt, ...)
   return result;
 }
 #endif
-}
+} // namespace detail
 template <> struct formatter<detail::bigint> {
-  FMT_CONSTEXPR auto parse(format_parse_context& ctx)
+  FMT_CONSTEXPR auto parse(format_parse_context &ctx)
       -> format_parse_context::iterator {
     return ctx.begin();
   }
   template <typename FormatContext>
-  auto format(const detail::bigint& n, FormatContext& ctx) const ->
+  auto format(const detail::bigint &n, FormatContext &ctx) const ->
       typename FormatContext::iterator {
     auto out = ctx.out();
     bool first = true;
@@ -1215,7 +1229,8 @@ template <> struct formatter<detail::bigint> {
 };
 FMT_FUNC detail::utf8_to_utf16::utf8_to_utf16(string_view s) {
   for_each_codepoint(s, [this](uint32_t cp, string_view) {
-    if (cp == invalid_code_point) FMT_THROW(std::runtime_error("invalid utf8"));
+    if (cp == invalid_code_point)
+      FMT_THROW(std::runtime_error("invalid utf8"));
     if (cp <= 0xFFFF) {
       buffer_.push_back(static_cast<wchar_t>(cp));
     } else {
@@ -1227,8 +1242,8 @@ FMT_FUNC detail::utf8_to_utf16::utf8_to_utf16(string_view s) {
   });
   buffer_.push_back(0);
 }
-FMT_FUNC void format_system_error(detail::buffer<char>& out, int error_code,
-                                  const char* message) noexcept {
+FMT_FUNC void format_system_error(detail::buffer<char> &out, int error_code,
+                                  const char *message) noexcept {
   FMT_TRY {
     auto ec = std::error_code(error_code, std::generic_category());
     write(std::back_inserter(out), std::system_error(ec, message).what());
@@ -1238,7 +1253,7 @@ FMT_FUNC void format_system_error(detail::buffer<char>& out, int error_code,
   format_error_code(out, error_code, message);
 }
 FMT_FUNC void report_system_error(int error_code,
-                                  const char* message) noexcept {
+                                  const char *message) noexcept {
   report_error(format_system_error, error_code, message);
 }
 FMT_FUNC std::string vformat(string_view fmt, format_args args) {
@@ -1249,14 +1264,16 @@ FMT_FUNC std::string vformat(string_view fmt, format_args args) {
 namespace detail {
 #ifdef _WIN32
 using dword = conditional_t<sizeof(long) == 4, unsigned long, unsigned>;
-extern "C" __declspec(dllimport) int __stdcall WriteConsoleW(
-    void*, const void*, dword, dword*, void*);
-FMT_FUNC bool write_console(std::FILE* f, string_view text) {
+extern "C" __declspec(dllimport) int __stdcall WriteConsoleW(void *,
+                                                             const void *,
+                                                             dword, dword *,
+                                                             void *);
+FMT_FUNC bool write_console(std::FILE *f, string_view text) {
   auto fd = _fileno(f);
   if (_isatty(fd)) {
     detail::utf8_to_utf16 u16(string_view(text.data(), text.size()));
     auto written = detail::dword();
-    if (detail::WriteConsoleW(reinterpret_cast<void*>(_get_osfhandle(fd)),
+    if (detail::WriteConsoleW(reinterpret_cast<void *>(_get_osfhandle(fd)),
                               u16.c_str(), static_cast<uint32_t>(u16.size()),
                               &written, nullptr)) {
       return true;
@@ -1265,20 +1282,21 @@ FMT_FUNC bool write_console(std::FILE* f, string_view text) {
   return false;
 }
 #endif
-FMT_FUNC void print(std::FILE* f, string_view text) {
+FMT_FUNC void print(std::FILE *f, string_view text) {
 #ifdef _WIN32
-  if (write_console(f, text)) return;
+  if (write_console(f, text))
+    return;
 #endif
   detail::fwrite_fully(text.data(), 1, text.size(), f);
 }
-}
-FMT_FUNC void vprint(std::FILE* f, string_view format_str, format_args args) {
+} // namespace detail
+FMT_FUNC void vprint(std::FILE *f, string_view format_str, format_args args) {
   memory_buffer buffer;
   detail::vformat_to(buffer, format_str, args);
   detail::print(f, {buffer.data(), buffer.size()});
 }
 #ifdef _WIN32
-FMT_FUNC void detail::vprint_mojibake(std::FILE* f, string_view format_str,
+FMT_FUNC void detail::vprint_mojibake(std::FILE *f, string_view format_str,
                                       format_args args) {
   memory_buffer buffer;
   detail::vformat_to(buffer, format_str,
@@ -1294,20 +1312,22 @@ struct singleton {
   unsigned char upper;
   unsigned char lower_count;
 };
-inline auto is_printable(uint16_t x, const singleton* singletons,
+inline auto is_printable(uint16_t x, const singleton *singletons,
                          size_t singletons_size,
-                         const unsigned char* singleton_lowers,
-                         const unsigned char* normal, size_t normal_size)
+                         const unsigned char *singleton_lowers,
+                         const unsigned char *normal, size_t normal_size)
     -> bool {
   auto upper = x >> 8;
   auto lower_start = 0;
   for (size_t i = 0; i < singletons_size; ++i) {
     auto s = singletons[i];
     auto lower_end = lower_start + s.lower_count;
-    if (upper < s.upper) break;
+    if (upper < s.upper)
+      break;
     if (upper == s.upper) {
       for (auto j = lower_start; j < lower_end; ++j) {
-        if (singleton_lowers[j] == (x & 0xff)) return false;
+        if (singleton_lowers[j] == (x & 0xff))
+          return false;
       }
     }
     lower_start = lower_end;
@@ -1318,20 +1338,21 @@ inline auto is_printable(uint16_t x, const singleton* singletons,
     auto v = static_cast<int>(normal[i]);
     auto len = (v & 0x80) != 0 ? (v & 0x7f) << 8 | normal[++i] : v;
     xsigned -= len;
-    if (xsigned < 0) break;
+    if (xsigned < 0)
+      break;
     current = !current;
   }
   return current;
 }
 FMT_FUNC auto is_printable(uint32_t cp) -> bool {
   static constexpr singleton singletons0[] = {
-      {0x00, 1}, {0x03, 5}, {0x05, 6}, {0x06, 3}, {0x07, 6}, {0x08, 8},
+      {0x00, 1},  {0x03, 5},  {0x05, 6},  {0x06, 3},  {0x07, 6},  {0x08, 8},
       {0x09, 17}, {0x0a, 28}, {0x0b, 25}, {0x0c, 20}, {0x0d, 16}, {0x0e, 13},
-      {0x0f, 4}, {0x10, 3}, {0x12, 18}, {0x13, 9}, {0x16, 1}, {0x17, 5},
-      {0x18, 2}, {0x19, 3}, {0x1a, 7}, {0x1c, 2}, {0x1d, 1}, {0x1f, 22},
-      {0x20, 3}, {0x2b, 3}, {0x2c, 2}, {0x2d, 11}, {0x2e, 1}, {0x30, 3},
-      {0x31, 2}, {0x32, 1}, {0xa7, 2}, {0xa9, 2}, {0xaa, 4}, {0xab, 8},
-      {0xfa, 2}, {0xfb, 5}, {0xfd, 4}, {0xfe, 3}, {0xff, 9},
+      {0x0f, 4},  {0x10, 3},  {0x12, 18}, {0x13, 9},  {0x16, 1},  {0x17, 5},
+      {0x18, 2},  {0x19, 3},  {0x1a, 7},  {0x1c, 2},  {0x1d, 1},  {0x1f, 22},
+      {0x20, 3},  {0x2b, 3},  {0x2c, 2},  {0x2d, 11}, {0x2e, 1},  {0x30, 3},
+      {0x31, 2},  {0x32, 1},  {0xa7, 2},  {0xa9, 2},  {0xaa, 4},  {0xab, 8},
+      {0xfa, 2},  {0xfb, 5},  {0xfd, 4},  {0xfe, 3},  {0xff, 9},
   };
   static constexpr unsigned char singletons0_lower[] = {
       0xad, 0x78, 0x79, 0x8b, 0x8d, 0xa2, 0x30, 0x57, 0x58, 0x8b, 0x8c, 0x90,
@@ -1361,13 +1382,13 @@ FMT_FUNC auto is_printable(uint32_t cp) -> bool {
       0xfe, 0xff,
   };
   static constexpr singleton singletons1[] = {
-      {0x00, 6}, {0x01, 1}, {0x03, 1}, {0x04, 2}, {0x08, 8}, {0x09, 2},
-      {0x0a, 5}, {0x0b, 2}, {0x0e, 4}, {0x10, 1}, {0x11, 2}, {0x12, 5},
-      {0x13, 17}, {0x14, 1}, {0x15, 2}, {0x17, 2}, {0x19, 13}, {0x1c, 5},
-      {0x1d, 8}, {0x24, 1}, {0x6a, 3}, {0x6b, 2}, {0xbc, 2}, {0xd1, 2},
-      {0xd4, 12}, {0xd5, 9}, {0xd6, 2}, {0xd7, 2}, {0xda, 1}, {0xe0, 5},
-      {0xe1, 2}, {0xe8, 2}, {0xee, 32}, {0xf0, 4}, {0xf8, 2}, {0xf9, 2},
-      {0xfa, 2}, {0xfb, 1},
+      {0x00, 6},  {0x01, 1}, {0x03, 1},  {0x04, 2}, {0x08, 8},  {0x09, 2},
+      {0x0a, 5},  {0x0b, 2}, {0x0e, 4},  {0x10, 1}, {0x11, 2},  {0x12, 5},
+      {0x13, 17}, {0x14, 1}, {0x15, 2},  {0x17, 2}, {0x19, 13}, {0x1c, 5},
+      {0x1d, 8},  {0x24, 1}, {0x6a, 3},  {0x6b, 2}, {0xbc, 2},  {0xd1, 2},
+      {0xd4, 12}, {0xd5, 9}, {0xd6, 2},  {0xd7, 2}, {0xda, 1},  {0xe0, 5},
+      {0xe1, 2},  {0xe8, 2}, {0xee, 32}, {0xf0, 4}, {0xf8, 2},  {0xf9, 2},
+      {0xfa, 2},  {0xfb, 1},
   };
   static constexpr unsigned char singletons1_lower[] = {
       0x0c, 0x27, 0x3b, 0x3e, 0x4e, 0x4f, 0x8f, 0x9e, 0x9e, 0x9f, 0x06, 0x07,
@@ -1462,16 +1483,24 @@ FMT_FUNC auto is_printable(uint32_t cp) -> bool {
                         sizeof(singletons1) / sizeof(*singletons1),
                         singletons1_lower, normal1, sizeof(normal1));
   }
-  if (0x2a6de <= cp && cp < 0x2a700) return false;
-  if (0x2b735 <= cp && cp < 0x2b740) return false;
-  if (0x2b81e <= cp && cp < 0x2b820) return false;
-  if (0x2cea2 <= cp && cp < 0x2ceb0) return false;
-  if (0x2ebe1 <= cp && cp < 0x2f800) return false;
-  if (0x2fa1e <= cp && cp < 0x30000) return false;
-  if (0x3134b <= cp && cp < 0xe0100) return false;
-  if (0xe01f0 <= cp && cp < 0x110000) return false;
+  if (0x2a6de <= cp && cp < 0x2a700)
+    return false;
+  if (0x2b735 <= cp && cp < 0x2b740)
+    return false;
+  if (0x2b81e <= cp && cp < 0x2b820)
+    return false;
+  if (0x2cea2 <= cp && cp < 0x2ceb0)
+    return false;
+  if (0x2ebe1 <= cp && cp < 0x2f800)
+    return false;
+  if (0x2fa1e <= cp && cp < 0x30000)
+    return false;
+  if (0x3134b <= cp && cp < 0xe0100)
+    return false;
+  if (0xe01f0 <= cp && cp < 0x110000)
+    return false;
   return cp < 0x110000;
 }
-}
+} // namespace detail
 FMT_END_NAMESPACE
 #endif
