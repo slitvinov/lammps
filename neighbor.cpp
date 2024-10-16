@@ -109,9 +109,6 @@ Neighbor::~Neighbor() {
   delete[] neigh_bin;
   delete[] neigh_pair;
   delete[] plist;
-  for (int i = 0; i < nrequest; i++)
-    if (requests[i])
-      delete requests[i];
   memory->sfree(requests);
   for (int i = 0; i < old_nrequest; i++)
     if (old_requests[i])
