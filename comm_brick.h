@@ -20,7 +20,6 @@ public:
   void forward_comm_array(int, double **) override;
   int exchange_variable(int, double *, double *&) override;
   int exchange_variable_all2all(int, double *, double *&) override;
-  void *extract(const char *, int &) override;
 
 protected:
   int nswap;
@@ -49,7 +48,6 @@ protected:
   int maxsend, maxrecv;
   int smax, rmax;
   void init_buffers();
-  int updown(int, int, int, double, int, double *);
   virtual void grow_send(int, int);
   virtual void grow_recv(int);
   virtual void grow_list(int, int);
@@ -58,8 +56,6 @@ protected:
   virtual void allocate_multi(int);
   virtual void allocate_multiold(int);
   virtual void free_swap();
-  virtual void free_multi();
-  virtual void free_multiold();
 };
 } // namespace LAMMPS_NS
 #endif

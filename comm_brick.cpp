@@ -64,14 +64,6 @@ void CommBrick::init() {
   init_exchange();
   if (bufextra > bufextra_old)
     grow_send(maxsend + bufextra, 2);
-  if ((mode == Comm::SINGLE) && multilo) {
-    free_multi();
-    memory->destroy(cutghostmulti);
-  }
-  if ((mode == Comm::SINGLE) && multioldlo) {
-    free_multiold();
-    memory->destroy(cutghostmultiold);
-  }
 }
 void CommBrick::setup() {
   int i, j;
@@ -91,95 +83,12 @@ void CommBrick::setup() {
     maxneed[0] = static_cast<int>(cutghost[0] * procgrid[0] / prd[0]) + 1;
     maxneed[1] = static_cast<int>(cutghost[1] * procgrid[1] / prd[1]) + 1;
     maxneed[2] = static_cast<int>(cutghost[2] * procgrid[2] / prd[2]) + 1;
-    if (domain->dimension == 2)
-      maxneed[2] = 0;
-    if (!periodicity[0])
-      maxneed[0] = MIN(maxneed[0], procgrid[0] - 1);
-    if (!periodicity[1])
-      maxneed[1] = MIN(maxneed[1], procgrid[1] - 1);
-    if (!periodicity[2])
-      maxneed[2] = MIN(maxneed[2], procgrid[2] - 1);
-    if (!periodicity[0]) {
-      recvneed[0][0] = MIN(maxneed[0], myloc[0]);
-      recvneed[0][1] = MIN(maxneed[0], procgrid[0] - myloc[0] - 1);
-      left = myloc[0] - 1;
-      if (left < 0)
-        left = procgrid[0] - 1;
-      sendneed[0][0] = MIN(maxneed[0], procgrid[0] - left - 1);
-      right = myloc[0] + 1;
-      if (right == procgrid[0])
-        right = 0;
-      sendneed[0][1] = MIN(maxneed[0], right);
-    } else
-      recvneed[0][0] = recvneed[0][1] = sendneed[0][0] = sendneed[0][1] =
-          maxneed[0];
-    if (!periodicity[1]) {
-      recvneed[1][0] = MIN(maxneed[1], myloc[1]);
-      recvneed[1][1] = MIN(maxneed[1], procgrid[1] - myloc[1] - 1);
-      left = myloc[1] - 1;
-      if (left < 0)
-        left = procgrid[1] - 1;
-      sendneed[1][0] = MIN(maxneed[1], procgrid[1] - left - 1);
-      right = myloc[1] + 1;
-      if (right == procgrid[1])
-        right = 0;
-      sendneed[1][1] = MIN(maxneed[1], right);
-    } else
-      recvneed[1][0] = recvneed[1][1] = sendneed[1][0] = sendneed[1][1] =
-          maxneed[1];
-    if (!periodicity[2]) {
-      recvneed[2][0] = MIN(maxneed[2], myloc[2]);
-      recvneed[2][1] = MIN(maxneed[2], procgrid[2] - myloc[2] - 1);
-      left = myloc[2] - 1;
-      if (left < 0)
-        left = procgrid[2] - 1;
-      sendneed[2][0] = MIN(maxneed[2], procgrid[2] - left - 1);
-      right = myloc[2] + 1;
-      if (right == procgrid[2])
-        right = 0;
-      sendneed[2][1] = MIN(maxneed[2], right);
-    } else
-      recvneed[2][0] = recvneed[2][1] = sendneed[2][0] = sendneed[2][1] =
-          maxneed[2];
-  } else {
-    recvneed[0][0] = updown(0, 0, myloc[0], prd[0], periodicity[0], xsplit);
-    recvneed[0][1] = updown(0, 1, myloc[0], prd[0], periodicity[0], xsplit);
-    left = myloc[0] - 1;
-    if (left < 0)
-      left = procgrid[0] - 1;
-    sendneed[0][0] = updown(0, 1, left, prd[0], periodicity[0], xsplit);
-    right = myloc[0] + 1;
-    if (right == procgrid[0])
-      right = 0;
-    sendneed[0][1] = updown(0, 0, right, prd[0], periodicity[0], xsplit);
-    recvneed[1][0] = updown(1, 0, myloc[1], prd[1], periodicity[1], ysplit);
-    recvneed[1][1] = updown(1, 1, myloc[1], prd[1], periodicity[1], ysplit);
-    left = myloc[1] - 1;
-    if (left < 0)
-      left = procgrid[1] - 1;
-    sendneed[1][0] = updown(1, 1, left, prd[1], periodicity[1], ysplit);
-    right = myloc[1] + 1;
-    if (right == procgrid[1])
-      right = 0;
-    sendneed[1][1] = updown(1, 0, right, prd[1], periodicity[1], ysplit);
-    if (domain->dimension == 3) {
-      recvneed[2][0] = updown(2, 0, myloc[2], prd[2], periodicity[2], zsplit);
-      recvneed[2][1] = updown(2, 1, myloc[2], prd[2], periodicity[2], zsplit);
-      left = myloc[2] - 1;
-      if (left < 0)
-        left = procgrid[2] - 1;
-      sendneed[2][0] = updown(2, 1, left, prd[2], periodicity[2], zsplit);
-      right = myloc[2] + 1;
-      if (right == procgrid[2])
-        right = 0;
-      sendneed[2][1] = updown(2, 0, right, prd[2], periodicity[2], zsplit);
-    } else
-      recvneed[2][0] = recvneed[2][1] = sendneed[2][0] = sendneed[2][1] = 0;
-    int all[6];
-    MPI_Allreduce(&recvneed[0][0], all, 6, MPI_INT, MPI_MAX, world);
-    maxneed[0] = MAX(all[0], all[1]);
-    maxneed[1] = MAX(all[2], all[3]);
-    maxneed[2] = MAX(all[4], all[5]);
+    recvneed[0][0] = recvneed[0][1] = sendneed[0][0] = sendneed[0][1] =
+      maxneed[0];
+    recvneed[1][0] = recvneed[1][1] = sendneed[1][0] = sendneed[1][1] =
+      maxneed[1];
+    recvneed[2][0] = recvneed[2][1] = sendneed[2][0] = sendneed[2][1] =
+      maxneed[2];
   }
   nswap = 2 * (maxneed[0] + maxneed[1] + maxneed[2]);
   if (nswap > maxswap)
@@ -200,14 +109,6 @@ void CommBrick::setup() {
           else
             slablo[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
           slabhi[iswap] = sublo[dim] + cutghost[dim];
-        } else {
-          for (i = 1; i <= ntypes; i++) {
-            if (ineed < 2)
-              multioldlo[iswap][i] = -BIG;
-            else
-              multioldlo[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
-            multioldhi[iswap][i] = sublo[dim] + cutghostmultiold[i][dim];
-          }
         }
         if (myloc[dim] == 0) {
           pbc_flag[iswap] = 1;
@@ -251,43 +152,6 @@ void CommBrick::setup() {
       iswap++;
     }
   }
-}
-int CommBrick::updown(int dim, int dir, int loc, double prd, int periodicity,
-                      double *split) {
-  int index, count;
-  double frac, delta;
-  if (dir == 0) {
-    frac = cutghost[dim] / prd;
-    index = loc - 1;
-    delta = 0.0;
-    count = 0;
-    while (delta < frac) {
-      if (index < 0) {
-        if (!periodicity)
-          break;
-        index = procgrid[dim] - 1;
-      }
-      count++;
-      delta += split[index + 1] - split[index];
-      index--;
-    }
-  } else {
-    frac = cutghost[dim] / prd;
-    index = loc + 1;
-    delta = 0.0;
-    count = 0;
-    while (delta < frac) {
-      if (index >= procgrid[dim]) {
-        if (!periodicity)
-          break;
-        index = 0;
-      }
-      count++;
-      delta += split[index + 1] - split[index];
-      index++;
-    }
-  }
-  return count;
 }
 void CommBrick::forward_comm(int) {
   int n;
@@ -903,33 +767,4 @@ void CommBrick::free_swap() {
   memory->destroy(firstrecv);
   memory->destroy(pbc_flag);
   memory->destroy(pbc);
-}
-void CommBrick::free_multi() {
-  memory->destroy(multilo);
-  memory->destroy(multihi);
-  multilo = multihi = nullptr;
-}
-void CommBrick::free_multiold() {
-  memory->destroy(multioldlo);
-  memory->destroy(multioldhi);
-  multioldlo = multioldhi = nullptr;
-}
-void *CommBrick::extract(const char *str, int &dim) {
-  dim = 0;
-  if (strcmp(str, "localsendlist") == 0) {
-    int i, iswap, isend;
-    dim = 1;
-    if (!localsendlist)
-      memory->create(localsendlist, atom->nlocal, "comm:localsendlist");
-    else
-      memory->grow(localsendlist, atom->nlocal, "comm:localsendlist");
-    for (i = 0; i < atom->nlocal; i++)
-      localsendlist[i] = 0;
-    for (iswap = 0; iswap < nswap; iswap++)
-      for (isend = 0; isend < sendnum[iswap]; isend++)
-        if (sendlist[iswap][isend] < atom->nlocal)
-          localsendlist[sendlist[iswap][isend]] = 1;
-    return (void *)localsendlist;
-  }
-  return nullptr;
 }
