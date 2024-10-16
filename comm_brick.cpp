@@ -81,25 +81,10 @@ void CommBrick::setup() {
   if ((cut == 0.0) && (me == 0))
     error->warning(FLERR, "Communication cutoff is 0.0. No ghost atoms "
                           "will be generated. Atoms may get lost.");
-  if (triclinic == 0) {
     prd = domain->prd;
     sublo = domain->sublo;
     subhi = domain->subhi;
     cutghost[0] = cutghost[1] = cutghost[2] = cut;
-  } else {
-    prd = domain->prd_lamda;
-    sublo = domain->sublo_lamda;
-    subhi = domain->subhi_lamda;
-    double *h_inv = domain->h_inv;
-    double length0, length1, length2;
-    length0 =
-        sqrt(h_inv[0] * h_inv[0] + h_inv[5] * h_inv[5] + h_inv[4] * h_inv[4]);
-    cutghost[0] = cut * length0;
-    length1 = sqrt(h_inv[1] * h_inv[1] + h_inv[3] * h_inv[3]);
-    cutghost[1] = cut * length1;
-    length2 = h_inv[2];
-    cutghost[2] = cut * length2;
-  }
   int *periodicity = domain->periodicity;
   int left, right;
   if (layout == Comm::LAYOUT_UNIFORM) {

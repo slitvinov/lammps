@@ -6,7 +6,7 @@ class Comm : protected Pointers {
 public:
   enum { BRICK };
   int style;
-  enum { LAYOUT_UNIFORM, LAYOUT_NONUNIFORM, LAYOUT_TILED };
+  enum { LAYOUT_UNIFORM };
   int layout;
   enum { SINGLE };
   int mode;

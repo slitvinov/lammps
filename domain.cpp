@@ -165,67 +165,38 @@ void Domain::set_global_box() {
   prd_half[2] = zprd_half = 0.5 * zprd;
 }
 void Domain::set_lamda_box() {
-  if (comm->layout != Comm::LAYOUT_TILED) {
-    int *myloc = comm->myloc;
-    double *xsplit = comm->xsplit;
-    double *ysplit = comm->ysplit;
-    double *zsplit = comm->zsplit;
-    sublo_lamda[0] = xsplit[myloc[0]];
-    subhi_lamda[0] = xsplit[myloc[0] + 1];
-    sublo_lamda[1] = ysplit[myloc[1]];
-    subhi_lamda[1] = ysplit[myloc[1] + 1];
-    sublo_lamda[2] = zsplit[myloc[2]];
-    subhi_lamda[2] = zsplit[myloc[2] + 1];
-  } else {
-    double(*mysplit)[2] = comm->mysplit;
-    sublo_lamda[0] = mysplit[0][0];
-    subhi_lamda[0] = mysplit[0][1];
-    sublo_lamda[1] = mysplit[1][0];
-    subhi_lamda[1] = mysplit[1][1];
-    sublo_lamda[2] = mysplit[2][0];
-    subhi_lamda[2] = mysplit[2][1];
-  }
+  int *myloc = comm->myloc;
+  double *xsplit = comm->xsplit;
+  double *ysplit = comm->ysplit;
+  double *zsplit = comm->zsplit;
+  sublo_lamda[0] = xsplit[myloc[0]];
+  subhi_lamda[0] = xsplit[myloc[0] + 1];
+  sublo_lamda[1] = ysplit[myloc[1]];
+  subhi_lamda[1] = ysplit[myloc[1] + 1];
+  sublo_lamda[2] = zsplit[myloc[2]];
+  subhi_lamda[2] = zsplit[myloc[2] + 1];
 }
 void Domain::set_local_box() {
-  if (comm->layout != Comm::LAYOUT_TILED) {
-    int *myloc = comm->myloc;
-    int *procgrid = comm->procgrid;
-    double *xsplit = comm->xsplit;
-    double *ysplit = comm->ysplit;
-    double *zsplit = comm->zsplit;
-    sublo[0] = boxlo[0] + xprd * xsplit[myloc[0]];
-    if (myloc[0] < procgrid[0] - 1)
-      subhi[0] = boxlo[0] + xprd * xsplit[myloc[0] + 1];
-    else
-      subhi[0] = boxhi[0];
-    sublo[1] = boxlo[1] + yprd * ysplit[myloc[1]];
-    if (myloc[1] < procgrid[1] - 1)
-      subhi[1] = boxlo[1] + yprd * ysplit[myloc[1] + 1];
-    else
-      subhi[1] = boxhi[1];
-    sublo[2] = boxlo[2] + zprd * zsplit[myloc[2]];
-    if (myloc[2] < procgrid[2] - 1)
-      subhi[2] = boxlo[2] + zprd * zsplit[myloc[2] + 1];
-    else
-      subhi[2] = boxhi[2];
-  } else {
-    double(*mysplit)[2] = comm->mysplit;
-    sublo[0] = boxlo[0] + xprd * mysplit[0][0];
-    if (mysplit[0][1] < 1.0)
-      subhi[0] = boxlo[0] + xprd * mysplit[0][1];
-    else
-      subhi[0] = boxhi[0];
-    sublo[1] = boxlo[1] + yprd * mysplit[1][0];
-    if (mysplit[1][1] < 1.0)
-      subhi[1] = boxlo[1] + yprd * mysplit[1][1];
-    else
-      subhi[1] = boxhi[1];
-    sublo[2] = boxlo[2] + zprd * mysplit[2][0];
-    if (mysplit[2][1] < 1.0)
-      subhi[2] = boxlo[2] + zprd * mysplit[2][1];
-    else
-      subhi[2] = boxhi[2];
-  }
+  int *myloc = comm->myloc;
+  int *procgrid = comm->procgrid;
+  double *xsplit = comm->xsplit;
+  double *ysplit = comm->ysplit;
+  double *zsplit = comm->zsplit;
+  sublo[0] = boxlo[0] + xprd * xsplit[myloc[0]];
+  if (myloc[0] < procgrid[0] - 1)
+    subhi[0] = boxlo[0] + xprd * xsplit[myloc[0] + 1];
+  else
+    subhi[0] = boxhi[0];
+  sublo[1] = boxlo[1] + yprd * ysplit[myloc[1]];
+  if (myloc[1] < procgrid[1] - 1)
+    subhi[1] = boxlo[1] + yprd * ysplit[myloc[1] + 1];
+  else
+    subhi[1] = boxhi[1];
+  sublo[2] = boxlo[2] + zprd * zsplit[myloc[2]];
+  if (myloc[2] < procgrid[2] - 1)
+    subhi[2] = boxlo[2] + zprd * zsplit[myloc[2] + 1];
+  else
+    subhi[2] = boxhi[2];
 }
 void Domain::reset_box() {
   if (atom->natoms == 0)
