@@ -744,16 +744,6 @@ void CommBrick::allocate_swap(int n) {
   memory->create(pbc_flag, n, "comm:pbc_flag");
   memory->create(pbc, n, 6, "comm:pbc");
 }
-void CommBrick::allocate_multi(int n) {
-  multilo = memory->create(multilo, n, ncollections, "comm:multilo");
-  multihi = memory->create(multihi, n, ncollections, "comm:multihi");
-}
-void CommBrick::allocate_multiold(int n) {
-  multioldlo =
-      memory->create(multioldlo, n, atom->ntypes + 1, "comm:multioldlo");
-  multioldhi =
-      memory->create(multioldhi, n, atom->ntypes + 1, "comm:multioldhi");
-}
 void CommBrick::free_swap() {
   memory->destroy(sendnum);
   memory->destroy(recvnum);
