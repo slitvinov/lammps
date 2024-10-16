@@ -123,21 +123,11 @@ void CommBrick::setup() {
       } else {
         sendproc[iswap] = procneigh[dim][1];
         recvproc[iswap] = procneigh[dim][0];
-        if (mode == Comm::SINGLE) {
-          slablo[iswap] = subhi[dim] - cutghost[dim];
-          if (ineed < 2)
-            slabhi[iswap] = BIG;
-          else
-            slabhi[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
-        } else {
-          for (i = 1; i <= ntypes; i++) {
-            multioldlo[iswap][i] = subhi[dim] - cutghostmultiold[i][dim];
-            if (ineed < 2)
-              multioldhi[iswap][i] = BIG;
-            else
-              multioldhi[iswap][i] = 0.5 * (sublo[dim] + subhi[dim]);
-          }
-        }
+	slablo[iswap] = subhi[dim] - cutghost[dim];
+	if (ineed < 2)
+	  slabhi[iswap] = BIG;
+	else
+	  slabhi[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
         if (myloc[dim] == procgrid[dim] - 1) {
           pbc_flag[iswap] = 1;
           pbc[iswap][dim] = -1;
