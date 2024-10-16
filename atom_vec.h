@@ -39,7 +39,6 @@ public:
   virtual void process_args(int, char **);
   virtual void init();
   virtual void force_clear(int, size_t) {}
-  virtual bigint roundup(bigint);
   virtual void grow(int);
   virtual void grow_pointers() {}
   virtual void copy(int, int, int);
@@ -123,7 +122,6 @@ protected:
   int ncreate, ndata_atom, ndata_vel;
   bool *threads;
   void grow_nmax();
-  int grow_nmax_bonus(int);
   void setup_fields();
   int process_fields(const std::vector<std::string> &,
                      const std::vector<std::string> &, Method *);

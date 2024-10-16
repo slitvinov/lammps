@@ -53,40 +53,20 @@ AtomVec::~AtomVec() {
 }
 void AtomVec::store_args(int narg, char **arg) {
   nargcopy = narg;
-  if (nargcopy)
-    argcopy = new char *[nargcopy];
-  else
-    argcopy = nullptr;
-  for (int i = 0; i < nargcopy; i++)
-    argcopy[i] = utils::strdup(arg[i]);
+  argcopy = nullptr;
 }
-void AtomVec::process_args(int narg, char **) {
-  if (narg)
-    error->all(FLERR, "Invalid atom_style command");
-}
+void AtomVec::process_args(int narg, char **) { }
 void AtomVec::init() {
   deform_vremap = domain->deform_vremap;
   deform_groupbit = domain->deform_groupbit;
   h_rate = domain->h_rate;
 }
 static constexpr bigint DELTA = 16384;
-bigint AtomVec::roundup(bigint n) {
-  if (n % DELTA)
-    n = n / DELTA * DELTA + DELTA;
-  if (n > MAXSMALLINT)
-    error->one(FLERR, "Too many atoms created on one or more procs");
-  return n;
-}
 void AtomVec::grow_nmax() {
   nmax = nmax / DELTA * DELTA;
   nmax += DELTA;
 }
 static constexpr bigint DELTA_BONUS = 8192;
-int AtomVec::grow_nmax_bonus(int nmax_bonus) {
-  nmax_bonus = nmax_bonus / DELTA_BONUS * DELTA_BONUS;
-  nmax_bonus += DELTA_BONUS;
-  return nmax_bonus;
-}
 void AtomVec::grow(int n) {
   int datatype, cols, maxcols;
   void *pdata;
@@ -95,8 +75,6 @@ void AtomVec::grow(int n) {
   else
     nmax = MAX(n, nmax);
   atom->nmax = nmax;
-  if (nmax < 0 || nmax > MAXSMALLINT)
-    error->one(FLERR, "Per-processor system is too big");
   tag = memory->grow(atom->tag, nmax, "atom:tag");
   type = memory->grow(atom->type, nmax, "atom:type");
   mask = memory->grow(atom->mask, nmax, "atom:mask");
@@ -104,47 +82,6 @@ void AtomVec::grow(int n) {
   x = memory->grow(atom->x, nmax, 3, "atom:x");
   v = memory->grow(atom->v, nmax, 3, "atom:v");
   f = memory->grow(atom->f, nmax * comm->nthreads, 3, "atom:f");
-  for (int i = 0; i < ngrow; i++) {
-    pdata = mgrow.pdata[i];
-    datatype = mgrow.datatype[i];
-    cols = mgrow.cols[i];
-    const int nthreads = threads[i] ? comm->nthreads : 1;
-    if (datatype == Atom::DOUBLE) {
-      if (cols == 0)
-        memory->grow(*((double **)pdata), nmax * nthreads, "atom:dvec");
-      else if (cols > 0)
-        memory->grow(*((double ***)pdata), nmax * nthreads, cols,
-                     "atom:darray");
-      else {
-        maxcols = *(mgrow.maxcols[i]);
-        memory->grow(*((double ***)pdata), nmax * nthreads, maxcols,
-                     "atom:darray");
-      }
-    } else if (datatype == Atom::INT) {
-      if (cols == 0)
-        memory->grow(*((int **)pdata), nmax * nthreads, "atom:ivec");
-      else if (cols > 0)
-        memory->grow(*((int ***)pdata), nmax * nthreads, cols, "atom:iarray");
-      else {
-        maxcols = *(mgrow.maxcols[i]);
-        memory->grow(*((int ***)pdata), nmax * nthreads, maxcols,
-                     "atom:iarray");
-      }
-    } else if (datatype == Atom::BIGINT) {
-      if (cols == 0)
-        memory->grow(*((bigint **)pdata), nmax * nthreads, "atom:bvec");
-      else if (cols > 0)
-        memory->grow(*((bigint ***)pdata), nmax * nthreads, cols,
-                     "atom:barray");
-      else {
-        maxcols = *(mgrow.maxcols[i]);
-        memory->grow(*((bigint ***)pdata), nmax * nthreads, maxcols,
-                     "atom:barray");
-      }
-    }
-  }
-  for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
-    modify->fix[atom->extra_grow[iextra]]->grow_arrays(nmax);
   grow_pointers();
 }
 void AtomVec::copy(int i, int j, int delflag) {
@@ -160,76 +97,6 @@ void AtomVec::copy(int i, int j, int delflag) {
   v[j][0] = v[i][0];
   v[j][1] = v[i][1];
   v[j][2] = v[i][2];
-  if (ncopy) {
-    for (n = 0; n < ncopy; n++) {
-      pdata = mcopy.pdata[n];
-      datatype = mcopy.datatype[n];
-      cols = mcopy.cols[n];
-      if (datatype == Atom::DOUBLE) {
-        if (cols == 0) {
-          double *vec = *((double **)pdata);
-          vec[j] = vec[i];
-        } else if (cols > 0) {
-          double **array = *((double ***)pdata);
-          for (m = 0; m < cols; m++)
-            array[j][m] = array[i][m];
-        } else {
-          double **array = *((double ***)pdata);
-          collength = mcopy.collength[n];
-          plength = mcopy.plength[n];
-          if (collength)
-            ncols = (*((int ***)plength))[i][collength - 1];
-          else
-            ncols = (*((int **)plength))[i];
-          for (m = 0; m < ncols; m++)
-            array[j][m] = array[i][m];
-        }
-      } else if (datatype == Atom::INT) {
-        if (cols == 0) {
-          int *vec = *((int **)pdata);
-          vec[j] = vec[i];
-        } else if (cols > 0) {
-          int **array = *((int ***)pdata);
-          for (m = 0; m < cols; m++)
-            array[j][m] = array[i][m];
-        } else {
-          int **array = *((int ***)pdata);
-          collength = mcopy.collength[n];
-          plength = mcopy.plength[n];
-          if (collength)
-            ncols = (*((int ***)plength))[i][collength - 1];
-          else
-            ncols = (*((int **)plength))[i];
-          for (m = 0; m < ncols; m++)
-            array[j][m] = array[i][m];
-        }
-      } else if (datatype == Atom::BIGINT) {
-        if (cols == 0) {
-          bigint *vec = *((bigint **)pdata);
-          vec[j] = vec[i];
-        } else if (cols > 0) {
-          bigint **array = *((bigint ***)pdata);
-          for (m = 0; m < cols; m++)
-            array[j][m] = array[i][m];
-        } else {
-          bigint **array = *((bigint ***)pdata);
-          collength = mcopy.collength[n];
-          plength = mcopy.plength[n];
-          if (collength)
-            ncols = (*((int ***)plength))[i][collength - 1];
-          else
-            ncols = (*((int **)plength))[i];
-          for (m = 0; m < ncols; m++)
-            array[j][m] = array[i][m];
-        }
-      }
-    }
-  }
-  if (bonus_flag)
-    copy_bonus(i, j, delflag);
-  if (atom->nextra_grow)
-    for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
-      modify->fix[atom->extra_grow[iextra]]->copy_arrays(i, j, delflag);
 }
 int AtomVec::pack_comm(int n, int *list, double *buf, int pbc_flag, int *pbc) {
   int i, j, m, mm, nn, datatype, cols;
