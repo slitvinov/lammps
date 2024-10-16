@@ -91,12 +91,9 @@ Neighbor::Neighbor(LAMMPS *lmp)
   custom_collection_flag = 0;
   interval_collection_flag = 0;
   nmax_collection = 0;
-  copymode = 0;
   overlap_topo = 0;
 }
 Neighbor::~Neighbor() {
-  if (copymode)
-    return;
   memory->destroy(cutneighsq);
   memory->destroy(cutneighghostsq);
   delete[] cuttype;

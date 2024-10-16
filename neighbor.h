@@ -127,7 +127,6 @@ protected:
   void requests_new2old();
   int choose_bin(class NeighRequest *);
   int choose_pair(class NeighRequest *);
-  int copymode;
 };
 namespace NeighConst {
 enum {
