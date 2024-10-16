@@ -66,12 +66,8 @@ public:
   ~Neighbor() override;
   virtual void init();
   int request(void *, int instance = 0);
-  NeighRequest *add_request(class Pair *, int flags = 0);
-  NeighRequest *add_request(class Fix *, int flags = 0);
-  NeighRequest *add_request(class Compute *, int flags = 0);
-  NeighRequest *add_request(class Command *, const char *, int flags = 0);
+  NeighRequest *add_request(class Pair *, int flags = 0);  
   int decide();
-  virtual int check_distance();
   void setup_bins();
   virtual void build(int);
   void set(int, char **);

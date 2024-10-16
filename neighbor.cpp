@@ -144,22 +144,10 @@ void Neighbor::init() {
   dimension = domain->dimension;
   triclinic = domain->triclinic;
   newton_pair = force->newton_pair;
-  if (delay > 0 && (delay % every) != 0)
-    error->all(FLERR, "Neighbor delay must be 0 or multiple of every setting");
-  if (pgsize < 10 * oneatom)
-    error->all(FLERR, "Neighbor page size must be >= 10x the one atom setting");
-  if (triclinic == 0) {
-    bboxlo = domain->boxlo;
-    bboxhi = domain->boxhi;
-  } else {
-    bboxlo = domain->boxlo_bound;
-    bboxhi = domain->boxhi_bound;
-  }
+  bboxlo = domain->boxlo;
+  bboxhi = domain->boxhi;
   triggersq = 0.25 * skin * skin;
   boxcheck = 0;
-  if (domain->box_change && (domain->xperiodic || domain->yperiodic ||
-                             (dimension == 3 && domain->zperiodic)))
-    boxcheck = 1;
   n = atom->ntypes;
   if (cutneighsq == nullptr) {
     memory->create(cutneighsq, n + 1, n + 1, "neigh:cutneighsq");
@@ -173,25 +161,16 @@ void Neighbor::init() {
   for (i = 1; i <= n; i++) {
     cuttype[i] = cuttypesq[i] = 0.0;
     for (j = 1; j <= n; j++) {
-      if (force->pair)
-        cutoff = sqrt(force->pair->cutsq[i][j]);
-      else
-        cutoff = 0.0;
+      cutoff = sqrt(force->pair->cutsq[i][j]);
       if (cutoff > 0.0)
         delta = skin;
-      else
-        delta = 0.0;
       cut = cutoff + delta;
       cutneighsq[i][j] = cut * cut;
       cuttype[i] = MAX(cuttype[i], cut);
       cuttypesq[i] = MAX(cuttypesq[i], cut * cut);
       cutneighmin = MIN(cutneighmin, cut);
       cutneighmax = MAX(cutneighmax, cut);
-      if (force->pair && force->pair->ghostneigh) {
-        cut = force->pair->cutghost[i][j] + skin;
-        cutneighghostsq[i][j] = cut * cut;
-      } else
-        cutneighghostsq[i][j] = cut * cut;
+      cutneighghostsq[i][j] = cut * cut;
     }
   }
   cutneighmaxsq = cutneighmax * cutneighmax;
@@ -200,55 +179,11 @@ void Neighbor::init() {
   fixchecklist = nullptr;
   fixchecklist = new int[modify->nfix];
   fix_check = 0;
-  for (i = 0; i < modify->nfix; i++)
-    if (modify->fix[i]->force_reneighbor)
-      fixchecklist[fix_check++] = i;
-  if (dist_check == 0) {
-    memory->destroy(xhold);
-    maxhold = 0;
-    xhold = nullptr;
-  }
-  if (dist_check) {
-    if (maxhold == 0) {
-      maxhold = atom->nmax;
-      memory->create(xhold, maxhold, 3, "neigh:xhold");
-    }
-  }
+  memory->destroy(xhold);
+  maxhold = 0;
+  xhold = nullptr;
   n = atom->ntypes;
-  if (nex_type == 0 && nex_group == 0 && nex_mol == 0)
-    exclude = 0;
-  else
-    exclude = 1;
-  if (nex_type) {
-    memory->destroy(ex_type);
-    memory->create(ex_type, n + 1, n + 1, "neigh:ex_type");
-    for (i = 1; i <= n; i++)
-      for (j = 1; j <= n; j++)
-        ex_type[i][j] = 0;
-    for (i = 0; i < nex_type; i++) {
-      if (ex1_type[i] <= 0 || ex1_type[i] > n || ex2_type[i] <= 0 ||
-          ex2_type[i] > n)
-        error->all(FLERR, "Invalid atom type in neighbor exclusion list");
-      ex_type[ex1_type[i]][ex2_type[i]] = 1;
-      ex_type[ex2_type[i]][ex1_type[i]] = 1;
-    }
-  }
-  if (nex_group) {
-    delete[] ex1_bit;
-    delete[] ex2_bit;
-    ex1_bit = new int[nex_group];
-    ex2_bit = new int[nex_group];
-    for (i = 0; i < nex_group; i++) {
-      ex1_bit[i] = group->bitmask[ex1_group[i]];
-      ex2_bit[i] = group->bitmask[ex2_group[i]];
-    }
-  }
-  if (nex_mol) {
-    delete[] ex_mol_bit;
-    ex_mol_bit = new int[nex_mol];
-    for (i = 0; i < nex_mol; i++)
-      ex_mol_bit[i] = group->bitmask[ex_mol_group[i]];
-  }
+  exclude = 0;
   if (firsttime)
     init_styles();
   firsttime = 0;
@@ -305,34 +240,14 @@ void Neighbor::init_styles() {
 int Neighbor::init_pair() {
   int i, j, k, m;
   int same = 1;
-  if (style != old_style)
-    same = 0;
-  if (triclinic != old_triclinic)
-    same = 0;
-  if (pgsize != old_pgsize)
-    same = 0;
-  if (oneatom != old_oneatom)
-    same = 0;
   if (nrequest != old_nrequest)
     same = 0;
   if (same)
     return same;
   requests_new2old();
-  for (i = 0; i < nlist; i++)
-    delete lists[i];
-  for (i = 0; i < nbin; i++)
-    delete neigh_bin[i];
-  for (i = 0; i < nlist; i++)
-    delete neigh_pair[i];
   delete[] lists;
   delete[] neigh_bin;
   delete[] neigh_pair;
-  if (style == Neighbor::BIN) {
-    for (i = 0; i < nrequest; i++)
-      if (requests[i]->occasional && requests[i]->ghost)
-        error->all(FLERR, "Cannot request an occasional binned neighbor list "
-                          "with ghost info");
-  }
   int nrequest_original = nrequest;
   morph_unique();
   morph_skip();
@@ -372,12 +287,8 @@ int Neighbor::init_pair() {
   for (i = 0; i < nrequest; i++) {
     flag = choose_bin(requests[i]);
     lists[i]->bin_method = flag;
-    if (flag < 0)
-      error->all(FLERR, "Requested neighbor bin option does not exist");
     flag = choose_pair(requests[i]);
     lists[i]->pair_method = flag;
-    if (flag < 0)
-      error->all(FLERR, "Requested neighbor pair method does not exist");
   }
   nbin = 0;
   for (i = 0; i < nrequest; i++) {
@@ -518,61 +429,6 @@ void Neighbor::morph_skip() {
     irq = requests[i];
     if (!irq->skip)
       continue;
-    if (irq->halffull)
-      continue;
-    if (irq->copy)
-      continue;
-    for (j = 0; j < nrequest; j++) {
-      if (i == j)
-        continue;
-      jrq = requests[j];
-      if (jrq->occasional)
-        continue;
-      if (jrq->skip)
-        continue;
-      if (irq->half != jrq->half)
-        continue;
-      if (irq->full != jrq->full)
-        continue;
-      inewton = irq->newton;
-      if (inewton == 0)
-        inewton = force->newton_pair ? 1 : 2;
-      jnewton = jrq->newton;
-      if (jnewton == 0)
-        jnewton = force->newton_pair ? 1 : 2;
-      if (inewton != jnewton)
-        continue;
-      if (irq->ghost != jrq->ghost)
-        continue;
-      if (irq->size != jrq->size)
-        continue;
-      if (irq->history != jrq->history)
-        continue;
-      if (irq->bond != jrq->bond)
-        continue;
-      if (irq->omp != jrq->omp)
-        continue;
-      if (irq->ssa != jrq->ssa)
-        continue;
-      if (irq->cut != jrq->cut)
-        continue;
-      if (irq->cutoff != jrq->cutoff)
-        continue;
-      break;
-    }
-    if (j < nrequest)
-      irq->skiplist = j;
-    else {
-      int newrequest = request(this, -1);
-      irq->skiplist = newrequest;
-      nrq = requests[newrequest];
-      nrq->copy_request(irq, 0);
-      nrq->pair = nrq->fix = nrq->compute = nrq->command = 0;
-      nrq->neigh = 1;
-      nrq->skip = 0;
-      if (irq->unique)
-        nrq->unique = 1;
-    }
   }
 }
 void Neighbor::morph_granular() {
@@ -582,38 +438,6 @@ void Neighbor::morph_granular() {
     irq = requests[i];
     if (!irq->neigh)
       continue;
-    if (!irq->size)
-      continue;
-    int onesided = -1;
-    for (j = 0; j < nrequest; j++) {
-      jrq = requests[j];
-      if (!jrq->pair)
-        continue;
-      if (!jrq->size)
-        continue;
-      if (!jrq->skip || jrq->skiplist != i)
-        continue;
-      if (onesided < 0)
-        onesided = jrq->granonesided;
-      else if (onesided != jrq->granonesided)
-        onesided = 2;
-      if (onesided == 2)
-        break;
-    }
-    if (onesided == 2) {
-      irq->newton = 2;
-      irq->granonesided = 0;
-      for (j = 0; j < nrequest; j++) {
-        jrq = requests[j];
-        if (!jrq->pair)
-          continue;
-        if (!jrq->size)
-          continue;
-        if (!jrq->skip || jrq->skiplist != i)
-          continue;
-        jrq->off2on = 1;
-      }
-    }
   }
 }
 void Neighbor::morph_halffull() {
@@ -887,33 +711,6 @@ NeighRequest *Neighbor::add_request(Pair *requestor, int flags) {
   req->apply_flags(flags);
   return req;
 }
-NeighRequest *Neighbor::add_request(Fix *requestor, int flags) {
-  int irequest = request(requestor, requestor->instance_me);
-  auto req = requests[irequest];
-  req->pair = 0;
-  req->fix = 1;
-  req->apply_flags(flags);
-  return req;
-}
-NeighRequest *Neighbor::add_request(Compute *requestor, int flags) {
-  int irequest = request(requestor, requestor->instance_me);
-  auto req = requests[irequest];
-  req->pair = 0;
-  req->compute = 1;
-  req->apply_flags(flags);
-  return req;
-}
-NeighRequest *Neighbor::add_request(Command *requestor, const char *style,
-                                    int flags) {
-  int irequest = request(requestor, 0);
-  auto req = requests[irequest];
-  req->pair = 0;
-  req->command = 1;
-  req->occasional = 1;
-  req->command_style = style;
-  req->apply_flags(flags);
-  return req;
-}
 void Neighbor::setup_bins() {
   for (int i = 0; i < nbin; i++)
     neigh_bin[i]->setup_bins(style);
@@ -921,51 +718,7 @@ void Neighbor::setup_bins() {
 }
 int Neighbor::decide() {
   ago++;
-  if (ago >= delay && ago % every == 0) {
-    if (build_once)
-      return 0;
-    if (dist_check == 0)
-      return 1;
-    return check_distance();
-  } else
-    return 0;
-}
-int Neighbor::check_distance() {
-  double delx, dely, delz, rsq;
-  double delta, deltasq, delta1, delta2;
-  if (boxcheck) {
-    delx = bboxlo[0] - boxlo_hold[0];
-    dely = bboxlo[1] - boxlo_hold[1];
-    delz = bboxlo[2] - boxlo_hold[2];
-    delta1 = sqrt(delx * delx + dely * dely + delz * delz);
-    delx = bboxhi[0] - boxhi_hold[0];
-    dely = bboxhi[1] - boxhi_hold[1];
-    delz = bboxhi[2] - boxhi_hold[2];
-    delta2 = sqrt(delx * delx + dely * dely + delz * delz);
-    delta = 0.5 * (skin - (delta1 + delta2));
-    if (delta < 0.0)
-      delta = 0.0;
-    deltasq = delta * delta;
-  } else
-    deltasq = triggersq;
-  double **x = atom->x;
-  int nlocal = atom->nlocal;
-  if (includegroup)
-    nlocal = atom->nfirst;
-  int flag = 0;
-  for (int i = 0; i < nlocal; i++) {
-    delx = x[i][0] - xhold[i][0];
-    dely = x[i][1] - xhold[i][1];
-    delz = x[i][2] - xhold[i][2];
-    rsq = delx * delx + dely * dely + delz * delz;
-    if (rsq > deltasq)
-      flag = 1;
-  }
-  int flagall;
-  MPI_Allreduce(&flag, &flagall, 1, MPI_INT, MPI_MAX, world);
-  if (flagall && ago == MAX(every, delay))
-    ndanger++;
-  return flagall;
+  return 1;
 }
 void Neighbor::build(int topoflag) {
   int i, m;
