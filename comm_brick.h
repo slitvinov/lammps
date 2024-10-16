@@ -12,11 +12,6 @@ public:
   void reverse_comm() override;
   void exchange() override;
   void borders() override;
-  void forward_comm(class Pair *) override;
-  void reverse_comm(class Pair *) override;
-  void forward_comm(class Fix *, int size = 0) override;
-  void reverse_comm(class Fix *, int size = 0) override;
-  void reverse_comm_variable(class Fix *) override;
 
 protected:
   int nswap;

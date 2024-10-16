@@ -43,11 +43,6 @@ public:
   virtual void reverse_comm() = 0;
   virtual void exchange() = 0;
   virtual void borders() = 0;
-  virtual void forward_comm(class Pair *) = 0;
-  virtual void reverse_comm(class Pair *) = 0;
-  virtual void forward_comm(class Fix *, int size = 0) = 0;
-  virtual void reverse_comm(class Fix *, int size = 0) = 0;
-  virtual void reverse_comm_variable(class Fix *) = 0;
   virtual void *extract(const char *, int &) { return nullptr; }
 
 protected:
