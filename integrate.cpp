@@ -1,5 +1,4 @@
 #include "integrate.h"
-#include "compute.h"
 #include "force.h"
 #include "modify.h"
 #include "pair.h"
