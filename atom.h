@@ -120,7 +120,6 @@ public:
   void first_reorder();
   virtual void sort();
   void update_callback(int);
-  virtual void sync_modify(ExecutionSpace, unsigned int, unsigned int) {}
   inline int *get_map_array() { return map_array; };
   inline int get_map_size() { return map_tag_max + 1; };
   inline int get_max_same() { return max_same; };

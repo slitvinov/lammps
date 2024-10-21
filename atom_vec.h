@@ -38,7 +38,6 @@ public:
   void store_args(int, char **);
   virtual void process_args(int, char **);
   virtual void init();
-  virtual void force_clear(int, size_t) {}
   virtual void grow(int);
   virtual void grow_pointers() {}
   virtual void copy(int, int, int);
