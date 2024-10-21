@@ -74,14 +74,7 @@ public:
   virtual void create_atom_post(int) {}
   virtual void data_atom(double *, imageint, const std::vector<std::string> &,
                          std::string &);
-  virtual void data_atom_post(int) {}
-  virtual void data_atom_bonus(int, const std::vector<std::string> &) {}
   virtual void data_body(int, int, int, int *, double *) {}
-  virtual void data_bonds_post(int, int, tagint, tagint, tagint) {}
-  virtual void pack_data(double **);
-  virtual void pack_data_pre(int) {}
-  virtual void pack_data_post(int) {}
-  virtual int pack_data_bonus(double *, int) { return 0; }
   virtual int property_atom(const std::string &) { return -1; }
   virtual void pack_property_atom(int, double *, int, int) {}
 

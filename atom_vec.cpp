@@ -1396,54 +1396,7 @@ void AtomVec::data_atom(double *coord, imageint imagetmp,
     error->one(FLERR,
                "Invalid atom ID {} in line {} of Atoms section of data file",
                tag[nlocal], nlocal + 1);
-  data_atom_post(nlocal);
   atom->nlocal++;
-}
-void AtomVec::pack_data(double **buf) {
-  int i, j, m, n, datatype, cols;
-  void *pdata;
-  int nlocal = atom->nlocal;
-  for (i = 0; i < nlocal; i++) {
-    pack_data_pre(i);
-    j = 0;
-    for (n = 0; n < ndata_atom; n++) {
-      pdata = mdata_atom.pdata[n];
-      datatype = mdata_atom.datatype[n];
-      cols = mdata_atom.cols[n];
-      if (datatype == Atom::DOUBLE) {
-        if (cols == 0) {
-          double *vec = *((double **)pdata);
-          buf[i][j++] = vec[i];
-        } else {
-          double **array = *((double ***)pdata);
-          for (m = 0; m < cols; m++)
-            buf[i][j++] = array[i][m];
-        }
-      } else if (datatype == Atom::INT) {
-        if (cols == 0) {
-          int *vec = *((int **)pdata);
-          buf[i][j++] = ubuf(vec[i]).d;
-        } else {
-          int **array = *((int ***)pdata);
-          for (m = 0; m < cols; m++)
-            buf[i][j++] = ubuf(array[i][m]).d;
-        }
-      } else if (datatype == Atom::BIGINT) {
-        if (cols == 0) {
-          bigint *vec = *((bigint **)pdata);
-          buf[i][j++] = ubuf(vec[i]).d;
-        } else {
-          bigint **array = *((bigint ***)pdata);
-          for (m = 0; m < cols; m++)
-            buf[i][j++] = ubuf(array[i][m]).d;
-        }
-      }
-    }
-    buf[i][j++] = ubuf((image[i] & IMGMASK) - IMGMAX).d;
-    buf[i][j++] = ubuf((image[i] >> IMGBITS & IMGMASK) - IMGMAX).d;
-    buf[i][j++] = ubuf((image[i] >> IMG2BITS) - IMGMAX).d;
-    pack_data_post(i);
-  }
 }
 void AtomVec::setup_fields() {
   int n, cols;
