@@ -7,7 +7,6 @@
 #include "fix.h"
 #include "force.h"
 #include "input.h"
-#include "math_extra.h"
 #include "memory.h"
 #include "modify.h"
 #include "region.h"

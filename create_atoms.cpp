@@ -7,7 +7,6 @@
 #include "input.h"
 #include "lattice.h"
 #include "math_const.h"
-#include "math_extra.h"
 #include "memory.h"
 #include "modify.h"
 #include "random_mars.h"

@@ -3,7 +3,6 @@
 #include "error.h"
 #include "input.h"
 #include "lattice.h"
-#include "math_extra.h"
 #include "update.h"
 #include <cmath>
 #include <cstring>

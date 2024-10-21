@@ -2,7 +2,6 @@
 #include "comm.h"
 #include "domain.h"
 #include "error.h"
-#include "math_extra.h"
 #include "memory.h"
 #include "universe.h"
 #include <cmath>
@@ -145,33 +144,6 @@ int ProcMap::best_factors(int npossible, int **factors, int *best, const int sx,
     area[0] = domain->xprd * domain->yprd / (sx * sy);
     area[1] = domain->xprd * domain->zprd / (sx * sz);
     area[2] = domain->yprd * domain->zprd / (sy * sz);
-  } else {
-    double *h = domain->h;
-    double a[3], b[3], c[3];
-    a[0] = h[0];
-    a[1] = 0.0;
-    a[2] = 0.0;
-    b[0] = h[5];
-    b[1] = h[1];
-    b[2] = 0.0;
-    MathExtra::cross3(a, b, c);
-    area[0] = sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]) / (sx * sy);
-    a[0] = h[0];
-    a[1] = 0.0;
-    a[2] = 0.0;
-    b[0] = h[4];
-    b[1] = h[3];
-    b[2] = h[2];
-    MathExtra::cross3(a, b, c);
-    area[1] = sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]) / (sx * sz);
-    a[0] = h[5];
-    a[1] = h[1];
-    a[2] = 0.0;
-    b[0] = h[4];
-    b[1] = h[3];
-    b[2] = h[2];
-    MathExtra::cross3(a, b, c);
-    area[2] = sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]) / (sy * sz);
   }
   int index;
   double surf;

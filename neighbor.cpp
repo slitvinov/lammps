@@ -17,7 +17,6 @@
 #include "pair.h"
 #include "style_nbin.h"
 #include "style_npair.h"
-#include "tokenizer.h"
 #include "update.h"
 #include <cmath>
 #include <cstring>

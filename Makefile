@@ -31,7 +31,6 @@ input.o \
 integrate.o \
 lattice.o \
 main.o \
-math_extra.o \
 memory.o \
 modify.o \
 my_page.o \
@@ -51,7 +50,6 @@ random_park.o \
 region_block.o \
 region.o \
 run.o \
-tokenizer.o \
 universe.o \
 update.o \
 utils.o \
