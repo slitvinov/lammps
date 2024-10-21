@@ -115,7 +115,6 @@ public:
   virtual void *extract(const char *, int &) { return nullptr; }
   virtual void *extract_peratom(const char *, int &) { return nullptr; }
   virtual void swap_eam(double *, double **) {}
-  virtual void reset_dt() {}
   virtual void min_xf_pointers(int, double **, double **) {}
   virtual void min_xf_get(int) {}
   virtual void min_x_set(int) {}

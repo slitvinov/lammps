@@ -11,7 +11,6 @@ public:
   virtual void run(int) = 0;
   virtual void force_clear() = 0;
   virtual void cleanup() {}
-  virtual void reset_dt() {}
 
 protected:
   int eflag, vflag;
