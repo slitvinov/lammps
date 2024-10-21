@@ -80,8 +80,6 @@ enum { NOCONVERT = 0, METAL2REAL = 1, REAL2METAL = 1 << 1 };
 enum { UNKNOWN = 0, ENERGY };
 int get_supported_conversions(const int property);
 double get_conversion_factor(const int property, const int conversion);
-int binary_search(const double needle, const int n, const double *haystack);
-void merge_sort(int *index, int num, void *ptr, int (*comp)(int, int, void *));
 } // namespace utils
 } // namespace LAMMPS_NS
 #endif

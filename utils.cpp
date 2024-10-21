@@ -17,10 +17,6 @@ extern "C" {
 static int re_match(const char *text, const char *pattern);
 static int re_find(const char *text, const char *pattern, int *matchlen);
 }
-static void do_merge(int *idx, int *buf, int llo, int lhi, int rlo, int rhi,
-                     void *ptr, int (*comp)(int, int, void *));
-static void insertion_sort(int *index, int num, void *ptr,
-                           int (*comp)(int, int, void *));
 using namespace LAMMPS_NS;
 bool utils::strmatch(const std::string &text, const std::string &pattern) {
   const int pos = re_match(text.c_str(), pattern.c_str());
@@ -630,95 +626,6 @@ double utils::get_conversion_factor(const int property, const int conversion) {
     }
   }
   return 0.0;
-}
-int utils::binary_search(const double needle, const int n,
-                         const double *haystack) {
-  int lo = 0;
-  int hi = n - 1;
-  if (needle < haystack[lo])
-    return lo;
-  if (needle >= haystack[hi])
-    return hi;
-  int index = (lo + hi) / 2;
-  while (lo < hi - 1) {
-    if (needle < haystack[index])
-      hi = index;
-    else if (needle >= haystack[index])
-      lo = index;
-    index = (lo + hi) / 2;
-  }
-  return index;
-}
-void utils::merge_sort(int *index, int num, void *ptr,
-                       int (*comp)(int, int, void *)) {
-  if (num < 2)
-    return;
-  int chunk, i, j;
-  chunk = 64;
-  for (i = 0; i < num; i += chunk) {
-    j = (i + chunk > num) ? num - i : chunk;
-    insertion_sort(index + i, j, ptr, comp);
-  }
-  if (chunk >= num)
-    return;
-  int *buf = new int[num];
-  int *dest = index;
-  int *hold = buf;
-  while (chunk < num) {
-    int m;
-    int *tmp = dest;
-    dest = hold;
-    hold = tmp;
-    for (i = 0; i < num - 1; i += 2 * chunk) {
-      j = i + 2 * chunk;
-      if (j > num)
-        j = num;
-      m = i + chunk;
-      if (m > num)
-        m = num;
-      do_merge(dest, hold, i, m, m, j, ptr, comp);
-    }
-    for (; i < num; i++)
-      dest[i] = hold[i];
-    chunk *= 2;
-  }
-  if (dest == buf)
-    memcpy(index, buf, sizeof(int) * num);
-  delete[] buf;
-}
-void insertion_sort(int *index, int num, void *ptr,
-                    int (*comp)(int, int, void *)) {
-  if (num < 2)
-    return;
-  for (int i = 1; i < num; ++i) {
-    int tmp = index[i];
-    for (int j = i - 1; j >= 0; --j) {
-      if ((*comp)(index[j], tmp, ptr) > 0) {
-        index[j + 1] = index[j];
-      } else {
-        index[j + 1] = tmp;
-        break;
-      }
-      if (j == 0)
-        index[0] = tmp;
-    }
-  }
-}
-static void do_merge(int *idx, int *buf, int llo, int lhi, int rlo, int rhi,
-                     void *ptr, int (*comp)(int, int, void *)) {
-  int i = llo;
-  int l = llo;
-  int r = rlo;
-  while ((l < lhi) && (r < rhi)) {
-    if ((*comp)(buf[l], buf[r], ptr) < 0)
-      idx[i++] = buf[l++];
-    else
-      idx[i++] = buf[r++];
-  }
-  while (l < lhi)
-    idx[i++] = buf[l++];
-  while (r < rhi)
-    idx[i++] = buf[r++];
 }
 extern "C" {
 typedef struct regex_t *re_t;
