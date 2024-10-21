@@ -32,7 +32,6 @@ public:
   int match(double, double, double);
   virtual void reset_vel();
   virtual int inside(double, double, double) = 0;
-  virtual void shape_update() {}
 
 protected:
   void options(int, char **);
