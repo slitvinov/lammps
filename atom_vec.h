@@ -81,7 +81,6 @@ public:
   virtual void pack_data(double **);
   virtual void pack_data_pre(int) {}
   virtual void pack_data_post(int) {}
-  virtual void data_vel(int, const std::vector<std::string> &);
   virtual int pack_data_bonus(double *, int) { return 0; }
   virtual int property_atom(const std::string &) { return -1; }
   virtual void pack_property_atom(int, double *, int, int) {}

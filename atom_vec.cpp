@@ -1445,53 +1445,6 @@ void AtomVec::pack_data(double **buf) {
     pack_data_post(i);
   }
 }
-void AtomVec::data_vel(int ilocal, const std::vector<std::string> &values) {
-  int m, n, datatype, cols;
-  void *pdata;
-  double **v = atom->v;
-  int ivalue = 1;
-  v[ilocal][0] = utils::numeric(FLERR, values[ivalue++], true, lmp);
-  v[ilocal][1] = utils::numeric(FLERR, values[ivalue++], true, lmp);
-  v[ilocal][2] = utils::numeric(FLERR, values[ivalue++], true, lmp);
-  if (ndata_vel > 2) {
-    for (n = 2; n < ndata_vel; n++) {
-      pdata = mdata_vel.pdata[n];
-      datatype = mdata_vel.datatype[n];
-      cols = mdata_vel.cols[n];
-      if (datatype == Atom::DOUBLE) {
-        if (cols == 0) {
-          double *vec = *((double **)pdata);
-          vec[ilocal] = utils::numeric(FLERR, values[ivalue++], true, lmp);
-        } else {
-          double **array = *((double ***)pdata);
-          for (m = 0; m < cols; m++)
-            array[ilocal][m] =
-                utils::numeric(FLERR, values[ivalue++], true, lmp);
-        }
-      } else if (datatype == Atom::INT) {
-        if (cols == 0) {
-          int *vec = *((int **)pdata);
-          vec[ilocal] = utils::inumeric(FLERR, values[ivalue++], true, lmp);
-        } else {
-          int **array = *((int ***)pdata);
-          for (m = 0; m < cols; m++)
-            array[ilocal][m] =
-                utils::inumeric(FLERR, values[ivalue++], true, lmp);
-        }
-      } else if (datatype == Atom::BIGINT) {
-        if (cols == 0) {
-          bigint *vec = *((bigint **)pdata);
-          vec[ilocal] = utils::bnumeric(FLERR, values[ivalue++], true, lmp);
-        } else {
-          bigint **array = *((bigint ***)pdata);
-          for (m = 0; m < cols; m++)
-            array[ilocal][m] =
-                utils::bnumeric(FLERR, values[ivalue++], true, lmp);
-        }
-      }
-    }
-  }
-}
 void AtomVec::setup_fields() {
   int n, cols;
   if ((fields_data_atom.size() < 1) || (fields_data_atom[0] != "id"))
