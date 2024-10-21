@@ -24,7 +24,6 @@ error.o \
 fix_nve.o \
 fix.o \
 fmtlib_format.o \
-fmtlib_os.o \
 force.o \
 group.o \
 input.o \
