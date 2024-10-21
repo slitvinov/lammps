@@ -1492,47 +1492,6 @@ void AtomVec::data_vel(int ilocal, const std::vector<std::string> &values) {
     }
   }
 }
-void AtomVec::pack_vel(double **buf) {
-  int i, j, m, n, datatype, cols;
-  void *pdata;
-  int nlocal = atom->nlocal;
-  for (i = 0; i < nlocal; i++) {
-    j = 0;
-    for (n = 0; n < ndata_vel; n++) {
-      pdata = mdata_vel.pdata[n];
-      datatype = mdata_vel.datatype[n];
-      cols = mdata_vel.cols[n];
-      if (datatype == Atom::DOUBLE) {
-        if (cols == 0) {
-          double *vec = *((double **)pdata);
-          buf[i][j++] = vec[i];
-        } else {
-          double **array = *((double ***)pdata);
-          for (m = 0; m < cols; m++)
-            buf[i][j++] = array[i][m];
-        }
-      } else if (datatype == Atom::INT) {
-        if (cols == 0) {
-          int *vec = *((int **)pdata);
-          buf[i][j++] = ubuf(vec[i]).d;
-        } else {
-          int **array = *((int ***)pdata);
-          for (m = 0; m < cols; m++)
-            buf[i][j++] = ubuf(array[i][m]).d;
-        }
-      } else if (datatype == Atom::BIGINT) {
-        if (cols == 0) {
-          bigint *vec = *((bigint **)pdata);
-          buf[i][j++] = ubuf(vec[i]).d;
-        } else {
-          bigint **array = *((bigint ***)pdata);
-          for (m = 0; m < cols; m++)
-            buf[i][j++] = ubuf(array[i][m]).d;
-        }
-      }
-    }
-  }
-}
 void AtomVec::setup_fields() {
   int n, cols;
   if ((fields_data_atom.size() < 1) || (fields_data_atom[0] != "id"))
