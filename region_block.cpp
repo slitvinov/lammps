@@ -2,11 +2,16 @@
 #include "domain.h"
 #include "error.h"
 #include "input.h"
-#include "math_extra.h"
 #include <cstring>
 using namespace LAMMPS_NS;
 enum { CONSTANT, VARIABLE };
 #define BIG 1.0e20
+static void copy3(const double *v, double *ans) {
+  ans[0] = v[0];
+  ans[1] = v[1];
+  ans[2] = v[2];
+}
+
 RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
     : Region(lmp, narg, arg), xlostr(nullptr), xhistr(nullptr), ylostr(nullptr),
       yhistr(nullptr), zlostr(nullptr), zhistr(nullptr) {
@@ -86,22 +91,22 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
   corners[1][3][0] = xhi;
   corners[1][3][1] = yhi;
   corners[1][3][2] = zlo;
-  MathExtra::copy3(corners[0][0], corners[2][0]);
-  MathExtra::copy3(corners[1][0], corners[2][1]);
-  MathExtra::copy3(corners[1][1], corners[2][2]);
-  MathExtra::copy3(corners[0][1], corners[2][3]);
-  MathExtra::copy3(corners[0][3], corners[3][0]);
-  MathExtra::copy3(corners[0][2], corners[3][1]);
-  MathExtra::copy3(corners[1][2], corners[3][2]);
-  MathExtra::copy3(corners[1][3], corners[3][3]);
-  MathExtra::copy3(corners[0][0], corners[4][0]);
-  MathExtra::copy3(corners[0][3], corners[4][1]);
-  MathExtra::copy3(corners[1][3], corners[4][2]);
-  MathExtra::copy3(corners[1][0], corners[4][3]);
-  MathExtra::copy3(corners[0][1], corners[5][0]);
-  MathExtra::copy3(corners[1][1], corners[5][1]);
-  MathExtra::copy3(corners[1][2], corners[5][2]);
-  MathExtra::copy3(corners[0][2], corners[5][3]);
+  copy3(corners[0][0], corners[2][0]);
+  copy3(corners[1][0], corners[2][1]);
+  copy3(corners[1][1], corners[2][2]);
+  copy3(corners[0][1], corners[2][3]);
+  copy3(corners[0][3], corners[3][0]);
+  copy3(corners[0][2], corners[3][1]);
+  copy3(corners[1][2], corners[3][2]);
+  copy3(corners[1][3], corners[3][3]);
+  copy3(corners[0][0], corners[4][0]);
+  copy3(corners[0][3], corners[4][1]);
+  copy3(corners[1][3], corners[4][2]);
+  copy3(corners[1][0], corners[4][3]);
+  copy3(corners[0][1], corners[5][0]);
+  copy3(corners[1][1], corners[5][1]);
+  copy3(corners[1][2], corners[5][2]);
+  copy3(corners[0][2], corners[5][3]);
 }
 RegBlock::~RegBlock() {
   delete[] xlostr;
