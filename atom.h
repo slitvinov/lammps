@@ -22,7 +22,6 @@ public:
   int ntypes;
   int firstgroup;
   int nfirst;
-  char *firstgroupname;
   tagint *tag;
   int *type, *mask;
   imageint *image;

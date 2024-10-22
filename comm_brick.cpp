@@ -318,8 +318,6 @@ void CommBrick::exchange() {
         m += static_cast<int>(buf_recv[m]);
     }
   }
-  if (atom->firstgroupname)
-    atom->first_reorder();
 }
 void CommBrick::borders() {
   int i, n, itype, icollection, iswap, dim, ineed, twoneed;

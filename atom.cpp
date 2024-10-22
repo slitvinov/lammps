@@ -28,7 +28,6 @@ Atom::Atom(LAMMPS *_lmp) : Pointers(_lmp) {
   natoms = 0;
   nlocal = nghost = nmax = 0;
   ntypes = 0;
-  firstgroupname = nullptr;
   sortfreq = 1000;
   nextsort = 0;
   userbinsize = 0.0;
@@ -106,7 +105,6 @@ Atom::~Atom() {
   delete[] atom_style;
   delete avec;
   delete avec_map;
-  delete[] firstgroupname;
   memory->destroy(binhead);
   memory->destroy(next);
   memory->destroy(permute);
@@ -228,13 +226,7 @@ void Atom::init() {
     nextra_store = 0;
   }
   check_mass(FLERR);
-  if (firstgroupname) {
-    firstgroup = group->find(firstgroupname);
-    if (firstgroup < 0)
-      error->all(FLERR, "Could not find atom_modify first group ID {}",
-                 firstgroupname);
-  } else
-    firstgroup = -1;
+  firstgroup = -1;
   avec->init();
 }
 void Atom::setup() {
