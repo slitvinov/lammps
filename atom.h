@@ -14,7 +14,7 @@ public:
   enum { ATOMIC = 0 };
   enum { ATOM = 0 };
   enum { NUMERIC = 0, LABELS = 1 };
-  enum { MAP_NONE = 0, MAP_ARRAY = 1, MAP_HASH = 2, MAP_YES = 3 };
+  enum { MAP_NONE = 0, MAP_HASH = 2, MAP_YES = 3 };
   bigint natoms;
   int nlocal, nghost;
   int nmax;
