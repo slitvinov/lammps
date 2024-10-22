@@ -8,7 +8,6 @@ public:
   ~CommBrick() override;
   void init() override;
   void setup() override;
-  void forward_comm(int dummy = 0) override;
   void reverse_comm() override;
   void exchange() override;
   void borders() override;

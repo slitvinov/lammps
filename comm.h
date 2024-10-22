@@ -39,7 +39,6 @@ public:
   virtual void set_proc_grid(int outflag = 1);
   double get_comm_cutoff();
   virtual void setup() = 0;
-  virtual void forward_comm(int dummy = 0) = 0;
   virtual void reverse_comm() = 0;
   virtual void exchange() = 0;
   virtual void borders() = 0;

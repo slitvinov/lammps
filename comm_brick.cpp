@@ -132,66 +132,6 @@ void CommBrick::setup() {
     }
   }
 }
-void CommBrick::forward_comm(int) {
-  int n;
-  MPI_Request request;
-  AtomVec *avec = atom->avec;
-  double **x = atom->x;
-  double *buf;
-  for (int iswap = 0; iswap < nswap; iswap++) {
-    if (sendproc[iswap] != me) {
-      if (comm_x_only) {
-        if (size_forward_recv[iswap]) {
-          buf = x[firstrecv[iswap]];
-          MPI_Irecv(buf, size_forward_recv[iswap], MPI_DOUBLE, recvproc[iswap],
-                    0, world, &request);
-        }
-        n = avec->pack_comm(sendnum[iswap], sendlist[iswap], buf_send,
-                            pbc_flag[iswap], pbc[iswap]);
-        if (n)
-          MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap], 0, world);
-        if (size_forward_recv[iswap])
-          MPI_Wait(&request, MPI_STATUS_IGNORE);
-      } else if (ghost_velocity) {
-        if (size_forward_recv[iswap])
-          MPI_Irecv(buf_recv, size_forward_recv[iswap], MPI_DOUBLE,
-                    recvproc[iswap], 0, world, &request);
-        n = avec->pack_comm_vel(sendnum[iswap], sendlist[iswap], buf_send,
-                                pbc_flag[iswap], pbc[iswap]);
-        if (n)
-          MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap], 0, world);
-        if (size_forward_recv[iswap])
-          MPI_Wait(&request, MPI_STATUS_IGNORE);
-        avec->unpack_comm_vel(recvnum[iswap], firstrecv[iswap], buf_recv);
-      } else {
-        if (size_forward_recv[iswap])
-          MPI_Irecv(buf_recv, size_forward_recv[iswap], MPI_DOUBLE,
-                    recvproc[iswap], 0, world, &request);
-        n = avec->pack_comm(sendnum[iswap], sendlist[iswap], buf_send,
-                            pbc_flag[iswap], pbc[iswap]);
-        if (n)
-          MPI_Send(buf_send, n, MPI_DOUBLE, sendproc[iswap], 0, world);
-        if (size_forward_recv[iswap])
-          MPI_Wait(&request, MPI_STATUS_IGNORE);
-        avec->unpack_comm(recvnum[iswap], firstrecv[iswap], buf_recv);
-      }
-    } else {
-      if (comm_x_only) {
-        if (sendnum[iswap])
-          avec->pack_comm(sendnum[iswap], sendlist[iswap], x[firstrecv[iswap]],
-                          pbc_flag[iswap], pbc[iswap]);
-      } else if (ghost_velocity) {
-        avec->pack_comm_vel(sendnum[iswap], sendlist[iswap], buf_send,
-                            pbc_flag[iswap], pbc[iswap]);
-        avec->unpack_comm_vel(recvnum[iswap], firstrecv[iswap], buf_send);
-      } else {
-        avec->pack_comm(sendnum[iswap], sendlist[iswap], buf_send,
-                        pbc_flag[iswap], pbc[iswap]);
-        avec->unpack_comm(recvnum[iswap], firstrecv[iswap], buf_send);
-      }
-    }
-  }
-}
 void CommBrick::reverse_comm() {
   int n;
   MPI_Request request;
