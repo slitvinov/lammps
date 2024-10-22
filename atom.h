@@ -94,7 +94,6 @@ public:
   std::set<tagint> *unique_tags;
   int sortfreq;
   bigint nextsort;
-  double userbinsize;
   int *sametag;
   bool reset_image_flag[3];
   typedef AtomVec *(*AtomVecCreator)(LAMMPS *);

@@ -30,7 +30,6 @@ Atom::Atom(LAMMPS *_lmp) : Pointers(_lmp) {
   ntypes = 0;
   sortfreq = 1000;
   nextsort = 0;
-  userbinsize = 0.0;
   maxbin = maxnext = 0;
   binhead = nullptr;
   next = permute = nullptr;
@@ -331,9 +330,7 @@ void Atom::sort() {
 }
 void Atom::setup_sort_bins() {
   double binsize = 0.0;
-  if (userbinsize > 0.0)
-    binsize = userbinsize;
-  else if (neighbor->cutneighmax > 0.0)
+  if (neighbor->cutneighmax > 0.0)
     binsize = 0.5 * neighbor->cutneighmax;
   double bininv = 1.0 / binsize;
   bboxlo[0] = domain->sublo[0];
