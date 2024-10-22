@@ -81,26 +81,7 @@ void Domain::init() {
   const auto &fixes = modify->get_fix_list();
   if (nonperiodic == 2)
     box_change_size = 1;
-  for (const auto &fix : fixes) {
-    if (fix->box_change & Fix::BOX_CHANGE_SIZE)
-      box_change_size = 1;
-    if (fix->box_change & Fix::BOX_CHANGE_SHAPE)
-      box_change_shape = 1;
-    if (fix->box_change & Fix::BOX_CHANGE_DOMAIN)
-      box_change_domain = 1;
-    if (fix->box_change & Fix::BOX_CHANGE_X)
-      box_change_x++;
-    if (fix->box_change & Fix::BOX_CHANGE_Y)
-      box_change_y++;
-    if (fix->box_change & Fix::BOX_CHANGE_Z)
-      box_change_z++;
-    if (fix->box_change & Fix::BOX_CHANGE_YZ)
-      box_change_yz++;
-    if (fix->box_change & Fix::BOX_CHANGE_XZ)
-      box_change_xz++;
-    if (fix->box_change & Fix::BOX_CHANGE_XY)
-      box_change_xy++;
-  }
+}
   std::string mesg = "Must not have multiple fixes change box parameter ";
 #define CHECK_BOX_FIX_ERROR(par)                                               \
   if (box_change_##par > 1)                                                    \
@@ -123,32 +104,6 @@ void Domain::set_initial_box(int expandflag) {
   small[0] = SMALL * (boxhi[0] - boxlo[0]);
   small[1] = SMALL * (boxhi[1] - boxlo[1]);
   small[2] = SMALL * (boxhi[2] - boxlo[2]);
-  if (!expandflag)
-    return;
-  if (boundary[0][0] == 2)
-    boxlo[0] -= small[0];
-  else if (boundary[0][0] == 3)
-    minxlo = boxlo[0];
-  if (boundary[0][1] == 2)
-    boxhi[0] += small[0];
-  else if (boundary[0][1] == 3)
-    minxhi = boxhi[0];
-  if (boundary[1][0] == 2)
-    boxlo[1] -= small[1];
-  else if (boundary[1][0] == 3)
-    minylo = boxlo[1];
-  if (boundary[1][1] == 2)
-    boxhi[1] += small[1];
-  else if (boundary[1][1] == 3)
-    minyhi = boxhi[1];
-  if (boundary[2][0] == 2)
-    boxlo[2] -= small[2];
-  else if (boundary[2][0] == 3)
-    minzlo = boxlo[2];
-  if (boundary[2][1] == 2)
-    boxhi[2] += small[2];
-  else if (boundary[2][1] == 3)
-    minzhi = boxhi[2];
 }
 void Domain::set_global_box() {
   prd[0] = xprd = boxhi[0] - boxlo[0];
@@ -187,8 +142,6 @@ void Domain::set_local_box() {
     subhi[2] = boxhi[2];
 }
 void Domain::reset_box() {
-  if (atom->natoms == 0)
-    return;
   set_global_box();
   set_local_box();
 }
