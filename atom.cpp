@@ -313,23 +313,6 @@ void Atom::check_mass(const char *file, int line) {
       error->all(file, line,
                  "Not all per-type masses are set. Type {} is missing.", itype);
 }
-void Atom::first_reorder() {
-  if (nlocal == nmax)
-    avec->grow(0);
-  int bitmask = group->bitmask[firstgroup];
-  nfirst = 0;
-  while (nfirst < nlocal && mask[nfirst] & bitmask)
-    nfirst++;
-  for (int i = 0; i < nlocal; i++) {
-    if (mask[i] & bitmask && i > nfirst) {
-      avec->copy(i, nlocal, 0);
-      avec->copy(nfirst, i, 0);
-      avec->copy(nlocal, nfirst, 0);
-      while (nfirst < nlocal && mask[nfirst] & bitmask)
-        nfirst++;
-    }
-  }
-}
 void Atom::sort() {
   int i, m, n, ix, iy, iz, ibin, empty;
   nextsort = (update->ntimestep / sortfreq) * sortfreq + sortfreq;
