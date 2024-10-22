@@ -74,15 +74,10 @@ void Verlet::run(int n) {
     ntimestep = ++update->ntimestep;
     ev_set(ntimestep);
     modify->initial_integrate(vflag);
-    if (n_post_integrate)
-      modify->post_integrate();
     nflag = neighbor->decide();
     if (nflag == 0) {
       comm->forward_comm();
     } else {
-      if (n_pre_exchange) {
-        modify->pre_exchange();
-      }
       domain->pbc();
       comm->exchange();
       if (sortflag && ntimestep >= atom->nextsort)
