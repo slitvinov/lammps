@@ -81,9 +81,6 @@ void Verlet::run(int n) {
       if (sortflag && ntimestep >= atom->nextsort)
         atom->sort();
       comm->borders();
-      if (n_pre_neighbor) {
-        modify->pre_neighbor();
-      }
       neighbor->build(1);
       if (n_post_neighbor) {
         modify->post_neighbor();
@@ -96,17 +93,8 @@ void Verlet::run(int n) {
     if (pair_compute_flag) {
       force->pair->compute(eflag, vflag);
     }
-    if (n_pre_reverse) {
-      modify->pre_reverse(eflag, vflag);
-    }
-    if (force->newton) {
-      comm->reverse_comm();
-    }
-    if (n_post_force_any)
-      modify->post_force(vflag);
+    comm->reverse_comm();
     modify->final_integrate();
-    if (n_end_of_step)
-      modify->end_of_step();
   }
 }
 void Verlet::cleanup() {
