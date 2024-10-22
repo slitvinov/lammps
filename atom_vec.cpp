@@ -1190,8 +1190,6 @@ int AtomVec::unpack_restart(double *buf) {
   int nlocal = atom->nlocal;
   if (nlocal == nmax) {
     grow(0);
-    if (atom->nextra_store)
-      memory->grow(atom->extra, nmax, atom->nextra_store, "atom:extra");
   }
   int m = 1;
   x[nlocal][0] = buf[m++];
@@ -1271,11 +1269,6 @@ int AtomVec::unpack_restart(double *buf) {
     m += unpack_restart_bonus(nlocal, &buf[m]);
   unpack_restart_init(nlocal);
   double **extra = atom->extra;
-  if (atom->nextra_store) {
-    int size = static_cast<int>(buf[0]) - m;
-    for (int i = 0; i < size; i++)
-      extra[nlocal][i] = buf[m++];
-  }
   atom->nlocal++;
   return m;
 }

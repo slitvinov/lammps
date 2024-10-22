@@ -79,7 +79,6 @@ Atom::Atom(LAMMPS *_lmp) : Pointers(_lmp) {
   nextra_grow = nextra_restart = nextra_border = 0;
   extra_grow = extra_restart = extra_border = nullptr;
   nextra_grow_max = nextra_restart_max = nextra_border_max = 0;
-  nextra_store = 0;
   extra = nullptr;
   tag_enable = 1;
   map_style = map_user = MAP_NONE;
@@ -220,11 +219,6 @@ AtomVec *Atom::new_avec(const std::string &style) {
   return nullptr;
 }
 void Atom::init() {
-  if (nextra_store) {
-    memory->destroy(extra);
-    extra = nullptr;
-    nextra_store = 0;
-  }
   check_mass(FLERR);
   firstgroup = -1;
   avec->init();

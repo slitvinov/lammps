@@ -88,7 +88,6 @@ public:
   int *extra_grow, *extra_restart, *extra_border;
   int nextra_grow_max, nextra_restart_max;
   int nextra_border_max;
-  int nextra_store;
   int map_style;
   int map_user;
   tagint map_tag_max;
