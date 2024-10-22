@@ -5,43 +5,6 @@
 #include <cmath>
 using namespace LAMMPS_NS;
 #define EXTRA 1000
-void Atom::map_clear() {
-  if (map_style == MAP_ARRAY) {
-    int nall = nlocal + nghost;
-    for (int i = 0; i < nall; i++) {
-      if (sametag)
-        sametag[i] = -1;
-      map_array[tag[i]] = -1;
-    }
-  } else {
-    int previous, ibucket, index;
-    tagint global;
-    int nall = nlocal + nghost;
-    for (int i = 0; i < nall; i++) {
-      if (sametag)
-        sametag[i] = -1;
-      previous = -1;
-      global = tag[i];
-      ibucket = global % map_nbucket;
-      index = map_bucket[ibucket];
-      while (index > -1) {
-        if (map_hash[index].global == global)
-          break;
-        previous = index;
-        index = map_hash[index].next;
-      }
-      if (index == -1)
-        continue;
-      if (previous == -1)
-        map_bucket[ibucket] = map_hash[index].next;
-      else
-        map_hash[previous].next = map_hash[index].next;
-      map_hash[index].next = map_free;
-      map_free = index;
-      map_nused--;
-    }
-  }
-}
 void Atom::map_delete() {
   memory->destroy(sametag);
   sametag = nullptr;
