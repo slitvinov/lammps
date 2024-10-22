@@ -82,17 +82,9 @@ void Verlet::run(int n) {
         atom->sort();
       comm->borders();
       neighbor->build(1);
-      if (n_post_neighbor) {
-        modify->post_neighbor();
-      }
     }
     force_clear();
-    if (n_pre_force) {
-      modify->pre_force(vflag);
-    }
-    if (pair_compute_flag) {
-      force->pair->compute(eflag, vflag);
-    }
+    force->pair->compute(eflag, vflag);
     comm->reverse_comm();
     modify->final_integrate();
   }
