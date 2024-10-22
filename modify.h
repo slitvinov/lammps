@@ -43,10 +43,7 @@ public:
   void reset_grid();
   Fix *add_fix(int, char **, int trysuffix = 1);
   Fix *add_fix(const std::string &, int trysuffix = 1);
-  void modify_fix(int, char **);
-  void delete_fix(const std::string &);
   void delete_fix(int);
-  int find_fix(const std::string &);
   Fix *get_fix_by_id(const std::string &) const;
   Fix *get_fix_by_index(int idx) const {
     return ((idx >= 0) && (idx < nfix)) ? fix[idx] : nullptr;

@@ -345,20 +345,6 @@ Fix *Modify::add_fix(const std::string &fixcmd, int trysuffix) {
   }
   return add_fix(args.size(), newarg.data(), trysuffix);
 }
-void Modify::modify_fix(int narg, char **arg) {
-  if (narg < 2)
-    utils::missing_cmd_args(FLERR, "fix_modify", error);
-  auto ifix = get_fix_by_id(arg[0]);
-  if (!ifix)
-    error->all(FLERR, "Could not find fix_modify ID {}", arg[0]);
-  ifix->modify_params(narg - 1, &arg[1]);
-}
-void Modify::delete_fix(const std::string &id) {
-  int ifix = find_fix(id);
-  if (ifix < 0)
-    error->all(FLERR, "Could not find fix ID {} to delete", id);
-  delete_fix(ifix);
-}
 void Modify::delete_fix(int ifix) {
   if ((ifix < 0) || (ifix >= nfix))
     return;
@@ -369,14 +355,6 @@ void Modify::delete_fix(int ifix) {
     fmask[i - 1] = fmask[i];
   nfix--;
   fix_list = std::vector<Fix *>(fix, fix + nfix);
-}
-int Modify::find_fix(const std::string &id) {
-  if (id.empty())
-    return -1;
-  for (int ifix = 0; ifix < nfix; ifix++)
-    if (fix[ifix] && (id == fix[ifix]->id))
-      return ifix;
-  return -1;
 }
 Fix *Modify::get_fix_by_id(const std::string &id) const {
   if (id.empty())
