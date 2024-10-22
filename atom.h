@@ -113,7 +113,6 @@ public:
   int parse_data(const char *);
   virtual void allocate_type_arrays();
   void set_mass(const char *, int, int, char **);
-  void check_mass(const char *, int);
   void first_reorder();
   virtual void sort();
   inline int *get_map_array() { return map_array; };

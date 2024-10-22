@@ -219,7 +219,6 @@ AtomVec *Atom::new_avec(const std::string &style) {
   return nullptr;
 }
 void Atom::init() {
-  check_mass(FLERR);
   firstgroup = -1;
   avec->init();
 }
@@ -237,18 +236,6 @@ void Atom::tag_check() {
   tagint minall, maxall;
   MPI_Allreduce(&min, &minall, 1, MPI_LMP_TAGINT, MPI_MIN, world);
   MPI_Allreduce(&max, &maxall, 1, MPI_LMP_TAGINT, MPI_MAX, world);
-  if (minall < 0)
-    error->all(FLERR, "One or more Atom IDs are negative");
-  if (maxall >= MAXTAGINT)
-    error->all(FLERR, "One or more atom IDs are too big");
-  if (maxall > 0 && minall == 0)
-    error->all(FLERR, "One or more atom IDs are zero");
-  if (maxall > 0 && tag_enable == 0)
-    error->all(FLERR, "Non-zero atom IDs with atom_modify id = no");
-  if (maxall == 0 && natoms && tag_enable)
-    error->all(FLERR, "All atom IDs = 0 but atom_modify id = yes");
-  if (tag_enable && maxall < natoms)
-    error->all(FLERR, "Duplicate atom IDs exist");
 }
 void Atom::tag_extend() {
   tagint maxtag = 0;
@@ -262,8 +249,6 @@ void Atom::tag_extend() {
       notag++;
   bigint notag_total;
   MPI_Allreduce(&notag, &notag_total, 1, MPI_LMP_BIGINT, MPI_SUM, world);
-  if (notag_total >= MAXTAGINT)
-    error->all(FLERR, "New atom IDs exceed maximum allowed ID {}", MAXTAGINT);
   bigint notag_sum;
   MPI_Scan(&notag, &notag_sum, 1, MPI_LMP_BIGINT, MPI_SUM, world);
   tagint itag = maxtag_all + notag_sum - notag + 1;
@@ -280,32 +265,14 @@ void Atom::allocate_type_arrays() {
   }
 }
 void Atom::set_mass(const char *file, int line, int, char **arg) {
-  if (mass == nullptr)
-    error->all(file, line, "Cannot set per-type atom mass for atom style {}",
-               atom_style);
   const std::string str = arg[0];
   int lo, hi;
   utils::bounds(file, line, str, 1, ntypes, lo, hi, error);
-  if ((lo < 1) || (hi > ntypes))
-    error->all(file, line, "Invalid atom type {} for atom mass", str);
   const double value = utils::numeric(FLERR, arg[1], false, lmp);
-  if (value <= 0.0)
-    error->all(file, line, "Invalid atom mass value {} for type {}", value,
-               str);
   for (int itype = lo; itype <= hi; itype++) {
     mass[itype] = value;
     mass_setflag[itype] = 1;
   }
-}
-void Atom::check_mass(const char *file, int line) {
-  if (mass == nullptr)
-    return;
-  if (rmass_flag)
-    return;
-  for (int itype = 1; itype <= ntypes; itype++)
-    if (mass_setflag[itype] == 0)
-      error->all(file, line,
-                 "Not all per-type masses are set. Type {} is missing.", itype);
 }
 void Atom::sort() {
   int i, m, n, ix, iy, iz, ibin, empty;
@@ -369,13 +336,6 @@ void Atom::setup_sort_bins() {
     binsize = userbinsize;
   else if (neighbor->cutneighmax > 0.0)
     binsize = 0.5 * neighbor->cutneighmax;
-  if ((binsize == 0.0) && (sortfreq > 0)) {
-    sortfreq = 0;
-    if (comm->me == 0)
-      error->warning(FLERR, "No pairwise cutoff or binsize set. Atom sorting "
-                            "therefore disabled.");
-    return;
-  }
   double bininv = 1.0 / binsize;
   bboxlo[0] = domain->sublo[0];
   bboxlo[1] = domain->sublo[1];
@@ -386,19 +346,9 @@ void Atom::setup_sort_bins() {
   nbinx = static_cast<int>((bboxhi[0] - bboxlo[0]) * bininv);
   nbiny = static_cast<int>((bboxhi[1] - bboxlo[1]) * bininv);
   nbinz = static_cast<int>((bboxhi[2] - bboxlo[2]) * bininv);
-  if (domain->dimension == 2)
-    nbinz = 1;
-  if (nbinx == 0)
-    nbinx = 1;
-  if (nbiny == 0)
-    nbiny = 1;
-  if (nbinz == 0)
-    nbinz = 1;
   bininvx = nbinx / (bboxhi[0] - bboxlo[0]);
   bininvy = nbiny / (bboxhi[1] - bboxlo[1]);
   bininvz = nbinz / (bboxhi[2] - bboxlo[2]);
-  if (1.0 * nbinx * nbiny * nbinz > INT_MAX)
-    error->one(FLERR, "Too many atom sorting bins");
   nbins = nbinx * nbiny * nbinz;
   if (nbins > maxbin) {
     memory->destroy(binhead);
