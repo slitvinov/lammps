@@ -22,11 +22,8 @@ void logmesg(LAMMPS *lmp, const std::string &mesg);
 std::string errorurl(int errorcode);
 void flush_buffers(LAMMPS *lmp);
 std::string getsyserror();
-char *fgets_trunc(char *s, int size, FILE *fp);
 void sfgets(const char *srcname, int srcline, char *s, int size, FILE *fp,
             const char *filename, Error *error);
-int read_lines_from_file(FILE *fp, int nlines, int nmax, char *buffer, int me,
-                         MPI_Comm comm);
 int logical(const char *file, int line, const std::string &str, bool do_abort,
             LAMMPS *lmp);
 int logical(const char *file, int line, const char *str, bool do_abort,

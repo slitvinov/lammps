@@ -66,54 +66,6 @@ void utils::flush_buffers(LAMMPS *lmp) {
     fflush(lmp->universe->ulogfile);
 }
 std::string utils::getsyserror() { return {strerror(errno)}; }
-char *utils::fgets_trunc(char *buf, int size, FILE *fp) {
-  constexpr int MAXDUMMY = 256;
-  char dummy[MAXDUMMY];
-  char *ptr = fgets(buf, size, fp);
-  if (!ptr)
-    return nullptr;
-  int n = strlen(buf);
-  if (n < size - 1) {
-    if (buf[n - 1] != '\n') {
-      buf[n] = '\n';
-      buf[n + 1] = '\0';
-    }
-    return buf;
-  } else if (buf[n - 1] == '\n') {
-    return buf;
-  } else
-    buf[size - 2] = '\n';
-  do {
-    ptr = fgets(dummy, MAXDUMMY, fp);
-    if (ptr)
-      n = strlen(ptr);
-    else
-      n = 0;
-  } while (n == MAXDUMMY - 1 && ptr[MAXDUMMY - 1] != '\n');
-  return buf;
-}
-int utils::read_lines_from_file(FILE *fp, int nlines, int nmax, char *buffer,
-                                int me, MPI_Comm comm) {
-  char *ptr = buffer;
-  *ptr = '\0';
-  if (me == 0) {
-    if (fp) {
-      for (int i = 0; i < nlines; i++) {
-        ptr = fgets_trunc(ptr, nmax, fp);
-        if (!ptr)
-          break;
-        ptr += strlen(ptr);
-        *ptr = '\0';
-      }
-    }
-  }
-  int n = strlen(buffer);
-  MPI_Bcast(&n, 1, MPI_INT, 0, comm);
-  if (n == 0)
-    return 1;
-  MPI_Bcast(buffer, n + 1, MPI_CHAR, 0, comm);
-  return 0;
-}
 int utils::logical(const char *file, int line, const std::string &str,
                    bool do_abort, LAMMPS *lmp) {
   if (str.empty()) {
