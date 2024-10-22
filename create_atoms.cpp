@@ -104,13 +104,6 @@ void CreateAtoms::command(int narg, char **arg) {
   delete[] ystr;
   delete[] zstr;
   MPI_Barrier(world);
-  if (comm->me == 0) {
-    utils::logmesg(lmp, "Created {} atoms\n", atom->natoms - natoms_previous);
-    if (scaleflag)
-      domain->print_box("  using lattice units in ");
-    else
-      domain->print_box("  using box units in ");
-  }
 }
 void CreateAtoms::add_random() {
   double xlo, ylo, zlo, xhi, yhi, zhi, zmid;
