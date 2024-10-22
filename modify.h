@@ -85,7 +85,6 @@ public:
   }
   const std::vector<Fix *> get_fix_by_style(const std::string &) const;
   const std::vector<Fix *> &get_fix_list();
-  int check_rigid_list_overlap(int *);
 
 protected:
   int n_post_force, n_post_force_group, n_post_force_respa;
