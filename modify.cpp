@@ -516,35 +516,6 @@ Fix *Modify::add_fix(const std::string &fixcmd, int trysuffix) {
   }
   return add_fix(args.size(), newarg.data(), trysuffix);
 }
-Fix *Modify::replace_fix(const char *replaceID, int narg, char **arg,
-                         int trysuffix) {
-  auto oldfix = get_fix_by_id(replaceID);
-  if (!oldfix)
-    error->all(FLERR, "Modify replace_fix ID {} could not be found", replaceID);
-  if (narg < 3)
-    error->all(FLERR, "Not enough arguments for replace_fix invocation");
-  if (get_fix_by_id(arg[0]))
-    error->all(FLERR, "Replace_fix ID {} is already in use", arg[0]);
-  delete[] oldfix->id;
-  oldfix->id = utils::strdup(arg[0]);
-  int jgroup = group->find(arg[1]);
-  if (jgroup == -1)
-    error->all(FLERR, "Could not find replace_fix group ID {}", arg[1]);
-  oldfix->igroup = jgroup;
-  delete[] oldfix->style;
-  oldfix->style = utils::strdup(arg[2]);
-  return add_fix(narg, arg, trysuffix);
-}
-Fix *Modify::replace_fix(const std::string &oldfix, const std::string &fixcmd,
-                         int trysuffix) {
-  auto args = utils::split_words(fixcmd);
-  std::vector<char *> newarg(args.size());
-  int i = 0;
-  for (const auto &arg : args) {
-    newarg[i++] = (char *)arg.c_str();
-  }
-  return replace_fix(oldfix.c_str(), args.size(), newarg.data(), trysuffix);
-}
 void Modify::modify_fix(int narg, char **arg) {
   if (narg < 2)
     utils::missing_cmd_args(FLERR, "fix_modify", error);
