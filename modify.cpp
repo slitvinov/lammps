@@ -267,12 +267,6 @@ void Modify::end_of_step() {
     if (update->ntimestep % end_of_step_every[i] == 0)
       fix[list_end_of_step[i]]->end_of_step();
 }
-double Modify::energy_couple() {
-  double energy = 0.0;
-  for (int i = 0; i < n_energy_couple; i++)
-    energy += fix[list_energy_couple[i]]->compute_scalar();
-  return energy;
-}
 double Modify::energy_global() {
   double energy = 0.0;
   for (int i = 0; i < n_energy_global; i++)

@@ -45,7 +45,6 @@ public:
   virtual void post_force(int);
   virtual void final_integrate();
   virtual void end_of_step();
-  virtual double energy_couple();
   virtual double energy_global();
   virtual void energy_atom(int, double *);
   virtual void post_run();
