@@ -133,9 +133,7 @@ public:
     else
       return -1;
   };
-  virtual void map_init(int check = 1);
   virtual void map_clear();
-  virtual void map_set();
   void map_one(tagint, int);
   int map_style_set();
   virtual void map_delete();
