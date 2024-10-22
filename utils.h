@@ -15,7 +15,7 @@ void missing_cmd_args(const std::string &file, int line, const std::string &cmd,
 void fmtargs_logmesg(LAMMPS *lmp, fmt::string_view format,
                      fmt::format_args args);
 template <typename... Args>
-void logmesg(LAMMPS *lmp, const std::string &format, Args &&...args) {
+void logmesg(LAMMPS *lmp, const std::string &format, Args &&... args) {
   fmtargs_logmesg(lmp, format, fmt::make_format_args(args...));
 }
 void logmesg(LAMMPS *lmp, const std::string &mesg);
