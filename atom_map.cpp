@@ -71,27 +71,6 @@ void Atom::map_one(tagint global, int local) {
     map_nused++;
   }
 }
-int Atom::map_style_set() {
-  if (tag_enable == 0)
-    error->all(FLERR, "Cannot create an atom map unless atoms have IDs");
-  tagint max = -1;
-  for (int i = 0; i < nlocal; i++)
-    max = MAX(max, tag[i]);
-  MPI_Allreduce(&max, &map_tag_max, 1, MPI_LMP_TAGINT, MPI_MAX, world);
-  int map_style_old = map_style;
-  if (map_user == MAP_ARRAY || map_user == MAP_HASH) {
-    map_style = map_user;
-  } else {
-    if (map_tag_max > 1000000)
-      map_style = MAP_HASH;
-    else
-      map_style = MAP_ARRAY;
-  }
-  int recreate = 0;
-  if (map_style != map_style_old)
-    recreate = 1;
-  return recreate;
-}
 void Atom::map_delete() {
   memory->destroy(sametag);
   sametag = nullptr;
