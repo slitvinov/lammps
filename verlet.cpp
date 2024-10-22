@@ -34,8 +34,6 @@ void Verlet::setup(int flag) {
   domain->pbc();
   domain->reset_box();
   comm->setup();
-  if (neighbor->style)
-    neighbor->setup_bins();
   comm->exchange();
   if (atom->sortfreq > 0)
     atom->sort();
