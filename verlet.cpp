@@ -70,16 +70,12 @@ void Verlet::run(int n) {
     ev_set(ntimestep);
     modify->initial_integrate(vflag);
     nflag = neighbor->decide();
-    if (nflag == 0) {
-      comm->forward_comm();
-    } else {
-      domain->pbc();
-      comm->exchange();
-      if (sortflag && ntimestep >= atom->nextsort)
-        atom->sort();
-      comm->borders();
-      neighbor->build(1);
-    }
+    domain->pbc();
+    comm->exchange();
+    if (sortflag && ntimestep >= atom->nextsort)
+      atom->sort();
+    comm->borders();
+    neighbor->build(1);
     force_clear();
     force->pair->compute(eflag, vflag);
     comm->reverse_comm();
