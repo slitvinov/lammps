@@ -66,18 +66,6 @@ int ProcMap::factor(int n, int **factors) {
   }
   return m;
 }
-int ProcMap::cull_2d(int n, int **factors, int m) {
-  int i = 0;
-  while (i < n) {
-    if (factors[i][2] != 1) {
-      for (int j = 0; j < m; j++)
-        factors[i][j] = factors[n - 1][j];
-      n--;
-    } else
-      i++;
-  }
-  return n;
-}
 int ProcMap::cull_user(int n, int **factors, int m, int *user_factors) {
   int i = 0;
   while (i < n) {
@@ -94,28 +82,6 @@ int ProcMap::cull_user(int n, int **factors, int m, int *user_factors) {
       n--;
     } else
       i++;
-  }
-  return n;
-}
-int ProcMap::cull_other(int n, int **factors, int m, int other_style,
-                        int *other_procgrid, int *other_coregrid) {
-  int i = 0;
-  while (i < n) {
-    if (other_style == Comm::MULTIPLE) {
-      int flag = 0;
-      if ((other_procgrid[0] / other_coregrid[0]) % factors[i][0])
-        flag = 1;
-      if ((other_procgrid[1] / other_coregrid[1]) % factors[i][1])
-        flag = 1;
-      if ((other_procgrid[2] / other_coregrid[2]) % factors[i][2])
-        flag = 1;
-      if (flag) {
-        for (int j = 0; j < m; j++)
-          factors[i][j] = factors[n - 1][j];
-        n--;
-      } else
-        i++;
-    }
   }
   return n;
 }

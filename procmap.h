@@ -15,9 +15,7 @@ private:
   int nodegrid[3];
   int **cmap;
   int factor(int, int **);
-  int cull_2d(int, int **, int);
   int cull_user(int, int **, int, int *);
-  int cull_other(int, int **, int, int, int *, int *);
   int best_factors(int, int **, int *, int, int, int);
 };
 } // namespace LAMMPS_NS
