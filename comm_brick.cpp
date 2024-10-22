@@ -252,8 +252,6 @@ void CommBrick::exchange() {
   double *sublo, *subhi;
   MPI_Request request;
   AtomVec *avec = atom->avec;
-  if (map_style != Atom::MAP_NONE)
-    atom->map_clear();
   atom->nghost = 0;
   atom->avec->clear_bonus();
   if (maxexchange_fix_dynamic) {
@@ -460,8 +458,6 @@ void CommBrick::borders() {
   max = MAX(maxforward * rmax, maxreverse * smax);
   if (max > maxrecv)
     grow_recv(max);
-  if (map_style != Atom::MAP_NONE)
-    atom->map_set();
 }
 void CommBrick::grow_send(int n, int flag) {
   if (flag == 0) {

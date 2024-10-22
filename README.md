@@ -1,5 +1,5 @@
 ```
-make -j 2
+make
 ```
 
 coverage
