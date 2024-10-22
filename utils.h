@@ -66,8 +66,6 @@ size_t count_words(const std::string &text);
 size_t count_words(const char *text);
 size_t trim_and_count_words(const std::string &text,
                             const std::string &separators = " \t\r\n\f");
-std::string join_words(const std::vector<std::string> &words,
-                       const std::string &sep);
 std::vector<std::string> split_words(const std::string &text);
 bool is_integer(const std::string &str);
 bool is_double(const std::string &str);

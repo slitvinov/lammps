@@ -431,15 +431,6 @@ size_t utils::trim_and_count_words(const std::string &text,
                                    const std::string &separators) {
   return utils::count_words(trim_comment(text), separators);
 }
-std::string utils::join_words(const std::vector<std::string> &words,
-                              const std::string &sep) {
-  std::string result;
-  if (words.size() > 0)
-    result = words[0];
-  for (std::size_t i = 1; i < words.size(); ++i)
-    result += sep + words[i];
-  return result;
-}
 std::vector<std::string> utils::split_words(const std::string &text) {
   std::vector<std::string> list;
   const char *buf = text.c_str();
