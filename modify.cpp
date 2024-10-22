@@ -601,27 +601,6 @@ const std::vector<Fix *> &Modify::get_fix_list() {
   fix_list = std::vector<Fix *>(fix, fix + nfix);
   return fix_list;
 }
-int Modify::check_rigid_group_overlap(int groupbit) {
-  const int *const mask = atom->mask;
-  const int nlocal = atom->nlocal;
-  int dim;
-  int n = 0;
-  for (int ifix = 0; ifix < nfix; ifix++) {
-    if (utils::strmatch(fix[ifix]->style, "^rigid")) {
-      const int *const body = (const int *)fix[ifix]->extract("body", dim);
-      if ((body == nullptr) || (dim != 1))
-        break;
-      for (int i = 0; (i < nlocal) && (n == 0); ++i)
-        if ((mask[i] & groupbit) && (body[i] >= 0))
-          ++n;
-    }
-  }
-  int n_all = 0;
-  MPI_Allreduce(&n, &n_all, 1, MPI_INT, MPI_SUM, world);
-  if (n_all > 0)
-    return 1;
-  return 0;
-}
 int Modify::check_rigid_list_overlap(int *select) {
   const int nlocal = atom->nlocal;
   int dim;
