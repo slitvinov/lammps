@@ -64,10 +64,7 @@ void Verlet::run(int n) {
   int n_pre_reverse = modify->n_pre_reverse;
   int n_post_force_any = modify->n_post_force_any;
   int n_end_of_step = modify->n_end_of_step;
-  if (atom->sortfreq > 0)
-    sortflag = 1;
-  else
-    sortflag = 0;
+  sortflag = 1;
   for (int i = 0; i < n; i++) {
     ntimestep = ++update->ntimestep;
     ev_set(ntimestep);
