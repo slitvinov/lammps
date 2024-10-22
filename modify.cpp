@@ -224,39 +224,9 @@ void Modify::initial_integrate(int vflag) {
   for (int i = 0; i < n_initial_integrate; i++)
     fix[list_initial_integrate[i]]->initial_integrate(vflag);
 }
-void Modify::post_integrate() {
-  for (int i = 0; i < n_post_integrate; i++)
-    fix[list_post_integrate[i]]->post_integrate();
-}
-void Modify::pre_exchange() {
-  for (int i = 0; i < n_pre_exchange; i++)
-    fix[list_pre_exchange[i]]->pre_exchange();
-}
-void Modify::pre_neighbor() {
-  for (int i = 0; i < n_pre_neighbor; i++)
-    fix[list_pre_neighbor[i]]->pre_neighbor();
-}
-void Modify::post_neighbor() {
-  for (int i = 0; i < n_post_neighbor; i++)
-    fix[list_post_neighbor[i]]->post_neighbor();
-}
 void Modify::pre_force(int vflag) {
   for (int i = 0; i < n_pre_force; i++)
     fix[list_pre_force[i]]->pre_force(vflag);
-}
-void Modify::pre_reverse(int eflag, int vflag) {
-  for (int i = 0; i < n_pre_reverse; i++)
-    fix[list_pre_reverse[i]]->pre_reverse(eflag, vflag);
-}
-void Modify::post_force(int vflag) {
-  if (n_post_force_group) {
-    for (int i = 0; i < n_post_force_group; i++)
-      fix[list_post_force_group[i]]->post_force(vflag);
-  }
-  if (n_post_force) {
-    for (int i = 0; i < n_post_force; i++)
-      fix[list_post_force[i]]->post_force(vflag);
-  }
 }
 void Modify::final_integrate() {
   for (int i = 0; i < n_final_integrate; i++)
@@ -272,37 +242,6 @@ void Modify::post_run() {
   for (int i = 0; i < nfix; i++)
     fix[i]->post_run();
   n_timeflag = -1;
-}
-void Modify::setup_pre_force_respa(int vflag, int ilevel) {
-  for (int i = 0; i < n_pre_force_respa; i++)
-    fix[list_pre_force_respa[i]]->setup_pre_force_respa(vflag, ilevel);
-}
-void Modify::initial_integrate_respa(int vflag, int ilevel, int iloop) {
-  for (int i = 0; i < n_initial_integrate_respa; i++)
-    fix[list_initial_integrate_respa[i]]->initial_integrate_respa(vflag, ilevel,
-                                                                  iloop);
-}
-void Modify::post_integrate_respa(int ilevel, int iloop) {
-  for (int i = 0; i < n_post_integrate_respa; i++)
-    fix[list_post_integrate_respa[i]]->post_integrate_respa(ilevel, iloop);
-}
-void Modify::pre_force_respa(int vflag, int ilevel, int iloop) {
-  for (int i = 0; i < n_pre_force_respa; i++)
-    fix[list_pre_force_respa[i]]->pre_force_respa(vflag, ilevel, iloop);
-}
-void Modify::post_force_respa(int vflag, int ilevel, int iloop) {
-  if (n_post_force_group) {
-    for (int i = 0; i < n_post_force_group; i++)
-      fix[list_post_force_group[i]]->post_force_respa(vflag, ilevel, iloop);
-  }
-  if (n_post_force_respa) {
-    for (int i = 0; i < n_post_force_respa; i++)
-      fix[list_post_force_respa[i]]->post_force_respa(vflag, ilevel, iloop);
-  }
-}
-void Modify::final_integrate_respa(int ilevel, int iloop) {
-  for (int i = 0; i < n_final_integrate_respa; i++)
-    fix[list_final_integrate_respa[i]]->final_integrate_respa(ilevel, iloop);
 }
 void Modify::min_pre_exchange() {
   for (int i = 0; i < n_min_pre_exchange; i++)
