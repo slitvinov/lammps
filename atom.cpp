@@ -285,20 +285,6 @@ void Atom::tag_extend() {
     if (tag[i] == 0)
       tag[i] = itag++;
 }
-int Atom::tag_consecutive() {
-  tagint idmin = MAXTAGINT;
-  tagint idmax = 0;
-  for (int i = 0; i < nlocal; i++) {
-    idmin = MIN(idmin, tag[i]);
-    idmax = MAX(idmax, tag[i]);
-  }
-  tagint idminall, idmaxall;
-  MPI_Allreduce(&idmin, &idminall, 1, MPI_LMP_TAGINT, MPI_MIN, world);
-  MPI_Allreduce(&idmax, &idmaxall, 1, MPI_LMP_TAGINT, MPI_MAX, world);
-  if (idminall != 1 || idmaxall != natoms)
-    return 0;
-  return 1;
-}
 void Atom::allocate_type_arrays() {
   if (avec->mass_type == AtomVec::PER_TYPE) {
     mass = new double[ntypes + 1];

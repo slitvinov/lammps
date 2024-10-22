@@ -112,7 +112,6 @@ public:
   void setup();
   void tag_check();
   void tag_extend();
-  int tag_consecutive();
   int parse_data(const char *);
   virtual void allocate_type_arrays();
   void set_mass(const char *, int, int, char **);
