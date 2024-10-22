@@ -126,7 +126,6 @@ public:
     else
       return -1;
   };
-  virtual void map_delete();
 
 protected:
   int *map_array;

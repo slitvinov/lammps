@@ -130,7 +130,6 @@ Atom::~Atom() {
   memory->destroy(extra_restart);
   memory->destroy(extra_border);
   memory->destroy(extra);
-  Atom::map_delete();
   delete unique_tags;
 }
 void Atom::peratom_create() {
