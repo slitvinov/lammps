@@ -166,16 +166,6 @@ protected:
   }
   virtual void ev_setup(int, int, int alloc = 1);
   void ev_unset();
-  void ev_tally_full(int, double, double, double, double, double, double);
-  void ev_tally_xyz_full(int, double, double, double, double, double, double,
-                         double, double);
-  void ev_tally4(int, int, int, int, double, double *, double *, double *,
-                 double *, double *, double *);
-  void ev_tally_tip4p(int, int *, double *, double, double);
-  void ev_tally_xyz(int, int, int, int, double, double, double, double, double,
-                    double, double, double);
-  void v_tally2(int, int, double, double *);
-  void virial_fdotr_compute();
   inline int sbmask(int j) const { return j >> SBBITS & 3; }
 };
 } // namespace LAMMPS_NS

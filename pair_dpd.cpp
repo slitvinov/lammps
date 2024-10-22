@@ -97,14 +97,9 @@ void PairDPD::compute(int eflag, int vflag) {
           evdwl = 0.5 * a0[itype][jtype] * cut[itype][jtype] * wd * wd;
           evdwl *= factor_dpd;
         }
-        if (evflag)
-          ev_tally(i, j, nlocal, newton_pair, evdwl, 0.0, fpair, delx, dely,
-                   delz);
       }
     }
   }
-  if (vflag_fdotr)
-    virial_fdotr_compute();
 }
 void PairDPD::allocate() {
   int i, j;
