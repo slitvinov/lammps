@@ -601,11 +601,6 @@ const std::vector<Fix *> &Modify::get_fix_list() {
   fix_list = std::vector<Fix *>(fix, fix + nfix);
   return fix_list;
 }
-int Modify::check_package(const char *package_fix_name) {
-  if (fix_map->find(package_fix_name) == fix_map->end())
-    return 0;
-  return 1;
-}
 int Modify::check_rigid_group_overlap(int groupbit) {
   const int *const mask = atom->mask;
   const int nlocal = atom->nlocal;
