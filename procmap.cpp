@@ -18,12 +18,7 @@ void ProcMap::onelevel_grid(int nprocs, int *user_procgrid, int *procgrid,
   int npossible = factor(nprocs, nullptr);
   memory->create(factors, npossible, 3, "procmap:factors");
   npossible = factor(nprocs, factors);
-  if (domain->dimension == 2)
-    npossible = cull_2d(npossible, factors, 3);
   npossible = cull_user(npossible, factors, 3, user_procgrid);
-  if (otherflag)
-    npossible = cull_other(npossible, factors, 3, other_style, other_procgrid,
-                           other_coregrid);
   if (npossible == 0)
     error->all(FLERR, "Could not create 3d grid of processors");
   best_factors(npossible, factors, procgrid, 1, 1, 1);
@@ -70,19 +65,6 @@ int ProcMap::factor(int n, int **factors) {
     }
   }
   return m;
-}
-int ProcMap::combine_factors(int n1, int **factors1, int n2, int **factors2,
-                             int **factors) {
-  int m = 0;
-  for (int i = 0; i < n1; i++)
-    for (int j = 0; j < n2; j++) {
-      factors[m][0] = factors1[i][0] * factors2[j][0];
-      factors[m][1] = factors1[i][1] * factors2[j][1];
-      factors[m][2] = factors1[i][2] * factors2[j][2];
-      factors[m][3] = j;
-      m++;
-    }
-  return n1 * n2;
 }
 int ProcMap::cull_2d(int n, int **factors, int m) {
   int i = 0;
