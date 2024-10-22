@@ -627,30 +627,6 @@ int Modify::check_rigid_group_overlap(int groupbit) {
     return 1;
   return 0;
 }
-int Modify::check_rigid_region_overlap(int groupbit, Region *reg) {
-  const int *const mask = atom->mask;
-  const double *const *const x = atom->x;
-  const int nlocal = atom->nlocal;
-  int dim;
-  int n = 0;
-  reg->prematch();
-  for (int ifix = 0; ifix < nfix; ifix++) {
-    if (strncmp("rigid", fix[ifix]->style, 5) == 0) {
-      const int *const body = (const int *)fix[ifix]->extract("body", dim);
-      if ((body == nullptr) || (dim != 1))
-        break;
-      for (int i = 0; (i < nlocal) && (n == 0); ++i)
-        if ((mask[i] & groupbit) && (body[i] >= 0) &&
-            reg->match(x[i][0], x[i][1], x[i][2]))
-          ++n;
-    }
-  }
-  int n_all = 0;
-  MPI_Allreduce(&n, &n_all, 1, MPI_INT, MPI_SUM, world);
-  if (n_all > 0)
-    return 1;
-  return 0;
-}
 int Modify::check_rigid_list_overlap(int *select) {
   const int nlocal = atom->nlocal;
   int dim;

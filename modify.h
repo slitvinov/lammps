@@ -87,7 +87,6 @@ public:
   const std::vector<Fix *> &get_fix_list();
   int check_package(const char *);
   int check_rigid_group_overlap(int);
-  int check_rigid_region_overlap(int, class Region *);
   int check_rigid_list_overlap(int *);
 
 protected:
