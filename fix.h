@@ -114,7 +114,6 @@ public:
   virtual void pre_reverse(int, int) {}
   virtual void post_force(int) {}
   virtual void final_integrate() {}
-  virtual void end_of_step() {}
   virtual void post_run() {}
   virtual void restart(char *) {}
   virtual void grow_arrays(int) {}

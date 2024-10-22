@@ -262,11 +262,6 @@ void Modify::final_integrate() {
   for (int i = 0; i < n_final_integrate; i++)
     fix[list_final_integrate[i]]->final_integrate();
 }
-void Modify::end_of_step() {
-  for (int i = 0; i < n_end_of_step; i++)
-    if (update->ntimestep % end_of_step_every[i] == 0)
-      fix[list_end_of_step[i]]->end_of_step();
-}
 double Modify::energy_global() {
   double energy = 0.0;
   for (int i = 0; i < n_energy_global; i++)
