@@ -128,8 +128,6 @@ void CreateAtoms::add_random() {
     zlo = MAX(zlo, region->extent_zlo);
     zhi = MIN(zhi, region->extent_zhi);
   }
-  if (xlo > xhi || ylo > yhi || zlo > zhi)
-    error->all(FLERR, "No overlap of box and region for create_atoms");
   int ntry, success;
   bigint ninsert = 0;
   for (bigint i = 0; i < nrandom; i++) {
@@ -140,8 +138,6 @@ void CreateAtoms::add_random() {
       xone[0] = xlo + random->uniform() * (xhi - xlo);
       xone[1] = ylo + random->uniform() * (yhi - ylo);
       xone[2] = zlo + random->uniform() * (zhi - zlo);
-      if (domain->dimension == 2)
-        xone[2] = zmid;
       if (region && (region->match(xone[0], xone[1], xone[2]) == 0))
         continue;
       coord = xone;
@@ -157,8 +153,5 @@ void CreateAtoms::add_random() {
         atom->avec->create_atom(ntype, xone);
     }
   }
-  if (ninsert < nrandom && comm->me == 0)
-    error->warning(FLERR, "Only inserted {} particles out of {}", ninsert,
-                   nrandom);
   delete random;
 }
