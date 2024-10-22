@@ -32,8 +32,6 @@ CommBrick::~CommBrick() {
   if (sendlist)
     for (int i = 0; i < maxswap; i++)
       memory->destroy(sendlist[i]);
-  if (localsendlist)
-    memory->destroy(localsendlist);
   memory->sfree(sendlist);
   memory->destroy(maxsendlist);
   memory->destroy(buf_send);
@@ -70,9 +68,6 @@ void CommBrick::setup() {
   int ntypes = atom->ntypes;
   double *prd, *sublo, *subhi;
   double cut = get_comm_cutoff();
-  if ((cut == 0.0) && (me == 0))
-    error->warning(FLERR, "Communication cutoff is 0.0. No ghost atoms "
-                          "will be generated. Atoms may get lost.");
   prd = domain->prd;
   sublo = domain->sublo;
   subhi = domain->subhi;
@@ -113,12 +108,6 @@ void CommBrick::setup() {
         if (myloc[dim] == 0) {
           pbc_flag[iswap] = 1;
           pbc[iswap][dim] = 1;
-          if (triclinic) {
-            if (dim == 1)
-              pbc[iswap][5] = 1;
-            else if (dim == 2)
-              pbc[iswap][4] = pbc[iswap][3] = 1;
-          }
         }
       } else {
         sendproc[iswap] = procneigh[dim][1];
