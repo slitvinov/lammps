@@ -34,40 +34,17 @@ static constexpr const char *mesh_name[] = {"recursive bisection",
                                             "quasi-random"};
 CreateAtoms::CreateAtoms(LAMMPS *lmp) : Command(lmp), basistype(nullptr) {}
 void CreateAtoms::command(int narg, char **arg) {
-  if (domain->box_exist == 0)
-    error->all(FLERR, "Create_atoms command before simulation box is defined");
-  if (modify->nfix_restart_peratom)
-    error->all(
-        FLERR,
-        "Cannot create_atoms after reading restart file with per-atom info");
   int latsty = domain->lattice->style;
-  if (latsty == Lattice::SQ || latsty == Lattice::SQ2 || latsty == Lattice::HEX)
-    error->all(FLERR, "Lattice style incompatible with simulation dimension");
-  if (narg < 2)
-    utils::missing_cmd_args(FLERR, "create_atoms", error);
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
   const char *meshfile;
   int iarg;
   if (strcmp(arg[1], "random") == 0) {
     style = RANDOM;
-    if (narg < 5)
-      utils::missing_cmd_args(FLERR, "create_atoms random", error);
     nrandom = utils::bnumeric(FLERR, arg[2], false, lmp);
-    if (nrandom < 0)
-      error->all(FLERR, "Illegal create_atoms number of random atoms {}",
-                 nrandom);
     seed = utils::inumeric(FLERR, arg[3], false, lmp);
-    if (seed <= 0)
-      error->all(FLERR, "Illegal create_atoms random seed {}", seed);
-    if (strcmp(arg[4], "NULL") == 0)
-      region = nullptr;
-    else {
-      region = domain->get_region_by_id(arg[4]);
-      if (!region)
-        error->all(FLERR, "Create_atoms region {} does not exist", arg[4]);
-      region->init();
-      region->prematch();
-    }
+    region = domain->get_region_by_id(arg[4]);
+    region->init();
+    region->prematch();
     iarg = 5;
   } else
     error->all(FLERR, "Unknown create_atoms command option {}", arg[1]);
@@ -89,17 +66,9 @@ void CreateAtoms::command(int narg, char **arg) {
   basistype = new int[nbasis];
   for (int i = 0; i < nbasis; i++)
     basistype[i] = ntype;
-  if (mode == ATOM) {
-    if ((ntype <= 0) || (ntype > atom->ntypes))
-      error->all(FLERR, "Invalid atom type in create_atoms command");
-  }
   ranlatt = nullptr;
   if (subsetflag != NONE)
     ranlatt = new RanMars(lmp, subsetseed + comm->me);
-  if (!vstr && (xstr || ystr || zstr))
-    error->all(FLERR, "Incomplete use of variables in create_atoms command");
-  if (vstr && (!xstr && !ystr && !zstr))
-    error->all(FLERR, "Incomplete use of variables in create_atoms command");
   xone[0] *= domain->lattice->xlattice;
   xone[1] *= domain->lattice->ylattice;
   xone[2] *= domain->lattice->zlattice;
@@ -116,8 +85,6 @@ void CreateAtoms::command(int narg, char **arg) {
   sublo[2] = domain->sublo[2];
   subhi[2] = domain->subhi[2];
   MPI_Barrier(world);
-  if (atom->map_style != Atom::MAP_NONE)
-    atom->map_clear();
   atom->nghost = 0;
   atom->avec->clear_bonus();
   bigint natoms_previous = atom->natoms;
@@ -126,15 +93,9 @@ void CreateAtoms::command(int narg, char **arg) {
     add_random();
   bigint nblocal = atom->nlocal;
   MPI_Allreduce(&nblocal, &atom->natoms, 1, MPI_LMP_BIGINT, MPI_SUM, world);
-  if (atom->natoms < 0 || atom->natoms >= MAXBIGINT)
-    error->all(FLERR, "Too many total atoms");
   if (atom->tag_enable)
     atom->tag_extend();
   atom->tag_check();
-  if (atom->map_style != Atom::MAP_NONE) {
-    atom->map_init();
-    atom->map_set();
-  }
   delete ranmol;
   delete ranlatt;
   delete[] basistype;
