@@ -126,14 +126,11 @@ public:
   inline int map(tagint global) {
     if (map_style == 1)
       return map_array[global];
-    else if (map_style == 2)
-      return map_find_hash(global);
     else
       return -1;
   };
   virtual void map_clear();
   virtual void map_delete();
-  int map_find_hash(tagint);
 
 protected:
   int *map_array;

@@ -59,15 +59,3 @@ void Atom::map_delete() {
     map_nhash = map_nbucket = 0;
   }
 }
-int Atom::map_find_hash(tagint global) {
-  int local = -1;
-  int index = map_bucket[global % map_nbucket];
-  while (index > -1) {
-    if (map_hash[index].global == global) {
-      local = map_hash[index].local;
-      break;
-    }
-    index = map_hash[index].next;
-  }
-  return local;
-}
