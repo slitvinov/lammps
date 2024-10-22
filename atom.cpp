@@ -412,14 +412,3 @@ void Atom::setup_sort_bins() {
     memory->create(binhead, maxbin, "atom:binhead");
   }
 }
-void Atom::update_callback(int ifix) {
-  for (int i = 0; i < nextra_grow; i++)
-    if (extra_grow[i] > ifix)
-      extra_grow[i]--;
-  for (int i = 0; i < nextra_restart; i++)
-    if (extra_restart[i] > ifix)
-      extra_restart[i]--;
-  for (int i = 0; i < nextra_border; i++)
-    if (extra_border[i] > ifix)
-      extra_border[i]--;
-}

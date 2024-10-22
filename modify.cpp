@@ -563,7 +563,6 @@ void Modify::delete_fix(int ifix) {
   if ((ifix < 0) || (ifix >= nfix))
     return;
   delete fix[ifix];
-  atom->update_callback(ifix);
   for (int i = ifix + 1; i < nfix; i++)
     fix[i - 1] = fix[i];
   for (int i = ifix + 1; i < nfix; i++)

@@ -115,8 +115,8 @@ public:
   virtual void allocate_type_arrays();
   void set_mass(const char *, int, int, char **);
   void check_mass(const char *, int);
+  void first_reorder();
   virtual void sort();
-  void update_callback(int);
   inline int *get_map_array() { return map_array; };
   inline int get_map_size() { return map_tag_max + 1; };
   inline int get_max_same() { return max_same; };
