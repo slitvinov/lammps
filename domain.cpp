@@ -363,16 +363,3 @@ Region *Domain::get_region_by_id(const std::string &name) const {
       return reg;
   return nullptr;
 }
-const std::vector<Region *>
-Domain::get_region_by_style(const std::string &name) const {
-  std::vector<Region *> matches;
-  if (name.empty())
-    return matches;
-  for (auto &reg : regions)
-    if (name == reg->style)
-      matches.push_back(reg);
-  return matches;
-}
-const std::vector<Region *> Domain::get_region_list() {
-  return std::vector<Region *>(regions.begin(), regions.end());
-}
