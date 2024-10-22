@@ -134,7 +134,6 @@ public:
       return -1;
   };
   virtual void map_clear();
-  void map_one(tagint, int);
   virtual void map_delete();
   int map_find_hash(tagint);
 

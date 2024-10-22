@@ -42,35 +42,6 @@ void Atom::map_clear() {
     }
   }
 }
-void Atom::map_one(tagint global, int local) {
-  if (map_style == MAP_ARRAY)
-    map_array[global] = local;
-  else {
-    int previous = -1;
-    int ibucket = global % map_nbucket;
-    int index = map_bucket[ibucket];
-    while (index > -1) {
-      if (map_hash[index].global == global)
-        break;
-      previous = index;
-      index = map_hash[index].next;
-    }
-    if (index > -1) {
-      map_hash[index].local = local;
-      return;
-    }
-    index = map_free;
-    map_free = map_hash[map_free].next;
-    if (previous == -1)
-      map_bucket[ibucket] = index;
-    else
-      map_hash[previous].next = index;
-    map_hash[index].global = global;
-    map_hash[index].local = local;
-    map_hash[index].next = -1;
-    map_nused++;
-  }
-}
 void Atom::map_delete() {
   memory->destroy(sametag);
   sametag = nullptr;
