@@ -165,7 +165,6 @@ protected:
   double bboxlo[3], bboxhi[3];
   void set_atomflag_defaults();
   void setup_sort_bins();
-  int next_prime(int);
 };
 } // namespace LAMMPS_NS
 #endif

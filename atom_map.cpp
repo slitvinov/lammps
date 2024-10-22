@@ -121,19 +121,3 @@ int Atom::map_find_hash(tagint global) {
   }
   return local;
 }
-int Atom::next_prime(int n) {
-  int factor;
-  int nprime = n + 1;
-  if (nprime % 2 == 0)
-    nprime++;
-  int root = static_cast<int>(sqrt(1.0 * n)) + 2;
-  while (nprime < MAXSMALLINT) {
-    for (factor = 3; factor < root; factor++)
-      if (nprime % factor == 0)
-        break;
-    if (factor == root)
-      return nprime;
-    nprime += 2;
-  }
-  return MAXSMALLINT;
-}
