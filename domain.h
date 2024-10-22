@@ -61,7 +61,6 @@ public:
   Region *get_region_by_id(const std::string &) const;
   const std::vector<Region *> get_region_by_style(const std::string &) const;
   const std::vector<Region *> get_region_list();
-  void print_box(const std::string &);
   void box_corners();
   inline int minimum_image_check(double dx, double dy, double dz) {
     if (xperiodic && fabs(dx) > xprd_half)

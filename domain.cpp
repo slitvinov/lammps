@@ -376,21 +376,3 @@ Domain::get_region_by_style(const std::string &name) const {
 const std::vector<Region *> Domain::get_region_list() {
   return std::vector<Region *>(regions.begin(), regions.end());
 }
-void Domain::print_box(const std::string &prefix) {
-  if (comm->me == 0) {
-    std::string mesg = prefix;
-    if (triclinic == 0) {
-      mesg += fmt::format("orthogonal box = ({:.8} {:.8} {:.8}) to "
-                          "({:.8} {:.8} {:.8})\n",
-                          boxlo[0], boxlo[1], boxlo[2], boxhi[0], boxhi[1],
-                          boxhi[2]);
-    } else {
-      mesg += fmt::format("triclinic box = ({:.8} {:.8} {:.8}) to "
-                          "({:.8} {:.8} {:.8}) with tilt "
-                          "({:.8} {:.8} {:.8})\n",
-                          boxlo[0], boxlo[1], boxlo[2], boxhi[0], boxhi[1],
-                          boxhi[2], xy, xz, yz);
-    }
-    utils::logmesg(lmp, mesg);
-  }
-}
