@@ -51,7 +51,6 @@ public:
   virtual void init();
   void set_initial_box(int expandflag = 1);
   virtual void set_global_box();
-  virtual void set_lamda_box();
   virtual void set_local_box();
   virtual void reset_box();
   virtual void pbc();

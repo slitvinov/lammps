@@ -186,8 +186,6 @@ void Comm::set_proc_grid(int outflag) {
   for (int i = 0; i < procgrid[2]; i++)
     zsplit[i] = i * 1.0 / procgrid[2];
   xsplit[procgrid[0]] = ysplit[procgrid[1]] = zsplit[procgrid[2]] = 1.0;
-  if (domain->triclinic)
-    domain->set_lamda_box();
   if (send_to_partition >= 0) {
     if (me == 0) {
       MPI_Send(procgrid, 3, MPI_INT, universe->root_proc[send_to_partition], 0,

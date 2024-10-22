@@ -164,18 +164,6 @@ void Domain::set_global_box() {
   prd_half[1] = yprd_half = 0.5 * yprd;
   prd_half[2] = zprd_half = 0.5 * zprd;
 }
-void Domain::set_lamda_box() {
-  int *myloc = comm->myloc;
-  double *xsplit = comm->xsplit;
-  double *ysplit = comm->ysplit;
-  double *zsplit = comm->zsplit;
-  sublo_lamda[0] = xsplit[myloc[0]];
-  subhi_lamda[0] = xsplit[myloc[0] + 1];
-  sublo_lamda[1] = ysplit[myloc[1]];
-  subhi_lamda[1] = ysplit[myloc[1] + 1];
-  sublo_lamda[2] = zsplit[myloc[2]];
-  subhi_lamda[2] = zsplit[myloc[2] + 1];
-}
 void Domain::set_local_box() {
   int *myloc = comm->myloc;
   int *procgrid = comm->procgrid;
