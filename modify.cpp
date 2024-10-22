@@ -586,17 +586,6 @@ Fix *Modify::get_fix_by_id(const std::string &id) const {
       return fix[ifix];
   return nullptr;
 }
-const std::vector<Fix *>
-Modify::get_fix_by_style(const std::string &style) const {
-  std::vector<Fix *> matches;
-  if (style.empty())
-    return matches;
-  for (int ifix = 0; ifix < nfix; ifix++) {
-    if (fix[ifix] && utils::strmatch(fix[ifix]->style, style))
-      matches.push_back(fix[ifix]);
-  }
-  return matches;
-}
 const std::vector<Fix *> &Modify::get_fix_list() {
   fix_list = std::vector<Fix *>(fix, fix + nfix);
   return fix_list;

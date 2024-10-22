@@ -83,7 +83,6 @@ public:
   Fix *get_fix_by_index(int idx) const {
     return ((idx >= 0) && (idx < nfix)) ? fix[idx] : nullptr;
   }
-  const std::vector<Fix *> get_fix_by_style(const std::string &) const;
   const std::vector<Fix *> &get_fix_list();
 
 protected:
