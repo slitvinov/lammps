@@ -8,7 +8,6 @@ namespace LAMMPS_NS {
 class PairDPD : public Pair {
 public:
   PairDPD(class LAMMPS *);
-  ~PairDPD() override;
   void compute(int, int) override;
   void settings(int, char **) override;
   void coeff(int, char **) override;

@@ -15,20 +15,6 @@ PairDPD::PairDPD(LAMMPS *lmp) : Pair(lmp) {
   writedata = 1;
   random = nullptr;
 }
-PairDPD::~PairDPD() {
-  if (copymode)
-    return;
-  if (allocated) {
-    memory->destroy(setflag);
-    memory->destroy(cutsq);
-    memory->destroy(cut);
-    memory->destroy(a0);
-    memory->destroy(gamma);
-    memory->destroy(sigma);
-  }
-  if (random)
-    delete random;
-}
 void PairDPD::compute(int eflag, int vflag) {
   int i, j, ii, jj, inum, jnum, itype, jtype;
   double xtmp, ytmp, ztmp, delx, dely, delz, evdwl, fpair;
