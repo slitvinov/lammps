@@ -31,6 +31,7 @@ public:
   LAMMPS(int, char **, MPI_Comm);
   void create();
   void init();
+
 private:
   LAMMPS(){};
   LAMMPS(const LAMMPS &){};

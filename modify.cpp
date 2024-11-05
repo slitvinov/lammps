@@ -4,11 +4,11 @@
 #include "domain.h"
 #include "error.h"
 #include "fix.h"
+#include "fix_nve.h"
 #include "group.h"
 #include "input.h"
 #include "memory.h"
 #include "region.h"
-#include "style_fix.h"
 #include "update.h"
 #include <cstring>
 using namespace LAMMPS_NS;
@@ -62,7 +62,7 @@ void _noopt Modify::create_factories() {
   fix_map = new FixCreatorMap();
 #define FIX_CLASS
 #define FixStyle(key, Class) (*fix_map)[#key] = &style_creator<Fix, Class>;
-#include "style_fix.h"
+#include "fix_nve.h"
 #undef FixStyle
 #undef FIX_CLASS
 }

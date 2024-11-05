@@ -140,6 +140,7 @@ protected:
   int *map;
   int nparams;
   int maxparam;
+
 public:
   typedef union {
     int i;

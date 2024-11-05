@@ -1,4 +1,5 @@
 #include "atom.h"
+#include "atom_vec_atomic.h"
 #include "comm.h"
 #include "comm_brick.h"
 #include "domain.h"
@@ -13,7 +14,6 @@
 #include "neighbor.h"
 #include "pair_dpd.h"
 #include "region_block.h"
-#include "atom_vec_atomic.h"
 #include "style_command.h"
 #include "universe.h"
 #include "update.h"
@@ -73,25 +73,25 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   while (iarg < narg) {
     if (strcmp(arg[iarg], "-in") == 0 || strcmp(arg[iarg], "-i") == 0) {
       if (iarg + 2 > narg)
-	error->universe_all(FLERR, "Invalid command-line argument");
+        error->universe_all(FLERR, "Invalid command-line argument");
       inflag = iarg + 1;
       iarg += 2;
     } else {
       error->universe_all(
-	  FLERR, fmt::format("Invalid command-line argument: {}", arg[iarg]));
+          FLERR, fmt::format("Invalid command-line argument: {}", arg[iarg]));
     }
   }
   if (universe->existflag == 0)
     universe->add_world(nullptr);
   if (!universe->consistent())
     error->universe_all(
-	FLERR,
-	"Processor partitions do not match number of allocated processors");
+        FLERR,
+        "Processor partitions do not match number of allocated processors");
   if (universe->existflag && inflag == 0)
     error->universe_all(FLERR, "Must use -in switch with multiple partitions");
   if (universe->existflag == 0 && partscreenflag)
     error->universe_all(FLERR,
-			"Can only use -pscreen with multiple partitions");
+                        "Can only use -pscreen with multiple partitions");
   if (universe->existflag == 0 && partlogflag)
     error->universe_all(FLERR, "Can only use -plog with multiple partitions");
   if (universe->me == 0) {
@@ -102,25 +102,25 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     else {
       universe->uscreen = fopen(arg[screenflag], "w");
       if (universe->uscreen == nullptr)
-	error->universe_one(
-	    FLERR, fmt::format("Cannot open universe screen file {}: {}",
-			       arg[screenflag], utils::getsyserror()));
+        error->universe_one(
+            FLERR, fmt::format("Cannot open universe screen file {}: {}",
+                               arg[screenflag], utils::getsyserror()));
     }
     if (logflag == 0) {
       if (helpflag == 0) {
-	universe->ulogfile = fopen("log.lammps", "w");
-	if (universe->ulogfile == nullptr)
-	  error->universe_warn(FLERR, "Cannot open log.lammps for writing: " +
-					  utils::getsyserror());
+        universe->ulogfile = fopen("log.lammps", "w");
+        if (universe->ulogfile == nullptr)
+          error->universe_warn(FLERR, "Cannot open log.lammps for writing: " +
+                                          utils::getsyserror());
       }
     } else if (strcmp(arg[logflag], "none") == 0)
       universe->ulogfile = nullptr;
     else {
       universe->ulogfile = fopen(arg[logflag], "w");
       if (universe->ulogfile == nullptr)
-	error->universe_one(FLERR,
-			    fmt::format("Cannot open universe log file {}: {}",
-					arg[logflag], utils::getsyserror()));
+        error->universe_one(FLERR,
+                            fmt::format("Cannot open universe log file {}: {}",
+                                        arg[logflag], utils::getsyserror()));
     }
   }
   if (universe->me > 0) {
@@ -136,18 +136,18 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     world = universe->uworld;
     if (universe->me == 0) {
       if (inflag == 0)
-	infile = stdin;
+        infile = stdin;
       else if (strcmp(arg[inflag], "none") == 0)
-	infile = stdin;
+        infile = stdin;
       else
-	infile = fopen(arg[inflag], "r");
+        infile = fopen(arg[inflag], "r");
       if (infile == nullptr)
-	error->one(FLERR, "Cannot open input script {}: {}", arg[inflag],
-		   utils::getsyserror());
+        error->one(FLERR, "Cannot open input script {}: {}", arg[inflag],
+                   utils::getsyserror());
       if ((inflag == 0) && (universe->nprocs > 1))
-	error->warning(
-	    FLERR, "Using I/O redirection is unreliable with parallel runs. "
-		   "Better to use the -in switch to read input files.");
+        error->warning(
+            FLERR, "Using I/O redirection is unreliable with parallel runs. "
+                   "Better to use the -in switch to read input files.");
       utils::flush_buffers(this);
     }
   }
@@ -163,11 +163,11 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   MPI_Type_size(MPI_LMP_TAGINT, &mpisize);
   if (mpisize != sizeof(tagint))
     error->all(FLERR,
-	       "MPI_LMP_TAGINT and tagint in lmptype.h are not compatible");
+               "MPI_LMP_TAGINT and tagint in lmptype.h are not compatible");
   MPI_Type_size(MPI_LMP_BIGINT, &mpisize);
   if (mpisize != sizeof(bigint))
     error->all(FLERR,
-	       "MPI_LMP_BIGINT and bigint in lmptype.h are not compatible");
+               "MPI_LMP_BIGINT and bigint in lmptype.h are not compatible");
 #ifdef LAMMPS_SMALLBIG
   if (sizeof(smallint) != 4 || sizeof(imageint) != 4 || sizeof(tagint) != 4 ||
       sizeof(bigint) != 8)
