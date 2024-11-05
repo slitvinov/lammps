@@ -79,10 +79,6 @@ void PairDPD::compute(int eflag, int vflag) {
           f[j][1] -= dely * fpair;
           f[j][2] -= delz * fpair;
         }
-        if (eflag) {
-          evdwl = 0.5 * a0[itype][jtype] * cut[itype][jtype] * wd * wd;
-          evdwl *= factor_dpd;
-        }
       }
     }
   }
