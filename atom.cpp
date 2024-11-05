@@ -12,7 +12,7 @@
 #include "memory.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "style_atom.h"
+#include "atom_vec_atomic.h"
 #include "update.h"
 #include <algorithm>
 #include <cstring>
@@ -95,7 +95,7 @@ Atom::Atom(LAMMPS *_lmp) : Pointers(_lmp) {
   avec_map = new AtomVecCreatorMap();
 #define ATOM_CLASS
 #define AtomStyle(key, Class) (*avec_map)[#key] = &avec_creator<Class>;
-#include "style_atom.h"
+#include "atom_vec_atomic.h"
 #undef AtomStyle
 #undef ATOM_CLASS
 }
@@ -178,9 +178,9 @@ void Atom::peratom_create() {
   add_peratom("damage", &damage, DOUBLE, 0);
 }
 void Atom::add_peratom(const std::string &name, void *address, int datatype,
-                       int cols, int threadflag) {
+		       int cols, int threadflag) {
   PerAtom item = {name,     address, nullptr, nullptr,
-                  datatype, cols,    0,       threadflag};
+		  datatype, cols,    0,       threadflag};
   peratom.push_back(item);
 }
 void Atom::set_atomflag_defaults() {
@@ -196,7 +196,7 @@ void Atom::set_atomflag_defaults() {
   dpd_flag = edpd_flag = tdpd_flag = 0;
 }
 void Atom::create_avec(const std::string &style, int narg, char **arg,
-                       int trysuffix) {
+		       int trysuffix) {
   delete[] atom_style;
   if (avec)
     delete avec;
