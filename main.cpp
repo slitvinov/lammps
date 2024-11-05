@@ -190,32 +190,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     create();
   }
 }
-LAMMPS::~LAMMPS() {
-  const int me = comm->me;
-  destroy();
-  num_package = 0;
-  packargs = nullptr;
-  if (universe->nworlds == 1) {
-    if (screen && screen != stdout)
-      fclose(screen);
-    if (logfile)
-      fclose(logfile);
-    logfile = nullptr;
-    if (screen != stdout)
-      screen = nullptr;
-  }
-  if (infile && infile != stdin)
-    fclose(infile);
-  if (world != universe->uworld)
-    MPI_Comm_free(&world);
-  MPI_Comm copy = universe->uorig;
-  if (external_comm)
-    MPI_Comm_free(&copy);
-  delete input;
-  delete universe;
-  delete error;
-  delete memory;
-}
 void LAMMPS::create() {
   force = nullptr;
   comm = new CommBrick(this);
@@ -236,25 +210,6 @@ void LAMMPS::init() {
   modify->init();
   neighbor->init();
   comm->init();
-}
-void LAMMPS::destroy() {
-  delete update;
-  update = nullptr;
-  delete neighbor;
-  neighbor = nullptr;
-  delete force;
-  force = nullptr;
-  delete group;
-  group = nullptr;
-  delete modify;
-  modify = nullptr;
-  delete comm;
-  comm = nullptr;
-  delete domain;
-  domain = nullptr;
-  delete atom;
-  atom = nullptr;
-  restart_ver = -1;
 }
 int main(int argc, char **argv) {
   MPI_Init(&argc, &argv);

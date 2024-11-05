@@ -29,11 +29,8 @@ public:
   int num_package;
   MPI_Comm external_comm;
   LAMMPS(int, char **, MPI_Comm);
-  ~LAMMPS();
   void create();
   void init();
-  void destroy();
-
 private:
   LAMMPS(){};
   LAMMPS(const LAMMPS &){};
