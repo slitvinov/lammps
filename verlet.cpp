@@ -25,9 +25,6 @@ void Verlet::init() {
   triclinic = domain->triclinic;
 }
 void Verlet::setup(int flag) {
-  if (comm->me == 0 && screen) {
-    fputs("Setting up Verlet run ...\n", screen);
-  }
   update->setupflag = 1;
   atom->setup();
   modify->setup_pre_exchange();
