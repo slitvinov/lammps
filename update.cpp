@@ -6,7 +6,7 @@
 #include "integrate.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "style_integrate.h"
+#include "verlet.h"
 #include <cstring>
 using namespace LAMMPS_NS;
 template <typename T>
@@ -37,7 +37,7 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp) {
 #define INTEGRATE_CLASS
 #define IntegrateStyle(key, Class)                                             \
   (*integrate_map)[#key] = &integrate_creator<Class>;
-#include "style_integrate.h"
+#include "verlet.h"
 #undef IntegrateStyle
 #undef INTEGRATE_CLASS
   str = (char *)"verlet";

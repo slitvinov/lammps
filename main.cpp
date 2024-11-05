@@ -11,13 +11,13 @@
 #include "memory.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "style_atom.h"
-#include "style_command.h"
-#include "style_integrate.h"
 #include "pair_dpd.h"
 #include "region_block.h"
+#include "style_atom.h"
+#include "style_command.h"
 #include "universe.h"
 #include "update.h"
+#include "verlet.h"
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
