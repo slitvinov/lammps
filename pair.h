@@ -78,7 +78,6 @@ public:
   Pair(class LAMMPS *);
   void init();
   virtual void setup() {}
-  void compute_dummy(int, int);
   void ev_tally(int, int, int, int, double, double, double, double, double,
                 double);
   void ev_tally3(int, int, int, double, double, double *, double *, double *,
@@ -126,9 +125,6 @@ protected:
   class Compute **list_tally_compute;
 
 public:
-  virtual void add_tally_callback(class Compute *);
-  virtual void del_tally_callback(class Compute *);
-
 protected:
   int instance_me;
   int offset_flag, mix_flag;

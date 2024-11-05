@@ -140,36 +140,6 @@ void Pair::init() {
 }
 void Pair::init_style() { neighbor->add_request(this); }
 void Pair::init_list(int, NeighList *ptr) { list = ptr; }
-void Pair::compute_dummy(int eflag, int vflag) { ev_init(eflag, vflag); }
-void Pair::add_tally_callback(Compute *ptr) {
-  int i, found = -1;
-  for (i = 0; i < num_tally_compute; ++i) {
-    if (list_tally_compute[i] == ptr)
-      found = i;
-  }
-  if (found < 0) {
-    found = num_tally_compute;
-    ++num_tally_compute;
-    void *p = memory->srealloc((void *)list_tally_compute,
-                               sizeof(Compute *) * num_tally_compute,
-                               "pair:list_tally_compute");
-    list_tally_compute = (Compute **)p;
-    list_tally_compute[num_tally_compute - 1] = ptr;
-  }
-}
-void Pair::del_tally_callback(Compute *ptr) {
-  int i, found = -1;
-  for (i = 0; i < num_tally_compute; ++i) {
-    if (list_tally_compute[i] == ptr)
-      found = i;
-  }
-  if (found < 0)
-    return;
-  --num_tally_compute;
-  for (i = found; i < num_tally_compute; ++i) {
-    list_tally_compute[i] = list_tally_compute[i + 1];
-  }
-}
 void Pair::map_element2type(int narg, char **arg, bool update_setflag) {
   int i, j;
   const int ntypes = atom->ntypes;
