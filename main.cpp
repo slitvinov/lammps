@@ -15,7 +15,7 @@
 #include "style_command.h"
 #include "style_integrate.h"
 #include "style_pair.h"
-#include "style_region.h"
+#include "region_block.h"
 #include "universe.h"
 #include "update.h"
 #include <cctype>

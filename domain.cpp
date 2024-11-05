@@ -9,7 +9,7 @@
 #include "memory.h"
 #include "modify.h"
 #include "region.h"
-#include "style_region.h"
+#include "region_block.h"
 #include "universe.h"
 #include "update.h"
 #include <cmath>
@@ -61,7 +61,7 @@ Domain::Domain(LAMMPS *lmp) : Pointers(lmp) {
   region_map = new RegionCreatorMap();
 #define REGION_CLASS
 #define RegionStyle(key, Class) (*region_map)[#key] = &region_creator<Class>;
-#include "style_region.h"
+#include "region_block.h"
 #undef RegionStyle
 #undef REGION_CLASS
 }
