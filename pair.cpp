@@ -76,21 +76,6 @@ Pair::Pair(LAMMPS *lmp)
   reverse_comm_device = 0;
   copymode = 0;
 }
-Pair::~Pair() {
-  num_tally_compute = 0;
-  memory->sfree((void *)list_tally_compute);
-  list_tally_compute = nullptr;
-  if (copymode)
-    return;
-  if (elements)
-    for (int i = 0; i < nelements; i++)
-      delete[] elements[i];
-  delete[] elements;
-  delete[] map;
-  memory->destroy(eatom);
-  memory->destroy(vatom);
-  memory->destroy(cvatom);
-}
 void Pair::init() {
   int i, j;
   if (offset_flag && tail_flag)

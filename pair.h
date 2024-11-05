@@ -76,7 +76,6 @@ public:
   unsigned int datamask_read, datamask_modify;
   int reverse_comm_device;
   Pair(class LAMMPS *);
-  ~Pair() override;
   void init();
   virtual void setup() {}
   void compute_dummy(int, int);
