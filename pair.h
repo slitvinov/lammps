@@ -152,7 +152,6 @@ protected:
   int vflag_fdotr;
   int maxeatom, maxvatom, maxcvatom;
   int copymode;
-  void ev_unset();
   inline int sbmask(int j) const { return j >> SBBITS & 3; }
 };
 } // namespace LAMMPS_NS

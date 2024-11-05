@@ -140,14 +140,3 @@ void Pair::init() {
 }
 void Pair::init_style() { neighbor->add_request(this); }
 void Pair::init_list(int, NeighList *ptr) { list = ptr; }
-void Pair::ev_unset() {
-  evflag = 0;
-  eflag_either = 0;
-  eflag_global = 0;
-  eflag_atom = 0;
-  vflag_either = 0;
-  vflag_global = 0;
-  vflag_atom = 0;
-  cvflag_atom = 0;
-  vflag_fdotr = 0;
-}
