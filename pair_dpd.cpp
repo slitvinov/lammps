@@ -110,13 +110,6 @@ void PairDPD::settings(int narg, char **arg) {
     error->all(FLERR, "Illegal pair_style command");
   delete random;
   random = new RanMars(lmp, seed + comm->me);
-  if (allocated) {
-    int i, j;
-    for (i = 1; i <= atom->ntypes; i++)
-      for (j = i; j <= atom->ntypes; j++)
-        if (setflag[i][j])
-          cut[i][j] = cut_global;
-  }
 }
 void PairDPD::coeff(int narg, char **arg) {
   if (narg < 4 || narg > 5)
