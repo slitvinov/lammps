@@ -140,52 +140,6 @@ void Pair::init() {
 }
 void Pair::init_style() { neighbor->add_request(this); }
 void Pair::init_list(int, NeighList *ptr) { list = ptr; }
-void Pair::map_element2type(int narg, char **arg, bool update_setflag) {
-  int i, j;
-  const int ntypes = atom->ntypes;
-  if (narg != ntypes)
-    error->all(FLERR, "Number of element to type mappings does not match "
-                      "number of atom types");
-  if (elements) {
-    for (i = 0; i < nelements; i++)
-      delete[] elements[i];
-    delete[] elements;
-  }
-  elements = new char *[ntypes];
-  for (i = 0; i < ntypes; i++)
-    elements[i] = nullptr;
-  nelements = 0;
-  map[0] = -1;
-  for (i = 1; i <= narg; i++) {
-    std::string entry = arg[i - 1];
-    if (entry == "NULL") {
-      map[i] = -1;
-      continue;
-    }
-    for (j = 0; j < nelements; j++)
-      if (entry == elements[j])
-        break;
-    map[i] = j;
-    if (j == nelements) {
-      elements[j] = utils::strdup(entry);
-      nelements++;
-    }
-  }
-  if (update_setflag) {
-    int count = 0;
-    for (i = 1; i <= ntypes; i++) {
-      for (j = i; j <= ntypes; j++) {
-        setflag[i][j] = 0;
-        if ((map[i] >= 0) && (map[j] >= 0)) {
-          setflag[i][j] = 1;
-          count++;
-        }
-      }
-    }
-    if (count == 0)
-      error->all(FLERR, "Incorrect args for pair coefficients");
-  }
-}
 void Pair::ev_setup(int eflag, int vflag, int alloc) {
   int i, n;
   eflag_either = eflag;

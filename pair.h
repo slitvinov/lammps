@@ -140,8 +140,6 @@ protected:
   int *map;
   int nparams;
   int maxparam;
-  void map_element2type(int, char **, bool update_setflag = true);
-
 public:
   typedef union {
     int i;
