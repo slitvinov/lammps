@@ -2,7 +2,7 @@
 #include "atom.h"
 #include "comm.h"
 #include "error.h"
-#include "style_pair.h"
+#include "pair_dpd.h"
 #include <cstring>
 using namespace LAMMPS_NS;
 template <typename S, typename T> static S *style_creator(LAMMPS *lmp) {
@@ -21,7 +21,7 @@ void _noopt Force::create_factories() {
   pair_map = new PairCreatorMap();
 #define PAIR_CLASS
 #define PairStyle(key, Class) (*pair_map)[#key] = &style_creator<Pair, Class>;
-#include "style_pair.h"
+#include "pair_dpd.h"
 #undef PairStyle
 #undef PAIR_CLASS
 }

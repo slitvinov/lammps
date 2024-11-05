@@ -14,7 +14,7 @@
 #include "style_atom.h"
 #include "style_command.h"
 #include "style_integrate.h"
-#include "style_pair.h"
+#include "pair_dpd.h"
 #include "region_block.h"
 #include "universe.h"
 #include "update.h"
