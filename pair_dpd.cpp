@@ -22,7 +22,6 @@ void PairDPD::compute(int eflag, int vflag) {
   double rsq, r, rinv, dot, wd, randnum, factor_dpd, factor_sqrt;
   int *ilist, *jlist, *numneigh, **firstneigh;
   evdwl = 0.0;
-  ev_init(eflag, vflag);
   double **x = atom->x;
   double **v = atom->v;
   double **f = atom->f;

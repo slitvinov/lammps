@@ -151,13 +151,6 @@ protected:
   int vflag_fdotr;
   int maxeatom, maxvatom, maxcvatom;
   int copymode;
-  void ev_init(int eflag, int vflag, int alloc = 1) {
-    if (eflag || vflag)
-      ev_setup(eflag, vflag, alloc);
-    else
-      ev_unset();
-  }
-  virtual void ev_setup(int, int, int alloc = 1);
   void ev_unset();
   inline int sbmask(int j) const { return j >> SBBITS & 3; }
 };
