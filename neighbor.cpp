@@ -11,11 +11,11 @@
 #include "memory.h"
 #include "modify.h"
 #include "nbin.h"
+#include "nbin_standard.h"
 #include "neigh_list.h"
 #include "neigh_request.h"
 #include "npair.h"
 #include "pair.h"
-#include "nbin_standard.h"
 #include "style_npair.h"
 #include "update.h"
 #include <cmath>
@@ -202,7 +202,7 @@ void Neighbor::init_styles() {
   nbclass = 0;
 #define NBIN_CLASS
 #define NBinStyle(key, Class, bitmasks) nbclass++;
-#include "nbin_standard.h"  
+#include "nbin_standard.h"
 #undef NBinStyle
 #undef NBIN_CLASS
   binclass = new BinCreator[nbclass];
@@ -214,7 +214,7 @@ void Neighbor::init_styles() {
   binnames[nbclass] = (char *)#key;                                            \
   binclass[nbclass] = &style_creator<NBin, Class>;                             \
   binmasks[nbclass++] = bitmasks;
-#include "nbin_standard.h"  
+#include "nbin_standard.h"
 #undef NBinStyle
 #undef NBIN_CLASS
   npclass = 0;
