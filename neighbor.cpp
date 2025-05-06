@@ -719,10 +719,7 @@ void Neighbor::modify_params(int narg, char **arg) {
       iarg += 2;
     } else if (strcmp(arg[iarg], "binsize") == 0) {
       binsize_user = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
-      if (binsize_user <= 0.0)
-        binsizeflag = 0;
-      else
-        binsizeflag = 1;
+      binsizeflag = 1;
       iarg += 2;
     }
   }
