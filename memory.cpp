@@ -26,8 +26,6 @@ void *Memory::smalloc(bigint nbytes, const char *name) {
 #else
   void *ptr = malloc(nbytes);
 #endif
-  if (ptr == nullptr)
-    error->one(FLERR, "Failed to allocate {} bytes for array {}", nbytes, name);
   return ptr;
 }
 void *Memory::srealloc(void *ptr, bigint nbytes, const char *name) {
@@ -48,9 +46,6 @@ void *Memory::srealloc(void *ptr, bigint nbytes, const char *name) {
 #else
   ptr = realloc(ptr, nbytes);
 #endif
-  if (ptr == nullptr)
-    error->one(FLERR, "Failed to reallocate {} bytes for array {}", nbytes,
-               name);
   return ptr;
 }
 void Memory::sfree(void *ptr) {
@@ -59,6 +54,4 @@ void Memory::sfree(void *ptr) {
   free(ptr);
 }
 void Memory::fail(const char *name) {
-  error->one(FLERR, "Cannot create/grow a vector/array of pointers for {}",
-             name);
 }

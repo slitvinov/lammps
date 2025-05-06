@@ -1017,10 +1017,6 @@ void AtomVec::data_atom(double *coord, imageint imagetmp,
       }
     }
   }
-  if (tag[nlocal] <= 0)
-    error->one(FLERR,
-               "Invalid atom ID {} in line {} of Atoms section of data file",
-               tag[nlocal], nlocal + 1);
   atom->nlocal++;
 }
 void AtomVec::setup_fields() {

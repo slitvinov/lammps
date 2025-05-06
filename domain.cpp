@@ -215,8 +215,6 @@ void Domain::pbc() {
   for (i = 0; i < n3; i++)
     if (!std::isfinite(*coord++))
       flag = 1;
-  if (flag)
-    error->one(FLERR, "Non-numeric atom coords - simulation unstable");
   lo = boxlo;
   hi = boxhi;
   period = prd;

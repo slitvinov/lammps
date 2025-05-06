@@ -119,9 +119,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
         infile = stdin;
       else
         infile = fopen(arg[inflag], "r");
-      if (infile == nullptr)
-        error->one(FLERR, "Cannot open input script {}: {}", arg[inflag],
-                   utils::getsyserror());
       if ((inflag == 0) && (universe->nprocs > 1))
         error->warning(
             FLERR, "Using I/O redirection is unreliable with parallel runs. "

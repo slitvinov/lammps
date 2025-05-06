@@ -110,8 +110,6 @@ void NBinStandard::setup_bins(int style) {
     mbinzlo = mbinzhi = 0;
   mbinz = mbinzhi - mbinzlo + 1;
   bigint bbin = ((bigint)mbinx) * ((bigint)mbiny) * ((bigint)mbinz) + 1;
-  if (bbin > MAXSMALLINT)
-    error->one(FLERR, "Too many neighbor bins");
   mbins = bbin;
 }
 void NBinStandard::bin_atoms() {

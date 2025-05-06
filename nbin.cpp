@@ -60,8 +60,6 @@ void NBin::copy_neighbor_info() {
 }
 int NBin::coord2bin(double *x) {
   int ix, iy, iz;
-  if (!std::isfinite(x[0]) || !std::isfinite(x[1]) || !std::isfinite(x[2]))
-    error->one(FLERR, "Non-numeric positions - simulation unstable");
   if (x[0] >= bboxhi[0])
     ix = static_cast<int>((x[0] - bboxhi[0]) * bininvx) + nbinx;
   else if (x[0] >= bboxlo[0]) {

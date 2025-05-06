@@ -11,4 +11,4 @@ pair_style	dpd 0.5 1 928948
 pair_coeff	1 1    4 30 1
 fix		nve  all  nve
 timestep        0.1
-run             10000
+run             1000

@@ -57,15 +57,6 @@ void utils::flush_buffers(LAMMPS *lmp) {
 std::string utils::getsyserror() { return {strerror(errno)}; }
 int utils::logical(const char *file, int line, const std::string &str,
                    bool do_abort, LAMMPS *lmp) {
-  if (str.empty()) {
-    const char msg[] =
-        "Expected boolean parameter instead of NULL or empty string "
-        "in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
-  }
   std::string buf(str);
   if (has_utf8(buf))
     buf = utf8_subst(buf);
@@ -75,13 +66,6 @@ int utils::logical(const char *file, int line, const std::string &str,
   } else if ((buf == "no") || (buf == "off") || (buf == "false") ||
              (buf == "0")) {
     rv = 0;
-  } else {
-    std::string msg("Expected boolean parameter instead of '");
-    msg += buf + "' in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
   }
   return rv;
 }
@@ -94,25 +78,9 @@ int utils::logical(const char *file, int line, const char *str, bool do_abort,
 }
 double utils::numeric(const char *file, int line, const std::string &str,
                       bool do_abort, LAMMPS *lmp) {
-  if (str.empty()) {
-    const char msg[] = "Expected floating point parameter instead of"
-                       " NULL or empty string in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
-  }
   std::string buf(str);
   if (has_utf8(buf))
     buf = utf8_subst(buf);
-  if (!is_double(buf)) {
-    std::string msg("Expected floating point parameter instead of '");
-    msg += buf + "' in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
-  }
   return atof(buf.c_str());
 }
 double utils::numeric(const char *file, int line, const char *str,
@@ -124,25 +92,9 @@ double utils::numeric(const char *file, int line, const char *str,
 }
 int utils::inumeric(const char *file, int line, const std::string &str,
                     bool do_abort, LAMMPS *lmp) {
-  if (str.empty()) {
-    const char msg[] = "Expected integer parameter instead of"
-                       " NULL or empty string in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
-  }
   std::string buf(str);
   if (has_utf8(buf))
     buf = utf8_subst(buf);
-  if (!is_integer(buf)) {
-    std::string msg("Expected integer parameter instead of '");
-    msg += buf + "' in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
-  }
   return atoi(buf.c_str());
 }
 int utils::inumeric(const char *file, int line, const char *str, bool do_abort,
@@ -154,25 +106,9 @@ int utils::inumeric(const char *file, int line, const char *str, bool do_abort,
 }
 bigint utils::bnumeric(const char *file, int line, const std::string &str,
                        bool do_abort, LAMMPS *lmp) {
-  if (str.empty()) {
-    const char msg[] = "Expected integer parameter instead of"
-                       " NULL or empty string in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
-  }
   std::string buf(str);
   if (has_utf8(buf))
     buf = utf8_subst(buf);
-  if (!is_integer(buf)) {
-    std::string msg("Expected integer parameter instead of '");
-    msg += buf + "' in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
-  }
   return ATOBIGINT(buf.c_str());
 }
 bigint utils::bnumeric(const char *file, int line, const char *str,
@@ -184,25 +120,9 @@ bigint utils::bnumeric(const char *file, int line, const char *str,
 }
 tagint utils::tnumeric(const char *file, int line, const std::string &str,
                        bool do_abort, LAMMPS *lmp) {
-  if (str.empty()) {
-    const char msg[] = "Expected integer parameter instead of"
-                       " NULL or empty string in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
-  }
   std::string buf(str);
   if (has_utf8(buf))
     buf = utf8_subst(buf);
-  if (!is_integer(buf)) {
-    std::string msg("Expected integer parameter instead of '");
-    msg += buf + "' in input script or data file";
-    if (do_abort)
-      lmp->error->one(file, line, msg);
-    else
-      lmp->error->all(file, line, msg);
-  }
   return ATOTAGINT(buf.c_str());
 }
 tagint utils::tnumeric(const char *file, int line, const char *str,
