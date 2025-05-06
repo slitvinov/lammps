@@ -26,7 +26,6 @@ public:
   int nregion;
   int size_restart;
   Region(class LAMMPS *, int, char **);
-  ~Region() override;
   virtual void init();
   void prematch();
   int match(double, double, double);

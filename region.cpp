@@ -4,7 +4,6 @@
 #include <map>
 #include "region.h"
 #include "domain.h"
-#include "error.h"
 #include "input.h"
 #include "lattice.h"
 #include "update.h"
@@ -19,14 +18,6 @@ Region::Region(LAMMPS *lmp, int, char **arg)
   size_restart = 5;
   Region::reset_vel();
   nregion = 1;
-}
-Region::~Region() {
-  delete[] id;
-  delete[] style;
-  delete[] xstr;
-  delete[] ystr;
-  delete[] zstr;
-  delete[] tstr;
 }
 void Region::init() { vel_timestep = -1; }
 void Region::prematch() {}
