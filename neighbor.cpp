@@ -574,17 +574,6 @@ int Neighbor::choose_pair(NeighRequest *rq) {
   int mask;
   for (int i = 0; i < npclass; i++) {
     mask = pairmasks[i];
-    if (rq->copy) {
-      if (!(mask & NP_COPY))
-        continue;
-      if (rq->trim) {
-        if (!rq->trim != !(mask & NP_TRIM))
-          continue;
-        if (!rq->omp != !(mask & NP_OMP))
-          continue;
-      }
-      return i + 1;
-    }
     return i + 1;
   }
   return -1;
