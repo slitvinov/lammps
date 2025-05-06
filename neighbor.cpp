@@ -569,20 +569,8 @@ int Neighbor::choose_bin(NeighRequest *rq) {
   return -1;
 }
 int Neighbor::choose_pair(NeighRequest *rq) {
-  if (includegroup && rq->ghost)
-    error->all(FLERR,
-               "Neighbor include group not allowed with ghost neighbors");
   bool newtflag;
-  if (rq->newton == 0 && newton_pair)
-    newtflag = true;
-  else if (rq->newton == 0 && !newton_pair)
-    newtflag = false;
-  else if (rq->newton == 1)
-    newtflag = true;
-  else if (rq->newton == 2)
-    newtflag = false;
-  else
-    error->all(FLERR, "Illegal 'newton' flag in neighbor list request");
+  newtflag = true;
   int mask;
   for (int i = 0; i < npclass; i++) {
     mask = pairmasks[i];
@@ -596,60 +584,6 @@ int Neighbor::choose_pair(NeighRequest *rq) {
           continue;
       }
       return i + 1;
-    }
-    if (rq->half) {
-      if (!(mask & NP_HALF))
-        continue;
-    } else if (rq->full) {
-      if (!(mask & NP_FULL))
-        continue;
-    }
-    if (newtflag) {
-      if (!(mask & NP_NEWTON))
-        continue;
-    } else if (!newtflag) {
-      if (!(mask & NP_NEWTOFF))
-        continue;
-    }
-    if (mask & NP_MOLONLY)
-      continue;
-    if (!rq->ghost != !(mask & NP_GHOST))
-      continue;
-    if (!rq->size != !(mask & NP_SIZE))
-      continue;
-    if (!rq->respaouter != !(mask & NP_RESPA))
-      continue;
-    if (!rq->granonesided != !(mask & NP_ONESIDE))
-      continue;
-    if (!rq->respaouter != !(mask & NP_RESPA))
-      continue;
-    if (!rq->bond != !(mask & NP_BOND))
-      continue;
-    if (!rq->omp != !(mask & NP_OMP))
-      continue;
-    if (!rq->ssa != !(mask & NP_SSA))
-      continue;
-    if (!rq->skip != !(mask & NP_SKIP))
-      continue;
-    if (!rq->trim != !(mask & NP_TRIM))
-      continue;
-    if (!rq->halffull != !(mask & NP_HALF_FULL))
-      continue;
-    if (!rq->off2on != !(mask & NP_OFF2ON))
-      continue;
-    if (style == Neighbor::BIN) {
-      if (!(mask & NP_BIN))
-        continue;
-    } else if (style == Neighbor::MULTI) {
-      if (!(mask & NP_MULTI))
-        continue;
-    }
-    if (triclinic) {
-      if (!(mask & NP_TRI))
-        continue;
-    } else if (!triclinic) {
-      if (!(mask & NP_ORTHO))
-        continue;
     }
     return i + 1;
   }
