@@ -149,14 +149,9 @@ void CommBrick::reverse_comm() {
 	MPI_Wait(&request, MPI_STATUS_IGNORE);
       avec->unpack_reverse(sendnum[iswap], sendlist[iswap], buf_recv);
     } else {
-      if (comm_f_only) {
-        if (sendnum[iswap])
-          avec->unpack_reverse(sendnum[iswap], sendlist[iswap],
-                               f[firstrecv[iswap]]);
-      } else {
-        avec->pack_reverse(recvnum[iswap], firstrecv[iswap], buf_send);
-        avec->unpack_reverse(sendnum[iswap], sendlist[iswap], buf_send);
-      }
+      if (sendnum[iswap])
+	avec->unpack_reverse(sendnum[iswap], sendlist[iswap],
+			     f[firstrecv[iswap]]);
     }
   }
 }
