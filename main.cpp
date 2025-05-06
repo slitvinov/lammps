@@ -1,5 +1,13 @@
-#include <set>
+#include <cctype>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <map>
+#include <map>
+#include <mpi.h>
+#include <set>
+#include <stdlib.h>
+#include <unistd.h>
 #include <unordered_set>
 #include "pointers.h"
 #include "atom.h"
@@ -23,14 +31,6 @@
 #include "universe.h"
 #include "update.h"
 #include "verlet.h"
-#include <cctype>
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <map>
-#include <mpi.h>
-#include <stdlib.h>
-#include <unistd.h>
 using namespace LAMMPS_NS;
 LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     : memory(nullptr), error(nullptr), universe(nullptr), input(nullptr),
