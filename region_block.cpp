@@ -2,7 +2,6 @@
 #include <unordered_set>
 #include "region_block.h"
 #include "domain.h"
-#include "error.h"
 #include "input.h"
 #include <cstring>
 using namespace LAMMPS_NS;
@@ -30,12 +29,6 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
   zlo = zscale * utils::numeric(FLERR, arg[6], false, lmp);
   zhistyle = CONSTANT;
   zhi = zscale * utils::numeric(FLERR, arg[7], false, lmp);
-  if (xlo > xhi)
-    error->all(FLERR, "Illegal region block xlo: {} >= xhi: {}", xlo, xhi);
-  if (ylo > yhi)
-    error->all(FLERR, "Illegal region block ylo: {} >= yhi: {}", ylo, yhi);
-  if (zlo > zhi)
-    error->all(FLERR, "Illegal region block zlo: {} >= zhi: {}", zlo, zhi);
   if (interior) {
     bboxflag = 1;
     extent_xlo = xlo;
