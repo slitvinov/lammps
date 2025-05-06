@@ -79,26 +79,15 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
       universe->uscreen = nullptr;
     else {
       universe->uscreen = fopen(arg[screenflag], "w");
-      if (universe->uscreen == nullptr)
-        error->universe_one(
-            FLERR, fmt::format("Cannot open universe screen file {}: {}",
-                               arg[screenflag], utils::getsyserror()));
     }
     if (logflag == 0) {
       if (helpflag == 0) {
         universe->ulogfile = fopen("log.lammps", "w");
-        if (universe->ulogfile == nullptr)
-          error->universe_warn(FLERR, "Cannot open log.lammps for writing: " +
-                                          utils::getsyserror());
       }
     } else if (strcmp(arg[logflag], "none") == 0)
       universe->ulogfile = nullptr;
     else {
       universe->ulogfile = fopen(arg[logflag], "w");
-      if (universe->ulogfile == nullptr)
-        error->universe_one(FLERR,
-                            fmt::format("Cannot open universe log file {}: {}",
-                                        arg[logflag], utils::getsyserror()));
     }
   }
   if (universe->me > 0) {
@@ -119,10 +108,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
         infile = stdin;
       else
         infile = fopen(arg[inflag], "r");
-      if ((inflag == 0) && (universe->nprocs > 1))
-        error->warning(
-            FLERR, "Using I/O redirection is unreliable with parallel runs. "
-                   "Better to use the -in switch to read input files.");
       utils::flush_buffers(this);
     }
   }
@@ -130,11 +115,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   MPI_Type_size(MPI_LMP_TAGINT, &mpisize);
   MPI_Type_size(MPI_LMP_BIGINT, &mpisize);
   input = new Input(this, narg, arg);
-  if (helpflag) {
-    error->done(0);
-  } else {
-    create();
-  }
+  create();
 }
 void LAMMPS::create() {
   force = nullptr;
