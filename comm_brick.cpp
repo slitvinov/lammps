@@ -34,16 +34,6 @@ CommBrick::CommBrick(LAMMPS *lmp)
   pbc_flag = nullptr;
   init_buffers();
 }
-CommBrick::~CommBrick() {
-  CommBrick::free_swap();
-  if (sendlist)
-    for (int i = 0; i < maxswap; i++)
-      memory->destroy(sendlist[i]);
-  memory->sfree(sendlist);
-  memory->destroy(maxsendlist);
-  memory->destroy(buf_send);
-  memory->destroy(buf_recv);
-}
 void CommBrick::init_buffers() {
   multilo = multihi = nullptr;
   cutghostmulti = nullptr;
@@ -147,27 +137,16 @@ void CommBrick::reverse_comm() {
   double *buf;
   for (int iswap = nswap - 1; iswap >= 0; iswap--) {
     if (sendproc[iswap] != me) {
-      if (comm_f_only) {
-        if (size_reverse_recv[iswap])
-          MPI_Irecv(buf_recv, size_reverse_recv[iswap], MPI_DOUBLE,
-                    sendproc[iswap], 0, world, &request);
-        if (size_reverse_send[iswap]) {
-          buf = f[firstrecv[iswap]];
-          MPI_Send(buf, size_reverse_send[iswap], MPI_DOUBLE, recvproc[iswap],
-                   0, world);
-        }
-        if (size_reverse_recv[iswap])
-          MPI_Wait(&request, MPI_STATUS_IGNORE);
-      } else {
-        if (size_reverse_recv[iswap])
-          MPI_Irecv(buf_recv, size_reverse_recv[iswap], MPI_DOUBLE,
-                    sendproc[iswap], 0, world, &request);
-        n = avec->pack_reverse(recvnum[iswap], firstrecv[iswap], buf_send);
-        if (n)
-          MPI_Send(buf_send, n, MPI_DOUBLE, recvproc[iswap], 0, world);
-        if (size_reverse_recv[iswap])
-          MPI_Wait(&request, MPI_STATUS_IGNORE);
+      if (size_reverse_recv[iswap])
+	MPI_Irecv(buf_recv, size_reverse_recv[iswap], MPI_DOUBLE,
+		  sendproc[iswap], 0, world, &request);
+      if (size_reverse_send[iswap]) {
+	buf = f[firstrecv[iswap]];
+	MPI_Send(buf, size_reverse_send[iswap], MPI_DOUBLE, recvproc[iswap],
+		 0, world);
       }
+      if (size_reverse_recv[iswap])
+	MPI_Wait(&request, MPI_STATUS_IGNORE);
       avec->unpack_reverse(sendnum[iswap], sendlist[iswap], buf_recv);
     } else {
       if (comm_f_only) {
