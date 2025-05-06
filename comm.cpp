@@ -1,11 +1,10 @@
 #include <map>
 #include <set>
-#include "comm.h"
+#include <vector>
 #include "pointers.h"
+#include "comm.h"
 #include "atom.h"
 #include "atom_vec.h"
-#include "pointers.h"
-#include <vector>
 #include "domain.h"
 #include "error.h"
 #include "fix.h"

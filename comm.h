@@ -1,6 +1,5 @@
 #ifndef LMP_COMM_H
 #define LMP_COMM_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class Comm : protected Pointers {
 public:

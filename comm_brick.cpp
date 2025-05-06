@@ -2,9 +2,9 @@
 #include <set>
 #include <cmath>
 #include <cstring>
+#include "pointers.h"
 #include "comm.h"
 #include "comm_brick.h"
-#include "pointers.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "pointers.h"
