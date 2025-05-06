@@ -43,16 +43,13 @@ void CreateAtoms::command(int narg, char **arg) {
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
   const char *meshfile;
   int iarg;
-  if (strcmp(arg[1], "random") == 0) {
-    style = RANDOM;
-    nrandom = utils::bnumeric(FLERR, arg[2], false, lmp);
-    seed = utils::inumeric(FLERR, arg[3], false, lmp);
-    region = domain->get_region_by_id(arg[4]);
-    region->init();
-    region->prematch();
-    iarg = 5;
-  } else
-    error->all(FLERR, "Unknown create_atoms command option {}", arg[1]);
+  style = RANDOM;
+  nrandom = utils::bnumeric(FLERR, arg[2], false, lmp);
+  seed = utils::inumeric(FLERR, arg[3], false, lmp);
+  region = domain->get_region_by_id(arg[4]);
+  region->init();
+  region->prematch();
+  iarg = 5;
   int scaleflag = 1;
   remapflag = 0;
   mode = ATOM;
