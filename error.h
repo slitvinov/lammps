@@ -1,6 +1,5 @@
 #ifndef LMP_ERROR_H
 #define LMP_ERROR_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class Error : protected Pointers {
 public:

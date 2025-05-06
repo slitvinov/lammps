@@ -1,3 +1,4 @@
+#include "pointers.h"
 #include "error.h"
 #include "input.h"
 #include "universe.h"
