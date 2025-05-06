@@ -687,31 +687,6 @@ void Neighbor::build(int topoflag) {
   lastcall = update->ntimestep;
   int nlocal = atom->nlocal;
   int nall = nlocal + atom->nghost;
-  if (nall > NEIGHMASK)
-    error->one(FLERR, "Too many local+ghost atoms for neighbor list");
-  if (dist_check) {
-    double **x = atom->x;
-    if (includegroup)
-      nlocal = atom->nfirst;
-    if (atom->nmax > maxhold) {
-      maxhold = atom->nmax;
-      memory->destroy(xhold);
-      memory->create(xhold, maxhold, 3, "neigh:xhold");
-    }
-    for (i = 0; i < nlocal; i++) {
-      xhold[i][0] = x[i][0];
-      xhold[i][1] = x[i][1];
-      xhold[i][2] = x[i][2];
-    }
-    if (boxcheck) {
-      boxlo_hold[0] = bboxlo[0];
-      boxlo_hold[1] = bboxlo[1];
-      boxlo_hold[2] = bboxlo[2];
-      boxhi_hold[0] = bboxhi[0];
-      boxhi_hold[1] = bboxhi[1];
-      boxhi_hold[2] = bboxhi[2];
-    }
-  }
   if (last_setup_bins < 0)
     setup_bins();
   for (i = 0; i < nbin; i++) {
