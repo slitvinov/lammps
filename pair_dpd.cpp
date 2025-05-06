@@ -3,7 +3,6 @@
 #include "pair_dpd.h"
 #include "atom.h"
 #include "comm.h"
-#include "error.h"
 #include "force.h"
 #include "memory.h"
 #include "neigh_list.h"
@@ -102,19 +101,13 @@ void PairDPD::allocate() {
       sigma[i][j] = gamma[i][j] = 0.0;
 }
 void PairDPD::settings(int narg, char **arg) {
-  if (narg != 3)
-    error->all(FLERR, "Illegal pair_style command");
   temperature = utils::numeric(FLERR, arg[0], false, lmp);
   cut_global = utils::numeric(FLERR, arg[1], false, lmp);
   seed = utils::inumeric(FLERR, arg[2], false, lmp);
-  if (seed <= 0)
-    error->all(FLERR, "Illegal pair_style command");
   delete random;
   random = new RanMars(lmp, seed + comm->me);
 }
 void PairDPD::coeff(int narg, char **arg) {
-  if (narg < 4 || narg > 5)
-    error->all(FLERR, "Incorrect args for pair coefficients");
   if (!allocated)
     allocate();
   int ilo, ihi, jlo, jhi;
@@ -135,20 +128,11 @@ void PairDPD::coeff(int narg, char **arg) {
       count++;
     }
   }
-  if (count == 0)
-    error->all(FLERR, "Incorrect args for pair coefficients");
 }
 void PairDPD::init_style() {
-  if (comm->ghost_velocity == 0)
-    error->all(FLERR, "Pair dpd requires ghost atoms store velocity");
-  if (force->newton_pair == 0 && comm->me == 0)
-    error->warning(FLERR,
-                   "Pair dpd needs newton pair on for momentum conservation");
   neighbor->add_request(this);
 }
 double PairDPD::init_one(int i, int j) {
-  if (setflag[i][j] == 0)
-    error->all(FLERR, "All pair coeffs are not set");
   sigma[i][j] = sqrt(2.0 * force->boltz * temperature * gamma[i][j]);
   cut[j][i] = cut[i][j];
   a0[j][i] = a0[i][j];
