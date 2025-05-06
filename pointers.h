@@ -3,7 +3,6 @@
 #include "fmt/format.h"
 #include "lammps.h"
 #include "lmptype.h"
-#include "platform.h"
 #include "utils.h"
 #include <cstddef>
 #include <cstdio>

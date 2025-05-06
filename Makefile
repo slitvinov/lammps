@@ -41,7 +41,6 @@ npair_half_bin_atomonly_newton.o \
 npair.o \
 pair_dpd.o \
 pair.o \
-platform.o \
 procmap.o \
 random_mars.o \
 random_park.o \
