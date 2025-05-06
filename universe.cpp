@@ -18,13 +18,6 @@ Universe::Universe(LAMMPS *lmp, MPI_Comm communicator) : Pointers(lmp) {
   for (int i = 0; i < nprocs; i++)
     uni2orig[i] = i;
 }
-Universe::~Universe() {
-  if (uworld != uorig)
-    MPI_Comm_free(&uworld);
-  memory->destroy(procs_per_world);
-  memory->destroy(root_proc);
-  memory->destroy(uni2orig);
-}
 void Universe::add_world(char *str) {
   int n, nper;
   n = 1;

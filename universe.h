@@ -16,7 +16,6 @@ public:
   MPI_Comm uorig;
   int *uni2orig;
   Universe(class LAMMPS *, MPI_Comm);
-  ~Universe() override;
   void add_world(char *);
 };
 } // namespace LAMMPS_NS
