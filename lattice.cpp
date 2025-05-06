@@ -13,8 +13,6 @@ using namespace LAMMPS_NS;
 Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
   nbasis = 0;
   basis = nullptr;
-  if (narg < 1)
-    utils::missing_cmd_args(FLERR, "lattice", error);
   if (strcmp(arg[0], "none") == 0)
     style = NONE;
   else if (strcmp(arg[0], "sc") == 0)
@@ -57,8 +55,6 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
     if (style == SQ || style == SQ2 || style == HEX)
       error->all(FLERR, "Lattice style incompatible with simulation dimension");
   }
-  if (narg < 2)
-    utils::missing_cmd_args(FLERR, "lattice", error);
   scale = utils::numeric(FLERR, arg[1], false, lmp);
   if (scale <= 0.0)
     error->all(FLERR, "Invalid lattice {} argument: {}", arg[0], arg[1]);
@@ -124,8 +120,6 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
   int iarg = 2;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "origin") == 0) {
-      if (iarg + 4 > narg)
-        utils::missing_cmd_args(FLERR, "lattice origin", error);
       origin[0] = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       origin[1] = utils::numeric(FLERR, arg[iarg + 2], false, lmp);
       origin[2] = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
@@ -137,8 +131,6 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
         error->all(FLERR, "Invalid lattice origin argument: {}", origin[2]);
       iarg += 4;
     } else if (strcmp(arg[iarg], "orient") == 0) {
-      if (iarg + 5 > narg)
-        utils::missing_cmd_args(FLERR, "lattice orient", error);
       int dim = -1;
       if (strcmp(arg[iarg + 1], "x") == 0)
         dim = 0;
@@ -160,16 +152,12 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
       orient[2] = utils::inumeric(FLERR, arg[iarg + 4], false, lmp);
       iarg += 5;
     } else if (strcmp(arg[iarg], "spacing") == 0) {
-      if (iarg + 4 > narg)
-        utils::missing_cmd_args(FLERR, "lattice spacing", error);
       spaceflag = 1;
       xlattice = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       ylattice = utils::numeric(FLERR, arg[iarg + 2], false, lmp);
       zlattice = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
       iarg += 4;
     } else if (strcmp(arg[iarg], "a1") == 0) {
-      if (iarg + 4 > narg)
-        utils::missing_cmd_args(FLERR, "lattice a1", error);
       if (style != CUSTOM)
         error->all(FLERR,
                    "Invalid a1 option in lattice command for non-custom style");
@@ -178,8 +166,6 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
       a1[2] = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
       iarg += 4;
     } else if (strcmp(arg[iarg], "a2") == 0) {
-      if (iarg + 4 > narg)
-        utils::missing_cmd_args(FLERR, "lattice a2", error);
       if (style != CUSTOM)
         error->all(FLERR,
                    "Invalid a2 option in lattice command for non-custom style");
@@ -188,8 +174,6 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
       a2[2] = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
       iarg += 4;
     } else if (strcmp(arg[iarg], "a3") == 0) {
-      if (iarg + 4 > narg)
-        utils::missing_cmd_args(FLERR, "lattice a3", error);
       if (style != CUSTOM)
         error->all(FLERR,
                    "Invalid a3 option in lattice command for non-custom style");
@@ -198,8 +182,6 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
       a3[2] = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
       iarg += 4;
     } else if (strcmp(arg[iarg], "basis") == 0) {
-      if (iarg + 4 > narg)
-        utils::missing_cmd_args(FLERR, "lattice basis", error);
       if (style != CUSTOM)
         error->all(
             FLERR,

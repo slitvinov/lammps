@@ -319,8 +319,6 @@ void Domain::set_lattice(int narg, char **arg) {
   lattice = new Lattice(lmp, narg, arg);
 }
 void Domain::add_region(int narg, char **arg) {
-  if (narg < 2)
-    utils::missing_cmd_args(FLERR, "region", error);
   if (strcmp(arg[1], "none") == 0)
     error->all(FLERR, "Unrecognized region style 'none'");
   if (get_region_by_id(arg[0]))

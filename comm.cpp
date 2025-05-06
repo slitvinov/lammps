@@ -124,13 +124,9 @@ void Comm::init_exchange() {
   bufextra = maxexchange + BUFEXTRA;
 }
 void Comm::modify_params(int narg, char **arg) {
-  if (narg < 1)
-    utils::missing_cmd_args(FLERR, "comm_modify", error);
   int iarg = 0;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "vel") == 0) {
-      if (iarg + 2 > narg)
-        utils::missing_cmd_args(FLERR, "comm_modify vel", error);
       ghost_velocity = utils::logical(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
     } else

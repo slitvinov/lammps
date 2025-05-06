@@ -252,8 +252,6 @@ void Modify::reset_grid() {
       fix[i]->reset_grid();
 }
 Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
-  if (narg < 3)
-    utils::missing_cmd_args(FLERR, "fix", error);
   const char *exceptions[] = {"GPU",
                               "OMP",
                               "INTEL",

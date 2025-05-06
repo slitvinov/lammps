@@ -34,8 +34,6 @@ int Region::match(double x, double y, double z) {
   return !(inside(x, y, z) ^ interior);
 }
 void Region::options(int narg, char **arg) {
-  if (narg < 0)
-    utils::missing_cmd_args(FLERR, "region", error);
   interior = 1;
   for (int i = 0; i < 6; i++)
     open_faces[i] = 0;

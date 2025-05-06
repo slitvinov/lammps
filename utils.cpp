@@ -25,20 +25,6 @@ bool utils::strmatch(const std::string &text, const std::string &pattern) {
   const int pos = re_match(text.c_str(), pattern.c_str());
   return (pos >= 0);
 }
-std::string utils::strfind(const std::string &text,
-                           const std::string &pattern) {
-  int matchlen;
-  const int pos = re_find(text.c_str(), pattern.c_str(), &matchlen);
-  if ((pos >= 0) && (matchlen > 0))
-    return text.substr(pos, matchlen);
-  else
-    return "";
-}
-void utils::missing_cmd_args(const std::string &file, int line,
-                             const std::string &cmd, Error *error) {
-  if (error)
-    error->all(file, line, "Illegal {} command: missing argument(s)", cmd);
-}
 void utils::logmesg(LAMMPS *lmp, const std::string &mesg) {
   if (lmp->screen)
     fputs(mesg.c_str(), lmp->screen);
