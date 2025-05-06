@@ -20,15 +20,8 @@ Compute::Compute(LAMMPS *lmp, int narg, char **arg)
       vector_local(nullptr), array_local(nullptr), extlist(nullptr),
       tlist(nullptr), vbiasall(nullptr) {
   instance_me = instance_total++;
-  if (narg < 3)
-    error->all(FLERR, "Illegal compute command");
   id = utils::strdup(arg[0]);
-  if (!utils::is_id(id))
-    error->all(FLERR,
-               "Compute ID must be alphanumeric or underscore characters");
   igroup = group->find(arg[1]);
-  if (igroup == -1)
-    error->all(FLERR, "Could not find compute group ID");
   groupbit = group->bitmask[igroup];
   style = utils::strdup(arg[2]);
   scalar_flag = vector_flag = array_flag = 0;
@@ -62,24 +55,17 @@ Compute::~Compute() {
   memory->destroy(tlist);
 }
 void Compute::modify_params(int narg, char **arg) {
-  if (narg == 0)
-    error->all(FLERR, "Illegal compute_modify command");
   int iarg = 0;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "extra") == 0 ||
         strcmp(arg[iarg], "extra/dof") == 0) {
-      if (iarg + 2 > narg)
-        error->all(FLERR, "Illegal compute_modify command");
       extra_dof = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
     } else if (strcmp(arg[iarg], "dynamic") == 0 ||
                strcmp(arg[iarg], "dynamic/dof") == 0) {
-      if (iarg + 2 > narg)
-        error->all(FLERR, "Illegal compute_modify command");
       dynamic_user = utils::logical(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-    } else
-      error->all(FLERR, "Illegal compute_modify command");
+    }
   }
 }
 void Compute::adjust_dof_fix() {
@@ -89,10 +75,6 @@ void Compute::adjust_dof_fix() {
       fix_dof += ifix->dof(igroup);
 }
 void Compute::reset_extra_dof() { extra_dof = domain->dimension; }
-void Compute::reset_extra_compute_fix(const char *) {
-  error->all(FLERR,
-             "Compute does not allow an extra compute or fix to be reset");
-}
 void Compute::addstep(bigint ntimestep) {
   int i;
   for (i = ntime - 1; i >= 0; i--) {

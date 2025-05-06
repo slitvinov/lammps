@@ -129,8 +129,7 @@ void Comm::modify_params(int narg, char **arg) {
     if (strcmp(arg[iarg], "vel") == 0) {
       ghost_velocity = utils::logical(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
-    } else
-      error->all(FLERR, "Unknown comm_modify keyword: {}", arg[iarg]);
+    }
   }
 }
 void Comm::set_proc_grid(int outflag) {
@@ -151,10 +150,6 @@ void Comm::set_proc_grid(int outflag) {
     pmap->onelevel_grid(nprocs, user_procgrid, procgrid, otherflag, other_style,
                         other_procgrid, other_coregrid);
   }
-  if (procgrid[0] * procgrid[1] * procgrid[2] != nprocs)
-    error->all(FLERR, "Bad grid of processors");
-  if (domain->dimension == 2 && procgrid[2] != 1)
-    error->all(FLERR, "Processor count in z must be 1 for 2d simulation");
   if (grid2proc)
     memory->destroy(grid2proc);
   memory->create(grid2proc, procgrid[0], procgrid[1], procgrid[2],

@@ -1021,13 +1021,6 @@ void AtomVec::data_atom(double *coord, imageint imagetmp,
 }
 void AtomVec::setup_fields() {
   int n, cols;
-  if ((fields_data_atom.size() < 1) || (fields_data_atom[0] != "id"))
-    error->all(FLERR,
-               "Atom style fields_data_atom must have 'id' as first field");
-  if ((fields_data_vel.size() < 2) || (fields_data_vel[0] != "id") ||
-      (fields_data_vel[1] != "v"))
-    error->all(FLERR, "Atom style fields_data_vel must have 'id' and 'v' as "
-                      "first two fields");
   ngrow = process_fields(fields_grow, default_grow, &mgrow);
   ncopy = process_fields(fields_copy, default_copy, &mcopy);
   ncomm = process_fields(fields_comm, default_comm, &mcomm);
@@ -1140,15 +1133,7 @@ int AtomVec::process_fields(const std::vector<std::string> &words,
     for (match = 0; match < nperatom; match++)
       if (field == peratom[match].name)
         break;
-    if (match == nperatom)
-      error->all(FLERR, "Peratom field {} not recognized", field);
     index[i] = match;
-    for (match = 0; match < i; match++)
-      if (index[i] == index[match])
-        error->all(FLERR, "Peratom field {} is repeated", field);
-    for (match = 0; match < ndef; match++)
-      if (field == def_words[match])
-        error->all(FLERR, "Peratom field {} is a default", field);
   }
   return nfield;
 }

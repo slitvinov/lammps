@@ -101,7 +101,6 @@ public:
   virtual void restore_bias(int, double *) {}
   virtual void restore_bias_thr(int, double *, double *) {}
   virtual void restore_bias_all() {}
-  virtual void reset_extra_compute_fix(const char *);
   virtual void lock_enable() {}
   virtual void lock_disable() {}
   virtual int lock_length() { return 0; }
