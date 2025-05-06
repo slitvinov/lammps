@@ -43,7 +43,6 @@ public:
   virtual void copy(int, int, int);
   virtual void copy_bonus(int, int, int) {}
   virtual void clear_bonus() {}
-  virtual int pack_comm(int, int *, double *, int, int *);
   virtual int pack_comm_vel(int, int *, double *, int, int *);
   virtual void unpack_comm(int, int, double *);
   virtual void unpack_comm_vel(int, int, double *);
