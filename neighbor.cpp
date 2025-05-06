@@ -21,7 +21,7 @@
 #include "neigh_request.h"
 #include "npair.h"
 #include "pair.h"
-#include "style_npair.h"
+#include "npair_half_bin_atomonly_newton.h"
 #include "update.h"
 #include <cmath>
 #include <cstring>
@@ -225,7 +225,7 @@ void Neighbor::init_styles() {
   npclass = 0;
 #define NPAIR_CLASS
 #define NPairStyle(key, Class, bitmasks) npclass++;
-#include "style_npair.h"
+#include "npair_half_bin_atomonly_newton.h"
 #undef NPairStyle
 #undef NPAIR_CLASS
   pairclass = new PairCreator[npclass];
@@ -237,7 +237,7 @@ void Neighbor::init_styles() {
   pairnames[npclass] = (char *)#key;                                           \
   pairclass[npclass] = &style_creator<NPair, Class>;                           \
   pairmasks[npclass++] = bitmasks;
-#include "style_npair.h"
+#include "npair_half_bin_atomonly_newton.h"  
 #undef NPairStyle
 #undef NPAIR_CLASS
 }
