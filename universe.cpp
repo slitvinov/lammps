@@ -40,12 +40,3 @@ void Universe::add_world(char *str) {
     nworlds++;
   }
 }
-int Universe::consistent() {
-  int n = 0;
-  for (int i = 0; i < nworlds; i++)
-    n += procs_per_world[i];
-  if (n == nprocs)
-    return 1;
-  else
-    return 0;
-}
