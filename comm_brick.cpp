@@ -164,19 +164,8 @@ void CommBrick::exchange() {
   AtomVec *avec = atom->avec;
   atom->nghost = 0;
   atom->avec->clear_bonus();
-  if (maxexchange_fix_dynamic) {
-    int bufextra_old = bufextra;
-    init_exchange();
-    if (bufextra > bufextra_old)
-      grow_send(maxsend + bufextra, 2);
-  }
-  if (triclinic == 0) {
-    sublo = domain->sublo;
-    subhi = domain->subhi;
-  } else {
-    sublo = domain->sublo_lamda;
-    subhi = domain->subhi_lamda;
-  }
+  sublo = domain->sublo;
+  subhi = domain->subhi;
   int dimension = domain->dimension;
   for (int dim = 0; dim < dimension; dim++) {
     x = atom->x;
