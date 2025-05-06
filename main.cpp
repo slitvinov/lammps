@@ -31,14 +31,6 @@
 #include <mpi.h>
 #include <stdlib.h>
 #include <unistd.h>
-#define LAMMPS_VERSION "28 Mar 2023"
-#define LAMMPS_UPDATE "Development"
-#if defined(LAMMPS_UPDATE)
-#define UPDATE_STRING " - " LAMMPS_UPDATE
-#else
-#define UPDATE_STRING ""
-#endif
-static void print_style(FILE *fp, const char *str, int &pos);
 using namespace LAMMPS_NS;
 LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     : memory(nullptr), error(nullptr), universe(nullptr), input(nullptr),
