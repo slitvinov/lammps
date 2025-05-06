@@ -53,7 +53,6 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp) {
 #define COMMAND_CLASS
 #define CommandStyle(key, Class) (*command_map)[#key] = &command_creator<Class>;
 #include "create_atoms.h"
-#include "create_box.h"
 #include "run.h"
 #undef CommandStyle
 #undef COMMAND_CLASS
