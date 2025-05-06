@@ -1,6 +1,5 @@
 #ifndef LMP_DOMAIN_H
 #define LMP_DOMAIN_H
-#include "pointers.h"
 #include <cmath>
 #include <map>
 #include <unordered_set>

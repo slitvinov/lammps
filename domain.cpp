@@ -1,10 +1,12 @@
 #include <map>
 #include <set>
+#include <vector>
+#include <cmath>
+#include <cstring>
+#include "pointers.h"
 #include "domain.h"
 #include "atom.h"
 #include "atom_vec.h"
-#include "pointers.h"
-#include <vector>
 #include "comm.h"
 #include "error.h"
 #include "fix.h"
@@ -16,8 +18,6 @@
 #include "region_block.h"
 #include "universe.h"
 #include "update.h"
-#include <cmath>
-#include <cstring>
 using namespace LAMMPS_NS;
 #define BIG 1.0e20
 #define SMALL 1.0e-4
