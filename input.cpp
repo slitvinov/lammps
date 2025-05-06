@@ -18,7 +18,9 @@
 #include "modify.h"
 #include "neighbor.h"
 #include "pair.h"
-#include "style_command.h"
+#include "create_atoms.h"
+#include "create_box.h"
+#include "run.h"
 #include "universe.h"
 #include "update.h"
 #include <cctype>
@@ -50,7 +52,9 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp) {
   command_map = new CommandCreatorMap();
 #define COMMAND_CLASS
 #define CommandStyle(key, Class) (*command_map)[#key] = &command_creator<Class>;
-#include "style_command.h"
+#include "create_atoms.h"
+#include "create_box.h"
+#include "run.h"
 #undef CommandStyle
 #undef COMMAND_CLASS
 }

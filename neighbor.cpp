@@ -237,7 +237,7 @@ void Neighbor::init_styles() {
   pairnames[npclass] = (char *)#key;                                           \
   pairclass[npclass] = &style_creator<NPair, Class>;                           \
   pairmasks[npclass++] = bitmasks;
-#include "npair_half_bin_atomonly_newton.h"  
+#include "npair_half_bin_atomonly_newton.h"
 #undef NPairStyle
 #undef NPAIR_CLASS
 }
