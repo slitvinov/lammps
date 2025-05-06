@@ -1,17 +1,17 @@
 #include <set>
 #include <map>
+#include <cstring>
+#include <vector>
+#include "pointers.h"
 #include "create_box.h"
 #include "atom.h"
 #include "atom_vec.h"
-#include "pointers.h"
-#include <vector>
 #include "comm.h"
 #include "domain.h"
 #include "error.h"
 #include "force.h"
 #include "region.h"
 #include "update.h"
-#include <cstring>
 using namespace LAMMPS_NS;
 CreateBox::CreateBox(LAMMPS *lmp) : Command(lmp) {}
 void CreateBox::command(int narg, char **arg) {

@@ -1,3 +1,4 @@
+#include "pointers.h"
 #include "run.h"
 #include "domain.h"
 #include "error.h"

@@ -1,10 +1,13 @@
 #include <set>
 #include <map>
+#include <vector>
+#include <cmath>
+#include <cstring>
+#include <exception>
+#include "pointers.h"
 #include "create_atoms.h"
 #include "atom.h"
 #include "atom_vec.h"
-#include "pointers.h"
-#include <vector>
 #include "comm.h"
 #include "domain.h"
 #include "error.h"
@@ -16,9 +19,6 @@
 #include "random_mars.h"
 #include "random_park.h"
 #include "region.h"
-#include <cmath>
-#include <cstring>
-#include <exception>
 using namespace LAMMPS_NS;
 using MathConst::MY_2PI;
 using MathConst::MY_PI;
