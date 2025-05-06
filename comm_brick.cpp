@@ -1,5 +1,8 @@
 #include <map>
 #include <set>
+#include <cmath>
+#include <cstring>
+#include "comm.h"
 #include "comm_brick.h"
 #include "pointers.h"
 #include "atom.h"
@@ -12,8 +15,6 @@
 #include "memory.h"
 #include "neighbor.h"
 #include "pair.h"
-#include <cmath>
-#include <cstring>
 using namespace LAMMPS_NS;
 #define BUFFACTOR 1.5
 #define BUFMIN 1024

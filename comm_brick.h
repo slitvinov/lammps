@@ -1,6 +1,5 @@
 #ifndef LMP_COMM_BRICK_H
 #define LMP_COMM_BRICK_H
-#include "comm.h"
 namespace LAMMPS_NS {
 class CommBrick : public Comm {
 public:

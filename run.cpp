@@ -1,3 +1,4 @@
+#include <cstring>
 #include "pointers.h"
 #include "run.h"
 #include "domain.h"
@@ -6,7 +7,6 @@
 #include "integrate.h"
 #include "modify.h"
 #include "update.h"
-#include <cstring>
 using namespace LAMMPS_NS;
 Run::Run(LAMMPS *lmp) : Command(lmp) {}
 void Run::command(int narg, char **arg) {
