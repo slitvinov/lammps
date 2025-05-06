@@ -110,14 +110,6 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
   copy3(corners[1][2], corners[5][2]);
   copy3(corners[0][2], corners[5][3]);
 }
-RegBlock::~RegBlock() {
-  delete[] xlostr;
-  delete[] xhistr;
-  delete[] ylostr;
-  delete[] yhistr;
-  delete[] zlostr;
-  delete[] zhistr;
-}
 void RegBlock::init() { Region::init(); }
 int RegBlock::inside(double x, double y, double z) {
   if (x >= xlo && x <= xhi && y >= ylo && y <= yhi && z >= zlo && z <= zhi)

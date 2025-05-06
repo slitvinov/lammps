@@ -10,7 +10,6 @@ class RegBlock : public Region {
 
 public:
   RegBlock(class LAMMPS *, int, char **);
-  ~RegBlock() override;
   void init() override;
   int inside(double, double, double) override;
 
