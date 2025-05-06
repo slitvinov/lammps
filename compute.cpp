@@ -1,3 +1,4 @@
+#include "pointers.h"
 #include "compute.h"
 #include "atom_masks.h"
 #include "domain.h"
