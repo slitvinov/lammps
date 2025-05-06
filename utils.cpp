@@ -416,10 +416,6 @@ size_t utils::count_words(const std::string &text,
   }
   return count;
 }
-size_t utils::trim_and_count_words(const std::string &text,
-                                   const std::string &separators) {
-  return utils::count_words(trim_comment(text), separators);
-}
 std::vector<std::string> utils::split_words(const std::string &text) {
   std::vector<std::string> list;
   const char *buf = text.c_str();
