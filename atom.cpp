@@ -1,10 +1,11 @@
 #include <map>
 #include <set>
+#include <vector>
+#include <unordered_set>
 #include "pointers.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "pointers.h"
-#include <vector>
 #include "atom_vec_atomic.h"
 #include "comm.h"
 #include "domain.h"

@@ -1,3 +1,5 @@
+#include <unordered_set>
+#include <map>
 #include "procmap.h"
 #include "comm.h"
 #include "domain.h"

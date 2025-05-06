@@ -2,6 +2,7 @@
 #include <map>
 #include <cstring>
 #include <vector>
+#include <unordered_set>
 #include "pointers.h"
 #include "create_box.h"
 #include "atom.h"

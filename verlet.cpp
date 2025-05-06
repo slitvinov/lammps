@@ -1,5 +1,6 @@
 #include <map>
 #include <set>
+#include <unordered_set>
 #include "verlet.h"
 #include "atom.h"
 #include "atom_vec.h"

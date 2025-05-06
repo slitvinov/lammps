@@ -1,3 +1,5 @@
+#include <map>
+#include <unordered_set>
 #include "nbin.h"
 #include "domain.h"
 #include "error.h"

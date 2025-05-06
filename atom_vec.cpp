@@ -1,5 +1,6 @@
 #include <set>
 #include <map>
+#include <unordered_set>
 #include "pointers.h"
 #include "atom_vec.h"
 #include "pointers.h"

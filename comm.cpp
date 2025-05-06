@@ -1,6 +1,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <unordered_set>
 #include "pointers.h"
 #include "comm.h"
 #include "atom.h"

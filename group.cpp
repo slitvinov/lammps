@@ -1,5 +1,10 @@
 #include <map>
 #include <set>
+#include <unordered_set>
+#include <cmath>
+#include <cstring>
+#include <map>
+#include <utility>
 #include "group.h"
 #include "atom.h"
 #include "comm.h"
@@ -12,10 +17,6 @@
 #include "memory.h"
 #include "modify.h"
 #include "region.h"
-#include <cmath>
-#include <cstring>
-#include <map>
-#include <utility>
 using namespace LAMMPS_NS;
 static constexpr int MAX_GROUP = 32;
 static constexpr double EPSILON = 1.0e-6;

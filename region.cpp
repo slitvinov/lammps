@@ -1,11 +1,13 @@
+#include <unordered_set>
+#include <cmath>
+#include <cstring>
+#include <map>
 #include "region.h"
 #include "domain.h"
 #include "error.h"
 #include "input.h"
 #include "lattice.h"
 #include "update.h"
-#include <cmath>
-#include <cstring>
 using namespace LAMMPS_NS;
 Region::Region(LAMMPS *lmp, int, char **arg)
     : Pointers(lmp), id(nullptr), style(nullptr), reglist(nullptr),

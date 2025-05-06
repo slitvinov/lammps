@@ -1,8 +1,5 @@
 #ifndef LMP_DOMAIN_H
 #define LMP_DOMAIN_H
-#include <cmath>
-#include <map>
-#include <unordered_set>
 namespace LAMMPS_NS {
 class Region;
 class Domain : protected Pointers {

@@ -1,11 +1,13 @@
+#include <cmath>
+#include <cstring>
+#include <map>
+#include <unordered_set>
 #include "lattice.h"
 #include "comm.h"
 #include "domain.h"
 #include "error.h"
 #include "memory.h"
 #include "update.h"
-#include <cmath>
-#include <cstring>
 using namespace LAMMPS_NS;
 #define BIG 1.0e30
 Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {

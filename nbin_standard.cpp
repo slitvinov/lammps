@@ -1,5 +1,6 @@
 #include <map>
 #include <set>
+#include <unordered_set>
 #include "nbin_standard.h"
 #include "atom.h"
 #include "comm.h"

@@ -2,13 +2,14 @@
 #include <set>
 #include <cmath>
 #include <cstring>
+#include <vector>
+#include <unordered_set>
 #include "pointers.h"
 #include "comm.h"
 #include "comm_brick.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "pointers.h"
-#include <vector>
 #include "domain.h"
 #include "error.h"
 #include "fix.h"

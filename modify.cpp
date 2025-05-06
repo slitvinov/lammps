@@ -1,5 +1,6 @@
 #include <map>
 #include <set>
+#include <unordered_set>
 #include "modify.h"
 #include "atom.h"
 #include "comm.h"
