@@ -306,10 +306,6 @@ void Domain::set_lattice(int narg, char **arg) {
   lattice = new Lattice(lmp, narg, arg);
 }
 void Domain::add_region(int narg, char **arg) {
-  if (strcmp(arg[1], "none") == 0)
-    error->all(FLERR, "Unrecognized region style 'none'");
-  if (get_region_by_id(arg[0]))
-    error->all(FLERR, "Reuse of region ID {}", arg[0]);
   Region *newregion = nullptr;
   if (!newregion && (region_map->find(arg[1]) != region_map->end())) {
     RegionCreator &region_creator = (*region_map)[arg[1]];

@@ -17,11 +17,7 @@ Fix::Fix(LAMMPS *lmp, int, char **arg)
       array_local(nullptr), eatom(nullptr), vatom(nullptr), cvatom(nullptr) {
   instance_me = instance_total++;
   id = utils::strdup(arg[0]);
-  if (!utils::is_id(id))
-    error->all(FLERR, "Fix ID must be alphanumeric or underscore characters");
   igroup = group->find(arg[1]);
-  if (igroup == -1)
-    error->all(FLERR, "Could not find fix group ID");
   groupbit = group->bitmask[igroup];
   style = utils::strdup(arg[2]);
   restart_global = restart_peratom = restart_file = 0;
@@ -77,43 +73,23 @@ Fix::~Fix() {
   memory->destroy(cvatom);
 }
 void Fix::modify_params(int narg, char **arg) {
-  if (narg == 0)
-    error->all(FLERR, "Illegal fix_modify command");
   int iarg = 0;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "dynamic/dof") == 0) {
-      if (iarg + 2 > narg)
-        error->all(FLERR, "Illegal fix_modify command");
       dynamic = utils::logical(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
     } else if (strcmp(arg[iarg], "energy") == 0) {
-      if (iarg + 2 > narg)
-        error->all(FLERR, "Illegal fix_modify command");
       thermo_energy = utils::logical(FLERR, arg[iarg + 1], false, lmp);
-      if (thermo_energy && !energy_global_flag && !energy_peratom_flag)
-        error->all(FLERR, "Illegal fix_modify command");
       iarg += 2;
     } else if (strcmp(arg[iarg], "virial") == 0) {
-      if (iarg + 2 > narg)
-        error->all(FLERR, "Illegal fix_modify command");
       thermo_virial = utils::logical(FLERR, arg[iarg + 1], false, lmp);
-      if (thermo_virial && !virial_global_flag && !virial_peratom_flag)
-        error->all(FLERR, "Illegal fix_modify command");
       iarg += 2;
     } else if (strcmp(arg[iarg], "respa") == 0) {
-      if (iarg + 2 > narg)
-        error->all(FLERR, "Illegal fix_modify command");
-      if (!respa_level_support)
-        error->all(FLERR, "Illegal fix_modify command");
       int lvl = utils::inumeric(FLERR, arg[iarg + 1], false, lmp);
-      if (lvl < 0)
-        error->all(FLERR, "Illegal fix_modify command");
       respa_level = lvl - 1;
       iarg += 2;
     } else {
       int n = modify_param(narg - iarg, &arg[iarg]);
-      if (n == 0)
-        error->all(FLERR, "Illegal fix_modify command");
       iarg += n;
     }
   }
