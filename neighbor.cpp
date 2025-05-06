@@ -97,50 +97,6 @@ Neighbor::Neighbor(LAMMPS *lmp)
   nmax_collection = 0;
   overlap_topo = 0;
 }
-Neighbor::~Neighbor() {
-  memory->destroy(cutneighsq);
-  memory->destroy(cutneighghostsq);
-  delete[] cuttype;
-  delete[] cuttypesq;
-  delete[] fixchecklist;
-  for (int i = 0; i < nlist; i++)
-    delete lists[i];
-  for (int i = 0; i < nbin; i++)
-    delete neigh_bin[i];
-  for (int i = 0; i < nlist; i++)
-    delete neigh_pair[i];
-  delete[] lists;
-  delete[] neigh_bin;
-  delete[] neigh_pair;
-  delete[] plist;
-  memory->sfree(requests);
-  for (int i = 0; i < old_nrequest; i++)
-    if (old_requests[i])
-      delete old_requests[i];
-  memory->sfree(old_requests);
-  delete[] j_sorted;
-  delete[] binclass;
-  delete[] binnames;
-  delete[] binmasks;
-  delete[] pairclass;
-  delete[] pairnames;
-  delete[] pairmasks;
-  memory->destroy(xhold);
-  memory->destroy(ex1_type);
-  memory->destroy(ex2_type);
-  memory->destroy(ex_type);
-  memory->destroy(ex1_group);
-  memory->destroy(ex2_group);
-  delete[] ex1_bit;
-  delete[] ex2_bit;
-  memory->destroy(ex_mol_group);
-  delete[] ex_mol_bit;
-  memory->destroy(ex_mol_intra);
-  memory->destroy(type2collection);
-  memory->destroy(collection2cut);
-  memory->destroy(collection);
-  memory->destroy(cutcollectionsq);
-}
 void Neighbor::init() {
   int i, j, n;
   overlap_topo = 0;
@@ -771,53 +727,28 @@ void Neighbor::build(int topoflag) {
   }
 }
 void Neighbor::set(int narg, char **arg) {
-  if (narg != 2)
-    error->all(FLERR,
-               "Illegal neighbor command: expected 2 arguments but found {}",
-               narg);
   skin = utils::numeric(FLERR, arg[0], false, lmp);
-  if (skin < 0.0)
-    error->all(FLERR, "Invalid neighbor argument: {}", arg[0]);
-  if (strcmp(arg[1], "bin") == 0)
-    style = Neighbor::BIN;
-  else if (strcmp(arg[1], "multi") == 0) {
-    style = Neighbor::MULTI;
-    ncollections = atom->ntypes;
-  } else
-    error->all(FLERR, "Unknown neighbor {} argument: {}", arg[0], arg[1]);
+  style = Neighbor::BIN;
 }
 void Neighbor::modify_params(int narg, char **arg) {
   int iarg = 0;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "every") == 0) {
-      if (iarg + 2 > narg)
-        utils::missing_cmd_args(FLERR, "neigh_modify every", error);
       every = utils::inumeric(FLERR, arg[iarg + 1], false, lmp);
-      if (every <= 0)
-        error->all(FLERR, "Invalid neigh_modify every argument: {}", every);
       iarg += 2;
     } else if (strcmp(arg[iarg], "delay") == 0) {
-      if (iarg + 2 > narg)
-        utils::missing_cmd_args(FLERR, "neigh_modify delay", error);
       delay = utils::inumeric(FLERR, arg[iarg + 1], false, lmp);
-      if (delay < 0)
-        error->all(FLERR, "Invalid neigh_modify delay argument: {}", delay);
       iarg += 2;
     } else if (strcmp(arg[iarg], "check") == 0) {
-      if (iarg + 2 > narg)
-        utils::missing_cmd_args(FLERR, "neigh_modify check", error);
       dist_check = utils::logical(FLERR, arg[iarg + 1], false, lmp);
       iarg += 2;
     } else if (strcmp(arg[iarg], "binsize") == 0) {
-      if (iarg + 2 > narg)
-        utils::missing_cmd_args(FLERR, "neigh_modify binsize", error);
       binsize_user = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       if (binsize_user <= 0.0)
         binsizeflag = 0;
       else
         binsizeflag = 1;
       iarg += 2;
-    } else
-      error->all(FLERR, "Unknown neigh_modify keyword: {}", arg[iarg]);
+    }
   }
 }

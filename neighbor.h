@@ -63,7 +63,6 @@ public:
   double **cutcollectionsq;
   int *collection;
   Neighbor(class LAMMPS *);
-  ~Neighbor() override;
   virtual void init();
   int request(void *, int instance = 0);
   NeighRequest *add_request(class Pair *, int flags = 0);
