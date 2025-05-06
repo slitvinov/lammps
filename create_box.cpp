@@ -3,6 +3,8 @@
 #include "create_box.h"
 #include "atom.h"
 #include "atom_vec.h"
+#include "pointers.h"
+#include <vector>
 #include "comm.h"
 #include "domain.h"
 #include "error.h"

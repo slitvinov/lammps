@@ -3,6 +3,8 @@
 #include "neighbor.h"
 #include "atom.h"
 #include "atom_vec.h"
+#include "pointers.h"
+#include <vector>
 #include "comm.h"
 #include "compute.h"
 #include "domain.h"

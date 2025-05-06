@@ -3,6 +3,8 @@
 #include "domain.h"
 #include "atom.h"
 #include "atom_vec.h"
+#include "pointers.h"
+#include <vector>
 #include "comm.h"
 #include "error.h"
 #include "fix.h"

@@ -1,6 +1,8 @@
 #include <set>
 #include <map>
 #include "atom_vec.h"
+#include "pointers.h"
+#include <vector>
 #include "atom.h"
 #include "comm.h"
 #include "domain.h"
