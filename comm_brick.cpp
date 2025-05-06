@@ -369,10 +369,7 @@ void CommBrick::borders() {
         nrecv = nsend;
         buf = buf_send;
       }
-      if (ghost_velocity)
-        avec->unpack_border_vel(nrecv, atom->nlocal + atom->nghost, buf);
-      else
-        avec->unpack_border(nrecv, atom->nlocal + atom->nghost, buf);
+      avec->unpack_border_vel(nrecv, atom->nlocal + atom->nghost, buf);
       smax = MAX(smax, nsend);
       rmax = MAX(rmax, nrecv);
       sendnum[iswap] = nsend;

@@ -49,7 +49,6 @@ public:
   virtual void unpack_reverse(int, int *, double *);
   virtual int pack_border(int, int *, double *, int, int *);
   virtual int pack_border_vel(int, int *, double *, int, int *);
-  virtual void unpack_border(int, int, double *);
   virtual void unpack_border_vel(int, int, double *);
   virtual int pack_border_bonus(int, int *, double *) { return 0; }
   virtual int unpack_border_bonus(int, int, double *) { return 0; }

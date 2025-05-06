@@ -562,69 +562,6 @@ int AtomVec::pack_border_vel(int n, int *list, double *buf, int pbc_flag,
                                                                 &buf[m]);
   return m;
 }
-void AtomVec::unpack_border(int n, int first, double *buf) {
-  int i, m, last, mm, nn, datatype, cols;
-  void *pdata;
-  m = 0;
-  last = first + n;
-  while (last > nmax)
-    grow(0);
-  for (i = first; i < last; i++) {
-    x[i][0] = buf[m++];
-    x[i][1] = buf[m++];
-    x[i][2] = buf[m++];
-    tag[i] = (tagint)ubuf(buf[m++]).i;
-    type[i] = (int)ubuf(buf[m++]).i;
-    mask[i] = (int)ubuf(buf[m++]).i;
-  }
-  if (nborder) {
-    for (nn = 0; nn < nborder; nn++) {
-      pdata = mborder.pdata[nn];
-      datatype = mborder.datatype[nn];
-      cols = mborder.cols[nn];
-      if (datatype == Atom::DOUBLE) {
-        if (cols == 0) {
-          double *vec = *((double **)pdata);
-          for (i = first; i < last; i++)
-            vec[i] = buf[m++];
-        } else {
-          double **array = *((double ***)pdata);
-          for (i = first; i < last; i++)
-            for (mm = 0; mm < cols; mm++)
-              array[i][mm] = buf[m++];
-        }
-      } else if (datatype == Atom::INT) {
-        if (cols == 0) {
-          int *vec = *((int **)pdata);
-          for (i = first; i < last; i++)
-            vec[i] = (int)ubuf(buf[m++]).i;
-        } else {
-          int **array = *((int ***)pdata);
-          for (i = first; i < last; i++)
-            for (mm = 0; mm < cols; mm++)
-              array[i][mm] = (int)ubuf(buf[m++]).i;
-        }
-      } else if (datatype == Atom::BIGINT) {
-        if (cols == 0) {
-          bigint *vec = *((bigint **)pdata);
-          for (i = first; i < last; i++)
-            vec[i] = (bigint)ubuf(buf[m++]).i;
-        } else {
-          bigint **array = *((bigint ***)pdata);
-          for (i = first; i < last; i++)
-            for (mm = 0; mm < cols; mm++)
-              array[i][mm] = (bigint)ubuf(buf[m++]).i;
-        }
-      }
-    }
-  }
-  if (bonus_flag)
-    m += unpack_border_bonus(n, first, &buf[m]);
-  if (atom->nextra_border)
-    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
-      m += modify->fix[atom->extra_border[iextra]]->unpack_border(n, first,
-                                                                  &buf[m]);
-}
 void AtomVec::unpack_border_vel(int n, int first, double *buf) {
   int i, m, last, mm, nn, datatype, cols;
   void *pdata;
