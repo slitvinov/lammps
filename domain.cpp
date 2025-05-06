@@ -106,17 +106,6 @@ void Domain::init() {
     if (fix->box_change & Fix::BOX_CHANGE_XY)
       box_change_xy++;
   }
-  std::string mesg = "Must not have multiple fixes change box parameter ";
-#define CHECK_BOX_FIX_ERROR(par)                                               \
-  if (box_change_##par > 1)                                                    \
-  error->all(FLERR, (mesg + #par))
-  CHECK_BOX_FIX_ERROR(x);
-  CHECK_BOX_FIX_ERROR(y);
-  CHECK_BOX_FIX_ERROR(z);
-  CHECK_BOX_FIX_ERROR(yz);
-  CHECK_BOX_FIX_ERROR(xz);
-  CHECK_BOX_FIX_ERROR(xy);
-#undef CHECK_BOX_FIX_ERROR
   box_change = 0;
   if (box_change_size || box_change_shape || box_change_domain)
     box_change = 1;
