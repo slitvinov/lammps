@@ -62,10 +62,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   int helpflag = 0;
   int nonbufflag = 0;
   pair_only_flag = 0;
-  if (arg)
-    exename = arg[0];
-  else
-    exename = nullptr;
+  exename = arg[0];
   packargs = nullptr;
   num_package = 0;
   char *restartfile = nullptr;
@@ -77,28 +74,12 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   iarg = 1;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "-in") == 0 || strcmp(arg[iarg], "-i") == 0) {
-      if (iarg + 2 > narg)
-        error->universe_all(FLERR, "Invalid command-line argument");
       inflag = iarg + 1;
       iarg += 2;
-    } else {
-      error->universe_all(
-          FLERR, fmt::format("Invalid command-line argument: {}", arg[iarg]));
     }
   }
   if (universe->existflag == 0)
     universe->add_world(nullptr);
-  if (!universe->consistent())
-    error->universe_all(
-        FLERR,
-        "Processor partitions do not match number of allocated processors");
-  if (universe->existflag && inflag == 0)
-    error->universe_all(FLERR, "Must use -in switch with multiple partitions");
-  if (universe->existflag == 0 && partscreenflag)
-    error->universe_all(FLERR,
-                        "Can only use -pscreen with multiple partitions");
-  if (universe->existflag == 0 && partlogflag)
-    error->universe_all(FLERR, "Can only use -plog with multiple partitions");
   if (universe->me == 0) {
     if (screenflag == 0)
       universe->uscreen = stdout;
