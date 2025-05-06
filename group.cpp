@@ -1,3 +1,5 @@
+#include <map>
+#include <set>
 #include "group.h"
 #include "atom.h"
 #include "comm.h"

@@ -1,3 +1,5 @@
+#include <map>
+#include <set>
 #include "pair_dpd.h"
 #include "atom.h"
 #include "comm.h"

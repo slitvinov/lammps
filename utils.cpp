@@ -1,4 +1,7 @@
+#include <map>
+#include <set>
 #include "utils.h"
+#include "pointers.h"
 #include "atom.h"
 #include "comm.h"
 #include "error.h"

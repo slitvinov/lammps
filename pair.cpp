@@ -1,3 +1,5 @@
+#include <map>
+#include <set>
 #include "pair.h"
 #include "atom.h"
 #include "atom_masks.h"

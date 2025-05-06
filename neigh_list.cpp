@@ -1,3 +1,5 @@
+#include <map>
+#include <set>
 #include "neigh_list.h"
 #include "atom.h"
 #include "comm.h"

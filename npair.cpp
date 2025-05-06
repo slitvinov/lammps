@@ -1,3 +1,5 @@
+#include <map>
+#include <set>
 #include "npair.h"
 #include "atom.h"
 #include "error.h"

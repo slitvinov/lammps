@@ -1,5 +1,8 @@
+#include <map>
+#include <set>
 #include "atom_vec_atomic.h"
 #include "atom.h"
+#include "pointers.h"
 using namespace LAMMPS_NS;
 AtomVecAtomic::AtomVecAtomic(LAMMPS *lmp) : AtomVec(lmp) {
   molecular = Atom::ATOMIC;

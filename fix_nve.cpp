@@ -1,3 +1,5 @@
+#include <set>
+#include <map>
 #include "fix_nve.h"
 #include "atom.h"
 #include "force.h"

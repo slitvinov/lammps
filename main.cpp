@@ -1,3 +1,6 @@
+#include <set>
+#include <map>
+#include "pointers.h"
 #include "atom.h"
 #include "atom_vec_atomic.h"
 #include "comm.h"

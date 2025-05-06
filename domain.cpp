@@ -1,3 +1,5 @@
+#include <map>
+#include <set>
 #include "domain.h"
 #include "atom.h"
 #include "atom_vec.h"

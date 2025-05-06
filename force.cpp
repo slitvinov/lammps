@@ -1,3 +1,5 @@
+#include <set>
+#include <map>
 #include "force.h"
 #include "atom.h"
 #include "comm.h"

@@ -1,4 +1,7 @@
+#include <map>
+#include <set>
 #include "comm.h"
+#include "pointers.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "domain.h"

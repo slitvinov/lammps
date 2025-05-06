@@ -1,8 +1,5 @@
 #ifndef LMP_ATOM_H
 #define LMP_ATOM_H
-#include "pointers.h"
-#include <map>
-#include <set>
 namespace LAMMPS_NS {
 class AtomVec;
 class Atom : protected Pointers {

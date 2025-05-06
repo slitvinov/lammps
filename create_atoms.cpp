@@ -1,3 +1,5 @@
+#include <set>
+#include <map>
 #include "create_atoms.h"
 #include "atom.h"
 #include "atom_vec.h"
