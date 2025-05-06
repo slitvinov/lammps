@@ -517,30 +517,6 @@ bool utils::is_id(const std::string &str) {
   }
   return true;
 }
-int utils::is_type(const std::string &str) {
-  if (str.empty())
-    return -1;
-  bool numeric = true;
-  int nstar = 0;
-  for (const auto &c : str) {
-    if (isdigit(c))
-      continue;
-    if (c == '*') {
-      ++nstar;
-      continue;
-    }
-    numeric = false;
-  }
-  if (numeric && (nstar < 2))
-    return 0;
-  if (isdigit(str[0]) || (str[0] == '*') || (str[0] == '#'))
-    return -1;
-  if (str.find_first_of(" \t\r\n\f") != std::string::npos)
-    return -1;
-  if (has_utf8(utf8_subst(str)))
-    return -1;
-  return 1;
-}
 int utils::get_supported_conversions(const int property) {
   if (property == ENERGY)
     return METAL2REAL | REAL2METAL;

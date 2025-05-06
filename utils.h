@@ -67,7 +67,6 @@ std::vector<std::string> split_words(const std::string &text);
 bool is_integer(const std::string &str);
 bool is_double(const std::string &str);
 bool is_id(const std::string &str);
-int is_type(const std::string &str);
 enum { NOCONVERT = 0, METAL2REAL = 1, REAL2METAL = 1 << 1 };
 enum { UNKNOWN = 0, ENERGY };
 int get_supported_conversions(const int property);
