@@ -1,6 +1,5 @@
 #ifndef LMP_COMMAND_H
 #define LMP_COMMAND_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class Command : protected Pointers {
 public:

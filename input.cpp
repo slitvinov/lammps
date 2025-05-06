@@ -7,6 +7,7 @@
 #include <vector>
 #include "comm.h"
 #include "comm_brick.h"
+#include "pointers.h"
 #include "command.h"
 #include "domain.h"
 #include "error.h"
