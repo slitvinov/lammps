@@ -29,7 +29,6 @@ public:
   typedef std::map<std::string, IntegrateCreator> IntegrateCreatorMap;
   IntegrateCreatorMap *integrate_map;
   Update(class LAMMPS *);
-  ~Update() override;
   void init();
   void set_units(const char *);
   void create_integrate(int, char **, int);

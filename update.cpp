@@ -43,12 +43,6 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp) {
   str = (char *)"verlet";
   create_integrate(1, &str, 1);
 }
-Update::~Update() {
-  delete[] unit_style;
-  delete[] integrate_style;
-  delete integrate;
-  delete integrate_map;
-}
 void Update::init() {
   if (whichflag == 0)
     return;
