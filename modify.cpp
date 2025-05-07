@@ -5,7 +5,6 @@
 #include "atom.h"
 #include "comm.h"
 #include "domain.h"
-#include "error.h"
 #include "fix.h"
 #include "fix_nve.h"
 #include "group.h"
@@ -164,9 +163,6 @@ void Modify::init() {
   delete[] flag;
   int checkall;
   MPI_Allreduce(&check, &checkall, 1, MPI_INT, MPI_SUM, world);
-  if (comm->me == 0 && checkall)
-    error->warning(FLERR,
-                   "One or more atoms are time integrated more than once");
 }
 void Modify::setup(int vflag) {
   for (int i = 0; i < nfix; i++)

@@ -1,5 +1,4 @@
 #include "random_park.h"
-#include "error.h"
 #include <cmath>
 using namespace LAMMPS_NS;
 #define IA 16807

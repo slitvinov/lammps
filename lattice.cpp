@@ -5,7 +5,6 @@
 #include "lattice.h"
 #include "comm.h"
 #include "domain.h"
-#include "error.h"
 #include "memory.h"
 #include "update.h"
 using namespace LAMMPS_NS;

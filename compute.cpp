@@ -4,7 +4,6 @@
 #include "compute.h"
 #include "atom_masks.h"
 #include "domain.h"
-#include "error.h"
 #include "fix.h"
 #include "group.h"
 #include "memory.h"

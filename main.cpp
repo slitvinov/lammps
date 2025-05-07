@@ -15,7 +15,6 @@
 #include "comm.h"
 #include "comm_brick.h"
 #include "domain.h"
-#include "error.h"
 #include "force.h"
 #include "group.h"
 #include "input.h"
@@ -37,7 +36,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
       atom(nullptr), update(nullptr), neighbor(nullptr), comm(nullptr),
       domain(nullptr), force(nullptr), modify(nullptr), group(nullptr) {
   memory = new Memory(this);
-  error = new Error(this);
   universe = new Universe(this, communicator);
   restart_ver = -1;
   external_comm = 0;

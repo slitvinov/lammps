@@ -2,7 +2,6 @@
 #include <set>
 #include "npair.h"
 #include "atom.h"
-#include "error.h"
 #include "memory.h"
 #include "nbin.h"
 #include "neigh_request.h"

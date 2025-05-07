@@ -4,7 +4,6 @@
 #include "pointers.h"
 #include "atom.h"
 #include "comm.h"
-#include "error.h"
 #include "fix.h"
 #include "fmt/chrono.h"
 #include "input.h"

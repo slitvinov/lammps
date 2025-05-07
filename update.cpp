@@ -1,6 +1,5 @@
 #include "update.h"
 #include "comm.h"
-#include "error.h"
 #include "fix.h"
 #include "force.h"
 #include "integrate.h"
@@ -74,12 +73,6 @@ void Update::set_units(const char *style) {
   }
   delete[] unit_style;
   unit_style = utils::strdup(style);
-  if (!dt_default && (comm->me == 0)) {
-    error->warning(
-        FLERR,
-        "Changing timestep from {:.6} to {:.6} due to changing units to {}",
-        dt_old, dt, unit_style);
-  }
   dt_default = 1;
 }
 void Update::create_integrate(int narg, char **arg, int trysuffix) {

@@ -19,7 +19,6 @@ compute.o \
 create_atoms.o \
 create_box.o \
 domain.o \
-error.o \
 fix_nve.o \
 fix.o \
 fmtlib_format.o \

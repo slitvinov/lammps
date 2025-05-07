@@ -3,7 +3,6 @@
 #include "force.h"
 #include "atom.h"
 #include "comm.h"
-#include "error.h"
 #include "pair_dpd.h"
 #include <cstring>
 using namespace LAMMPS_NS;

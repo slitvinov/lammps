@@ -9,7 +9,6 @@
 #include "atom.h"
 #include "atom_vec.h"
 #include "comm.h"
-#include "error.h"
 #include "fix.h"
 #include "force.h"
 #include "lattice.h"

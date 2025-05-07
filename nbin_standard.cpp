@@ -5,7 +5,6 @@
 #include "atom.h"
 #include "comm.h"
 #include "domain.h"
-#include "error.h"
 #include "group.h"
 #include "memory.h"
 #include "neighbor.h"

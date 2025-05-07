@@ -9,7 +9,6 @@
 #include "comm.h"
 #include "compute.h"
 #include "domain.h"
-#include "error.h"
 #include "fix.h"
 #include "force.h"
 #include "group.h"

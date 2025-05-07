@@ -7,7 +7,6 @@
 #include "comm.h"
 #include "compute.h"
 #include "domain.h"
-#include "error.h"
 #include "force.h"
 #include "math_const.h"
 #include "memory.h"
@@ -81,15 +80,6 @@ Pair::Pair(LAMMPS *lmp)
 }
 void Pair::init() {
   int i, j;
-  if (tail_flag && domain->nonperiodic && comm->me == 0)
-    error->warning(FLERR,
-                   "Using pair tail corrections with non-periodic system");
-  if (!compute_flag && tail_flag && comm->me == 0)
-    error->warning(FLERR,
-                   "Using pair tail corrections with pair_modify compute no");
-  if (!compute_flag && offset_flag && comm->me == 0)
-    error->warning(FLERR,
-                   "Using pair potential shift with pair_modify compute no");
   init_style();
   cutforce = 0.0;
   etail = ptail = 0.0;

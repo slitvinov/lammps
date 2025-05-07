@@ -11,7 +11,6 @@
 #include "atom_vec.h"
 #include "comm.h"
 #include "domain.h"
-#include "error.h"
 #include "input.h"
 #include "lattice.h"
 #include "math_const.h"

@@ -1,5 +1,4 @@
 #include "universe.h"
-#include "error.h"
 #include "memory.h"
 #include <cstring>
 using namespace LAMMPS_NS;

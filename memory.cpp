@@ -1,5 +1,4 @@
 #include "memory.h"
-#include "error.h"
 #if defined(LMP_INTEL) &&                                                      \
     ((defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)))
 #ifndef LMP_INTEL_NO_TBB

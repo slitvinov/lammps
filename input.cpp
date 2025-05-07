@@ -11,7 +11,6 @@
 #include "pointers.h"
 #include "command.h"
 #include "domain.h"
-#include "error.h"
 #include "fix.h"
 #include "force.h"
 #include "memory.h"

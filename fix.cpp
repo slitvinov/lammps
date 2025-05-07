@@ -3,7 +3,6 @@
 #include "fix.h"
 #include "atom.h"
 #include "atom_masks.h"
-#include "error.h"
 #include "force.h"
 #include "group.h"
 #include "memory.h"

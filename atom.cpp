@@ -9,7 +9,6 @@
 #include "atom_vec_atomic.h"
 #include "comm.h"
 #include "domain.h"
-#include "error.h"
 #include "fix.h"
 #include "force.h"
 #include "group.h"

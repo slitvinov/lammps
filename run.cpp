@@ -4,7 +4,6 @@
 #include "pointers.h"
 #include "run.h"
 #include "domain.h"
-#include "error.h"
 #include "input.h"
 #include "integrate.h"
 #include "modify.h"

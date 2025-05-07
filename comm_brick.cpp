@@ -11,7 +11,6 @@
 #include "atom_vec.h"
 #include "pointers.h"
 #include "domain.h"
-#include "error.h"
 #include "fix.h"
 #include "memory.h"
 #include "neighbor.h"

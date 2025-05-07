@@ -3,7 +3,6 @@
 #include "procmap.h"
 #include "comm.h"
 #include "domain.h"
-#include "error.h"
 #include "memory.h"
 #include "universe.h"
 #include <cmath>
