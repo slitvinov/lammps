@@ -107,59 +107,6 @@ void AtomVec::unpack_reverse(int n, int *list, double *buf) {
     f[j][1] += buf[m++];
     f[j][2] += buf[m++];
   }
-  if (nreverse) {
-    for (nn = 0; nn < nreverse; nn++) {
-      pdata = mreverse.pdata[nn];
-      datatype = mreverse.datatype[nn];
-      cols = mreverse.cols[nn];
-      if (datatype == Atom::DOUBLE) {
-        if (cols == 0) {
-          double *vec = *((double **)pdata);
-          for (i = 0; i < n; i++) {
-            j = list[i];
-            vec[j] += buf[m++];
-          }
-        } else {
-          double **array = *((double ***)pdata);
-          for (i = 0; i < n; i++) {
-            j = list[i];
-            for (mm = 0; mm < cols; mm++)
-              array[j][mm] += buf[m++];
-          }
-        }
-      } else if (datatype == Atom::INT) {
-        if (cols == 0) {
-          int *vec = *((int **)pdata);
-          for (i = 0; i < n; i++) {
-            j = list[i];
-            vec[j] += (int)ubuf(buf[m++]).i;
-          }
-        } else {
-          int **array = *((int ***)pdata);
-          for (i = 0; i < n; i++) {
-            j = list[i];
-            for (mm = 0; mm < cols; mm++)
-              array[j][mm] += (int)ubuf(buf[m++]).i;
-          }
-        }
-      } else if (datatype == Atom::BIGINT) {
-        if (cols == 0) {
-          bigint *vec = *((bigint **)pdata);
-          for (i = 0; i < n; i++) {
-            j = list[i];
-            vec[j] += (bigint)ubuf(buf[m++]).i;
-          }
-        } else {
-          bigint **array = *((bigint ***)pdata);
-          for (i = 0; i < n; i++) {
-            j = list[i];
-            for (mm = 0; mm < cols; mm++)
-              array[j][mm] += (bigint)ubuf(buf[m++]).i;
-          }
-        }
-      }
-    }
-  }
 }
 int AtomVec::pack_border(int n, int *list, double *buf, int pbc_flag,
                          int *pbc) {
