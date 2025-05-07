@@ -1142,11 +1142,6 @@ void AtomVec::init_method(int nfield, Method *method) {
     method->pdata[i] = (void *)field.address;
     method->datatype[i] = field.datatype;
     method->cols[i] = field.cols;
-    if (method->cols[i] < 0) {
-      method->maxcols[i] = field.address_maxcols;
-      method->collength[i] = field.collength;
-      method->plength[i] = field.address_length;
-    }
   }
 }
 void AtomVec::Method::resize(int nfield) {
