@@ -32,7 +32,6 @@ public:
   double rcbcutfrac;
   int rcbcutdim;
   Comm(class LAMMPS *);
-  ~Comm() override;
   virtual void init();
   void modify_params(int, char **);
   virtual void set_proc_grid(int outflag = 1);

@@ -73,16 +73,6 @@ Comm::Comm(LAMMPS *lmp) : Pointers(lmp) {
     utils::logmesg(lmp, "  using {} OpenMP thread(s) per MPI task\n", nthreads);
 #endif
 }
-Comm::~Comm() {
-  memory->destroy(grid2proc);
-  memory->destroy(xsplit);
-  memory->destroy(ysplit);
-  memory->destroy(zsplit);
-  memory->destroy(cutusermulti);
-  memory->destroy(cutusermultiold);
-  delete[] customfile;
-  delete[] outfile;
-}
 void Comm::init() {
   triclinic = domain->triclinic;
   map_style = atom->map_style;
