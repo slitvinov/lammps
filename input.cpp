@@ -193,11 +193,6 @@ int Input::execute_command() {
   else if (mycmd == "neighbor")
     neighbor->set(narg, arg);
   else if (mycmd == "pair_coeff") {
-    int itype, jtype;
-    if (utils::strmatch(arg[0], "^\\d+$") && utils::strmatch(arg[1], "^\\d+$")) {
-      itype = utils::inumeric(FLERR, arg[0], false, lmp);
-      jtype = utils::inumeric(FLERR, arg[1], false, lmp);
-    }
     force->pair->coeff(narg, arg);
   } else if (mycmd == "pair_style") {
     force->create_pair(arg[0], 1);
