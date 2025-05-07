@@ -74,15 +74,10 @@ void Input::file() {
 	    reallocate(line, maxline, 0);
 	  if (fgets(&line[m], maxline - m, infile) == nullptr) {
 	    endfile = 1;
-	    if (m)
-	      n = strlen(line) + 1;
-	    else
-	      n = 0;
+	    n = 0;
 	    break;
 	  }
 	  m += strlen(&line[m]);
-	  if (line[m - 1] != '\n')
-	    continue;
 	  break;
 	}
 	if (endfile)
@@ -91,13 +86,6 @@ void Input::file() {
 	m--;
 	while (m >= 0 && isspace(line[m]))
 	  m--;
-	if (m >= 0 && line[m] == '&')
-	  continue;
-	if (ntriple % 2) {
-	  line[m + 1] = '\n';
-	  m += 2;
-	  continue;
-	}
 	line[m + 1] = '\0';
 	n = m + 2;
 	break;
