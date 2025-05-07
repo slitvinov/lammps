@@ -22,7 +22,6 @@ public:
   int nregion;
   Region(class LAMMPS *, int, char **);
   virtual void init();
-  int match(double, double, double);
   virtual int inside(double, double, double) = 0;
 
 protected:

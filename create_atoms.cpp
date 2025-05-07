@@ -132,8 +132,6 @@ void CreateAtoms::add_random() {
       xone[0] = xlo + random->uniform() * (xhi - xlo);
       xone[1] = ylo + random->uniform() * (yhi - ylo);
       xone[2] = zlo + random->uniform() * (zhi - zlo);
-      if (region && (region->match(xone[0], xone[1], xone[2]) == 0))
-        continue;
       coord = xone;
       success = 1;
       break;
