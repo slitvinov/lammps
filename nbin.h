@@ -22,7 +22,6 @@ public:
   double *binsizex_multi, *binsizey_multi, *binsizez_multi;
   double *bininvx_multi, *bininvy_multi, *bininvz_multi;
   NBin(class LAMMPS *);
-  ~NBin() override;
   void post_constructor(class NeighRequest *);
   virtual void copy_neighbor_info();
   virtual void bin_atoms_setup(int) = 0;

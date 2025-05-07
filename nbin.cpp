@@ -40,11 +40,6 @@ NBin::NBin(LAMMPS *lmp) : Pointers(lmp) {
   dimension = domain->dimension;
   triclinic = domain->triclinic;
 }
-NBin::~NBin() {
-  memory->destroy(binhead);
-  memory->destroy(bins);
-  memory->destroy(atom2bin);
-}
 void NBin::post_constructor(NeighRequest *nrq) {
   cutoff_custom = 0.0;
   if (nrq->cut)
