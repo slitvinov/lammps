@@ -152,14 +152,6 @@ void Comm::set_proc_grid(int outflag) {
   for (int i = 0; i < procgrid[2]; i++)
     zsplit[i] = i * 1.0 / procgrid[2];
   xsplit[procgrid[0]] = ysplit[procgrid[1]] = zsplit[procgrid[2]] = 1.0;
-  if (send_to_partition >= 0) {
-    if (me == 0) {
-      MPI_Send(procgrid, 3, MPI_INT, universe->root_proc[send_to_partition], 0,
-               universe->uworld);
-      MPI_Send(coregrid, 3, MPI_INT, universe->root_proc[send_to_partition], 0,
-               universe->uworld);
-    }
-  }
 }
 double Comm::get_comm_cutoff() {
   double maxcommcutoff, maxbondcutoff = 0.0;
