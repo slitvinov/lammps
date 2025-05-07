@@ -38,8 +38,6 @@ public:
   virtual void post_run();
   Fix *add_fix(int, char **, int trysuffix = 1);
   Fix *add_fix(const std::string &, int trysuffix = 1);
-  void delete_fix(int);
-  Fix *get_fix_by_id(const std::string &) const;
   Fix *get_fix_by_index(int idx) const {
     return ((idx >= 0) && (idx < nfix)) ? fix[idx] : nullptr;
   }

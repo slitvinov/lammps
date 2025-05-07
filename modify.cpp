@@ -277,25 +277,6 @@ Fix *Modify::add_fix(const std::string &fixcmd, int trysuffix) {
   }
   return add_fix(args.size(), newarg.data(), trysuffix);
 }
-void Modify::delete_fix(int ifix) {
-  if ((ifix < 0) || (ifix >= nfix))
-    return;
-  delete fix[ifix];
-  for (int i = ifix + 1; i < nfix; i++)
-    fix[i - 1] = fix[i];
-  for (int i = ifix + 1; i < nfix; i++)
-    fmask[i - 1] = fmask[i];
-  nfix--;
-  fix_list = std::vector<Fix *>(fix, fix + nfix);
-}
-Fix *Modify::get_fix_by_id(const std::string &id) const {
-  if (id.empty())
-    return nullptr;
-  for (int ifix = 0; ifix < nfix; ifix++)
-    if (fix[ifix] && (id == fix[ifix]->id))
-      return fix[ifix];
-  return nullptr;
-}
 const std::vector<Fix *> &Modify::get_fix_list() {
   fix_list = std::vector<Fix *>(fix, fix + nfix);
   return fix_list;
