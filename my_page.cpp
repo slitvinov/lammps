@@ -25,28 +25,6 @@ int MyPage<T>::init(int user_maxchunk, int user_pagesize, int user_pagedelta) {
   reset();
   return 0;
 }
-template <class T> T *MyPage<T>::get(int n) {
-  if (n > maxchunk) {
-    errorflag = 1;
-    return nullptr;
-  }
-  ndatum += n;
-  nchunk++;
-  if (index + n <= pagesize) {
-    int start = index;
-    index += n;
-    return &page[start];
-  }
-  ipage++;
-  if (ipage == npage) {
-    allocate();
-    if (errorflag)
-      return nullptr;
-  }
-  page = pages[ipage];
-  index = n;
-  return &page[0];
-}
 template <class T> void MyPage<T>::reset() {
   ndatum = nchunk = 0;
   index = ipage = 0;
