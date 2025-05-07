@@ -8,6 +8,8 @@
 #include <mpi.h>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
+#include "nbin.h"
 #include "nbin_standard.h"
 #include "atom.h"
 #include "comm.h"
