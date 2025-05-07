@@ -48,7 +48,6 @@ public:
   virtual int unpack_border_bonus(int, int, double *) { return 0; }
   virtual int pack_exchange_bonus(int, double *) { return 0; }
   virtual int unpack_exchange_bonus(int, double *) { return 0; }
-  virtual int size_restart();
   virtual void pack_restart_pre(int) {}
   virtual void pack_restart_post(int) {}
   virtual void unpack_restart_init(int) {}

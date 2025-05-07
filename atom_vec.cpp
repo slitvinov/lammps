@@ -175,39 +175,6 @@ void AtomVec::unpack_border_vel(int n, int first, double *buf) {
     v[i][2] = buf[m++];
   }
 }
-int AtomVec::size_restart() {
-  int i, nn, cols, collength, ncols;
-  void *plength;
-  int nlocal = atom->nlocal;
-  int n = 11 * nlocal;
-  if (nrestart) {
-    for (nn = 0; nn < nrestart; nn++) {
-      cols = mrestart.cols[nn];
-      if (cols == 0)
-        n += nlocal;
-      else if (cols > 0)
-        n += cols * nlocal;
-      else {
-        collength = mrestart.collength[nn];
-        plength = mrestart.plength[nn];
-        for (i = 0; i < nlocal; i++) {
-          if (collength)
-            ncols = (*((int ***)plength))[i][collength - 1];
-          else
-            ncols = (*((int **)plength))[i];
-          n += ncols;
-        }
-      }
-    }
-  }
-  if (bonus_flag)
-    n += size_restart_bonus();
-  if (atom->nextra_restart)
-    for (int iextra = 0; iextra < atom->nextra_restart; iextra++)
-      for (i = 0; i < nlocal; i++)
-        n += modify->fix[atom->extra_restart[iextra]]->size_restart(i);
-  return n;
-}
 void AtomVec::create_atom(int itype, double *coord) {
   int m, n, datatype, cols;
   void *pdata;
