@@ -22,11 +22,6 @@ NPair::NPair(LAMMPS *lmp) : Pointers(lmp), nb(nullptr), bins(nullptr) {
   copymode = 0;
   execution_space = Host;
 }
-NPair::~NPair() {
-  if (copymode)
-    return;
-  memory->destroy(mycutneighsq);
-}
 void NPair::post_constructor(NeighRequest *nrq) {
   cutoff_custom = 0.0;
   if (nrq->cut)

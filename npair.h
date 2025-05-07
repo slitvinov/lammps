@@ -8,7 +8,6 @@ public:
   bigint last_build;
   double cutoff_custom;
   NPair(class LAMMPS *);
-  ~NPair() override;
   void post_constructor(class NeighRequest *);
   virtual void copy_neighbor_info();
   void build_setup();
