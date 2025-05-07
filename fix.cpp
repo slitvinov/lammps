@@ -78,28 +78,6 @@ Fix::~Fix() {
   memory->destroy(vatom);
   memory->destroy(cvatom);
 }
-void Fix::modify_params(int narg, char **arg) {
-  int iarg = 0;
-  while (iarg < narg) {
-    if (strcmp(arg[iarg], "dynamic/dof") == 0) {
-      dynamic = utils::logical(FLERR, arg[iarg + 1], false, lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg], "energy") == 0) {
-      thermo_energy = utils::logical(FLERR, arg[iarg + 1], false, lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg], "virial") == 0) {
-      thermo_virial = utils::logical(FLERR, arg[iarg + 1], false, lmp);
-      iarg += 2;
-    } else if (strcmp(arg[iarg], "respa") == 0) {
-      int lvl = utils::inumeric(FLERR, arg[iarg + 1], false, lmp);
-      respa_level = lvl - 1;
-      iarg += 2;
-    } else {
-      int n = modify_param(narg - iarg, &arg[iarg]);
-      iarg += n;
-    }
-  }
-}
 void Fix::ev_setup(int eflag, int vflag) {
   int i, n;
   evflag = 1;
