@@ -2,6 +2,8 @@
 #include <map>
 #include <vector>
 #include <cstring>
+#include <map>
+#include "pointers.h"
 #include "force.h"
 #include "atom.h"
 #include "comm.h"

@@ -1,4 +1,5 @@
 #include <vector>
+#include <map>
 #include "integrate.h"
 #include "force.h"
 #include "modify.h"

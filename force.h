@@ -1,7 +1,5 @@
 #ifndef LMP_FORCE_H
 #define LMP_FORCE_H
-#include "pointers.h"
-#include <map>
 namespace LAMMPS_NS {
 class Angle;
 class Pair;
