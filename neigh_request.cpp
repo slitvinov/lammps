@@ -7,6 +7,7 @@
 #include "lammps.h"
 #include "pointers.h"
 #include "neigh_request.h"
+#include "lmptype.h"
 #include "atom.h"
 #include "memory.h"
 #include "neighbor.h"

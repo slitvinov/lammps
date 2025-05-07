@@ -6,6 +6,7 @@
 #include <mpi.h>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "nbin.h"
 #include "domain.h"
 #include "memory.h"

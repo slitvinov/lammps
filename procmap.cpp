@@ -12,6 +12,7 @@
 #include "procmap.h"
 #include "comm.h"
 #include "domain.h"
+#include "lmptype.h"
 #include "memory.h"
 #include "universe.h"
 using namespace LAMMPS_NS;

@@ -6,6 +6,7 @@
 #include <mpi.h>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "fix.h"
 #include "fix_nve.h"
 #include "atom.h"

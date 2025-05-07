@@ -11,6 +11,7 @@
 #include "pointers.h"
 #include "comm.h"
 #include "comm_brick.h"
+#include "lmptype.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "pointers.h"

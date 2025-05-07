@@ -7,6 +7,7 @@
 #include <string>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "npair.h"
 #include "atom.h"
 #include "memory.h"

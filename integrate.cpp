@@ -5,6 +5,7 @@
 #include <string>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "integrate.h"
 #include "force.h"
 #include "modify.h"

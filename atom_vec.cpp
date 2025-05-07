@@ -9,6 +9,7 @@
 #include <cmath>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "atom_vec.h"
 #include "pointers.h"
 #include "atom.h"

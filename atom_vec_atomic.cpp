@@ -6,6 +6,7 @@
 #include <string>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "atom_vec.h"
 #include "atom_vec_atomic.h"
 #include "atom.h"

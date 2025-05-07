@@ -9,6 +9,7 @@
 #include "lammps.h"
 #include "pointers.h"
 #include "force.h"
+#include "lmptype.h"
 #include "atom.h"
 #include "comm.h"
 #include "pair_dpd.h"

@@ -2,6 +2,7 @@
 #include <mpi.h>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "memory.h"
 #if defined(LMP_INTEL) &&                                                      \
     ((defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)))

@@ -10,6 +10,7 @@
 #include "lammps.h"
 #include "pointers.h"
 #include "domain.h"
+#include "lmptype.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "comm.h"

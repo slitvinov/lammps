@@ -4,6 +4,7 @@
 #include "lammps.h"
 #include "pointers.h"
 #include "universe.h"
+#include "lmptype.h"
 #include "memory.h"
 using namespace LAMMPS_NS;
 #define MAXLINE 256
