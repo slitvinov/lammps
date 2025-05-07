@@ -122,8 +122,6 @@ public:
   virtual int unpack_exchange(int, double *) { return 0; }
   virtual int pack_restart(int, double *) { return 0; }
   virtual void unpack_restart(int, int) {}
-  virtual int size_restart(int) { return 0; }
-  virtual int maxsize_restart() { return 0; }
   virtual void setup_pre_force_respa(int, int) {}
   virtual void initial_integrate_respa(int, int, int) {}
   virtual void post_integrate_respa(int, int) {}

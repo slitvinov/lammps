@@ -21,8 +21,6 @@ Region::Region(LAMMPS *lmp, int, char **arg)
   style = utils::strdup(arg[1]);
   xstr = ystr = zstr = tstr = nullptr;
   dx = dy = dz = 0.0;
-  size_restart = 5;
-  Region::reset_vel();
   nregion = 1;
 }
 void Region::init() { vel_timestep = -1; }
@@ -35,8 +33,4 @@ void Region::options(int narg, char **arg) {
   for (int i = 0; i < 6; i++)
     open_faces[i] = 0;
   xscale = yscale = zscale = 1.0;
-}
-void Region::reset_vel() {
-  for (int i = 0; i < size_restart; i++)
-    prev[i] = 0;
 }

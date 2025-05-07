@@ -18,15 +18,12 @@ public:
   double omega[3];
   double rprev;
   double xcenter[3];
-  double prev[5];
   int vel_timestep;
   int nregion;
-  int size_restart;
   Region(class LAMMPS *, int, char **);
   virtual void init();
   void prematch();
   int match(double, double, double);
-  virtual void reset_vel();
   virtual int inside(double, double, double) = 0;
 
 protected:
