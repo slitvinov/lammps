@@ -173,14 +173,7 @@ void CommBrick::exchange() {
     nlocal = atom->nlocal;
     i = nsend = 0;
     while (i < nlocal) {
-      if (x[i][dim] < lo || x[i][dim] >= hi) {
-        if (nsend > maxsend)
-          grow_send(nsend, 1);
-        nsend += avec->pack_exchange(i, &buf_send[nsend]);
-        avec->copy(nlocal - 1, i, 1);
-        nlocal--;
-      } else
-        i++;
+      i++;
     }
     atom->nlocal = nlocal;
     if (procgrid[dim] == 1)
