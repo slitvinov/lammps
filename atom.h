@@ -97,7 +97,6 @@ public:
   typedef std::map<std::string, AtomVecCreator> AtomVecCreatorMap;
   AtomVecCreatorMap *avec_map;
   Atom(class LAMMPS *);
-  ~Atom() override;
   void peratom_create();
   void add_peratom(const std::string &, void *, int, int, int threadflag = 0);
   void create_avec(const std::string &, int, char **, int);

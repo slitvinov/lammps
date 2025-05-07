@@ -108,38 +108,6 @@ Atom::Atom(LAMMPS *_lmp) : Pointers(_lmp) {
 #undef AtomStyle
 #undef ATOM_CLASS
 }
-Atom::~Atom() {
-  delete[] atom_style;
-  delete avec;
-  delete avec_map;
-  memory->destroy(binhead);
-  memory->destroy(next);
-  memory->destroy(permute);
-  memory->destroy(tag);
-  memory->destroy(type);
-  memory->destroy(mask);
-  memory->destroy(image);
-  memory->destroy(x);
-  memory->destroy(v);
-  memory->destroy(f);
-  memory->sfree(ivname);
-  memory->sfree(dvname);
-  memory->sfree(ianame);
-  memory->sfree(daname);
-  memory->sfree(ivector);
-  memory->sfree(dvector);
-  memory->sfree(iarray);
-  memory->sfree(darray);
-  memory->sfree(icols);
-  memory->sfree(dcols);
-  delete[] mass;
-  delete[] mass_setflag;
-  memory->destroy(extra_grow);
-  memory->destroy(extra_restart);
-  memory->destroy(extra_border);
-  memory->destroy(extra);
-  delete unique_tags;
-}
 void Atom::peratom_create() {
   peratom.clear();
   int tagintsize = INT;
