@@ -19,8 +19,5 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
   nbasis = 0;
   basis = nullptr;
   style = NONE;
-  if (style == NONE) {
-    xlattice = ylattice = zlattice = utils::numeric(FLERR, arg[1], false, lmp);
-    return;
-  }
+  xlattice = ylattice = zlattice = utils::numeric(FLERR, arg[1], false, lmp);
 }
