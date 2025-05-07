@@ -17,7 +17,6 @@
 #include "atom_vec.h"
 #include "comm.h"
 #include "domain.h"
-#include "input.h"
 #include "math_const.h"
 #include "memory.h"
 #include "modify.h"

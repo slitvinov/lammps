@@ -10,7 +10,6 @@
 #include "atom.h"
 #include "comm.h"
 #include "fix.h"
-#include "input.h"
 #include "memory.h"
 #include "modify.h"
 #include "universe.h"

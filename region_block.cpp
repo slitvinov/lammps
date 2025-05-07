@@ -12,7 +12,6 @@
 #include "region.h"
 #include "region_block.h"
 #include "domain.h"
-#include "input.h"
 using namespace LAMMPS_NS;
 enum { CONSTANT, VARIABLE };
 #define BIG 1.0e20

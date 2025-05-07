@@ -18,7 +18,6 @@
 #include "fix.h"
 #include "force.h"
 #include "group.h"
-#include "input.h"
 #include "library.h"
 #include "math_const.h"
 #include "memory.h"

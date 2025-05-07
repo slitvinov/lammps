@@ -17,7 +17,6 @@
 #include "fix.h"
 #include "fix_nve.h"
 #include "group.h"
-#include "input.h"
 #include "memory.h"
 #include "region.h"
 #include "update.h"

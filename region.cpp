@@ -11,7 +11,6 @@
 #include "pointers.h"
 #include "region.h"
 #include "domain.h"
-#include "input.h"
 #include "lmptype.h"
 #include "update.h"
 using namespace LAMMPS_NS;
