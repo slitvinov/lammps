@@ -97,14 +97,6 @@ public:
     }
     return array;
   }
-  template <typename TYPE> void destroy(TYPE ***&array) {
-    if (array == nullptr)
-      return;
-    sfree(array[0][0]);
-    sfree(array[0]);
-    sfree(array);
-    array = nullptr;
-  }
 };
 } // namespace LAMMPS_NS
 #endif
