@@ -78,7 +78,6 @@ Pair::Pair(LAMMPS *lmp)
   nelements = nparams = maxparam = 0;
   nondefault_history_transfer = 0;
   beyond_contact = 0;
-  execution_space = Host;
   datamask_read = ALL_MASK;
   datamask_modify = ALL_MASK;
   reverse_comm_device = 0;

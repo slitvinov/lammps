@@ -52,24 +52,6 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
     tmax = 3;
   else
     tmax = 1;
-  face[0][0] = -1.0;
-  face[0][1] = 0.0;
-  face[0][2] = 0.0;
-  face[1][0] = 1.0;
-  face[1][1] = 0.0;
-  face[1][2] = 0.0;
-  face[2][0] = 0.0;
-  face[2][1] = -1.0;
-  face[2][2] = 0.0;
-  face[3][0] = 0.0;
-  face[3][1] = 1.0;
-  face[3][2] = 0.0;
-  face[4][0] = 0.0;
-  face[4][1] = 0.0;
-  face[4][2] = -1.0;
-  face[5][0] = 0.0;
-  face[5][1] = 0.0;
-  face[5][2] = 1.0;
   corners[0][0][0] = xlo;
   corners[0][0][1] = ylo;
   corners[0][0][2] = zlo;

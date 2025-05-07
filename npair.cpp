@@ -20,7 +20,6 @@ NPair::NPair(LAMMPS *lmp) : Pointers(lmp), nb(nullptr), bins(nullptr) {
   last_build = -1;
   mycutneighsq = nullptr;
   copymode = 0;
-  execution_space = Host;
 }
 void NPair::post_constructor(NeighRequest *nrq) {
   cutoff_custom = 0.0;

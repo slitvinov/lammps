@@ -62,7 +62,6 @@ Fix::Fix(LAMMPS *lmp, int, char **arg)
   maxeatom = maxvatom = maxcvatom = 0;
   vflag_atom = cvflag_atom = 0;
   centroidstressflag = CENTROID_SAME;
-  execution_space = Host;
   datamask_read = ALL_MASK;
   datamask_modify = ALL_MASK;
   forward_comm_device = 0;
