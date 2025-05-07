@@ -20,7 +20,6 @@
 #include "exceptions.h"
 #include "fix.h"
 #include "force.h"
-#include "input.h"
 #include "memory.h"
 #include "modify.h"
 #include "region.h"

@@ -12,7 +12,6 @@
 #include "command.h"
 #include "run.h"
 #include "domain.h"
-#include "input.h"
 #include "integrate.h"
 #include "modify.h"
 #include "update.h"
