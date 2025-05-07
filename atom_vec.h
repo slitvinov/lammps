@@ -42,7 +42,6 @@ public:
   virtual void clear_bonus() {}
   virtual int pack_comm_bonus(int, int *, double *) { return 0; }
   virtual void unpack_reverse(int, int *, double *);
-  virtual int pack_border(int, int *, double *, int, int *);
   virtual int pack_border_vel(int, int *, double *, int, int *);
   virtual void unpack_border_vel(int, int, double *);
   virtual int pack_border_bonus(int, int *, double *) { return 0; }

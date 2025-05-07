@@ -308,12 +308,8 @@ void CommBrick::borders() {
       }
       if (nsend * size_border > maxsend)
         grow_send(nsend * size_border, 0);
-      if (ghost_velocity)
-        n = avec->pack_border_vel(nsend, sendlist[iswap], buf_send,
-                                  pbc_flag[iswap], pbc[iswap]);
-      else
-        n = avec->pack_border(nsend, sendlist[iswap], buf_send, pbc_flag[iswap],
-                              pbc[iswap]);
+      n = avec->pack_border_vel(nsend, sendlist[iswap], buf_send,
+				pbc_flag[iswap], pbc[iswap]);
       if (sendproc[iswap] != me) {
         MPI_Sendrecv(&nsend, 1, MPI_INT, sendproc[iswap], 0, &nrecv, 1, MPI_INT,
                      recvproc[iswap], 0, world, MPI_STATUS_IGNORE);
