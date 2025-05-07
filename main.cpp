@@ -11,9 +11,9 @@
 #include <unordered_set>
 #include <string>
 #include <vector>
-#include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "atom.h"
 #include "comm.h"
 #include "comm_brick.h"

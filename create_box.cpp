@@ -8,6 +8,7 @@
 #include <cmath>
 #include <mpi.h>
 #include "lammps.h"
+#include "lmptype.h"
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

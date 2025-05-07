@@ -1,6 +1,5 @@
 #ifndef LMP_UTILS_H
 #define LMP_UTILS_H
-#include "lmptype.h"
 namespace LAMMPS_NS {
 class Error;
 class LAMMPS;

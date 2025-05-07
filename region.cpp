@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <mpi.h>
+#include "lmptype.h"
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
@@ -12,6 +13,7 @@
 #include "domain.h"
 #include "input.h"
 #include "lattice.h"
+#include "lmptype.h"
 #include "update.h"
 using namespace LAMMPS_NS;
 Region::Region(LAMMPS *lmp, int, char **arg)

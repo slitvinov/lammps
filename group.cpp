@@ -8,9 +8,11 @@
 #include <string>
 #include <vector>
 #include <mpi.h>
+#include "lmptype.h"
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "group.h"
 #include "atom.h"
 #include "comm.h"

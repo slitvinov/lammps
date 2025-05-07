@@ -6,6 +6,7 @@
 #include <mpi.h>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
 #include "utils.h"
 #include "update.h"
 #include "comm.h"

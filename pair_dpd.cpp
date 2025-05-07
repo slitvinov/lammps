@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 #include <mpi.h>
+#include "lmptype.h"
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
