@@ -71,31 +71,13 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
       iarg += 2;
     }
   }
-  if (universe->existflag == 0)
-    universe->add_world(nullptr);
+  universe->add_world(nullptr);
   if (universe->me == 0) {
-    if (screenflag == 0)
-      universe->uscreen = stdout;
-    else if (strcmp(arg[screenflag], "none") == 0)
-      universe->uscreen = nullptr;
-    else {
-      universe->uscreen = fopen(arg[screenflag], "w");
-    }
-    if (logflag == 0) {
-      if (helpflag == 0) {
-        universe->ulogfile = fopen("log.lammps", "w");
-      }
-    } else if (strcmp(arg[logflag], "none") == 0)
-      universe->ulogfile = nullptr;
-    else {
-      universe->ulogfile = fopen(arg[logflag], "w");
-    }
+    universe->uscreen = stdout;
+    universe->ulogfile = fopen("log.lammps", "w");
   }
   if (universe->me > 0) {
-    if (screenflag == 0)
-      universe->uscreen = stdout;
-    else
-      universe->uscreen = nullptr;
+    universe->uscreen = stdout;
     universe->ulogfile = nullptr;
   }
   if (universe->existflag == 0) {
@@ -103,12 +85,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     logfile = universe->ulogfile;
     world = universe->uworld;
     if (universe->me == 0) {
-      if (inflag == 0)
-        infile = stdin;
-      else if (strcmp(arg[inflag], "none") == 0)
-        infile = stdin;
-      else
-        infile = fopen(arg[inflag], "r");
+      infile = fopen(arg[inflag], "r");
     }
   }
   int mpisize;
