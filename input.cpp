@@ -228,4 +228,3 @@ int Input::execute_command() {
   }
   return -1;
 }
-}
