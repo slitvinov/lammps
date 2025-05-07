@@ -525,36 +525,7 @@ static int matchcharclass(char c, const char *str) {
   return 0;
 }
 static int matchone(regex_t p, char c) {
-  switch (p.type) {
-  case RX_DOT:
-    return matchdot(c);
-  case RX_CHAR_CLASS:
-    return matchcharclass(c, (const char *)p.u.ccl);
-  case RX_INV_CHAR_CLASS:
-    return !matchcharclass(c, (const char *)p.u.ccl);
-  case RX_DIGIT:
-    return matchdigit(c);
-  case RX_NOT_DIGIT:
-    return !matchdigit(c);
-  case RX_INTEGER:
-    return matchint(c);
-  case RX_NOT_INTEGER:
-    return !matchint(c);
-  case RX_FLOAT:
-    return matchfloat(c);
-  case RX_NOT_FLOAT:
-    return !matchfloat(c);
-  case RX_ALPHA:
-    return matchalphanum(c);
-  case RX_NOT_ALPHA:
-    return !matchalphanum(c);
-  case RX_WHITESPACE:
-    return matchwhitespace(c);
-  case RX_NOT_WHITESPACE:
-    return !matchwhitespace(c);
-  default:
-    return (p.u.ch == c);
-  }
+  return matchdigit(c);
 }
 static int matchstar(regex_t p, regex_t *pattern, const char *text,
                      int *matchlen) {
