@@ -33,23 +33,6 @@ public:
     array = nullptr;
   }
   template <typename TYPE>
-  TYPE *create1d_offset(TYPE *&array, int nlo, int nhi, const char *name) {
-    bigint nbytes = ((bigint)sizeof(TYPE)) * (nhi - nlo + 1);
-    array = (TYPE *)smalloc(nbytes, name);
-    array -= nlo;
-    return array;
-  }
-  template <typename TYPE>
-  TYPE **create1d_offset(TYPE **&, int, int, const char *name) {
-    fail(name);
-    return nullptr;
-  }
-  template <typename TYPE> void destroy1d_offset(TYPE *&array, int offset) {
-    if (array)
-      sfree(&array[offset]);
-    array = nullptr;
-  }
-  template <typename TYPE>
   TYPE **create(TYPE **&array, int n1, int n2, const char *name) {
     bigint nbytes = ((bigint)sizeof(TYPE)) * n1 * n2;
     TYPE *data = (TYPE *)smalloc(nbytes, name);
@@ -113,11 +96,6 @@ public:
       }
     }
     return array;
-  }
-  template <typename TYPE>
-  TYPE ****create(TYPE ****&, int, int, int, const char *name) {
-    fail(name);
-    return nullptr;
   }
   template <typename TYPE> void destroy(TYPE ***&array) {
     if (array == nullptr)
