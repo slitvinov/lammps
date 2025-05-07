@@ -119,12 +119,6 @@ void CommBrick::setup() {
         if (myloc[dim] == procgrid[dim] - 1) {
           pbc_flag[iswap] = 1;
           pbc[iswap][dim] = -1;
-          if (triclinic) {
-            if (dim == 1)
-              pbc[iswap][5] = -1;
-            else if (dim == 2)
-              pbc[iswap][4] = pbc[iswap][3] = -1;
-          }
         }
       }
       iswap++;
@@ -223,14 +217,8 @@ void CommBrick::borders() {
     twoneed = 2 * maxneed[dim];
     for (ineed = 0; ineed < twoneed; ineed++) {
       x = atom->x;
-      if (mode == Comm::SINGLE) {
-        lo = slablo[iswap];
-        hi = slabhi[iswap];
-      } else {
-        type = atom->type;
-        mlo = multioldlo[iswap];
-        mhi = multioldhi[iswap];
-      }
+      lo = slablo[iswap];
+      hi = slabhi[iswap];
       if (ineed % 2 == 0) {
         nfirst = nlast;
         nlast = atom->nlocal + atom->nghost;
