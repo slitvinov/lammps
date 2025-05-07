@@ -188,39 +188,6 @@ void AtomVec::create_atom(int itype, double *coord) {
   v[nlocal][0] = 0.0;
   v[nlocal][1] = 0.0;
   v[nlocal][2] = 0.0;
-  for (n = 0; n < ncreate; n++) {
-    pdata = mcreate.pdata[n];
-    datatype = mcreate.datatype[n];
-    cols = mcreate.cols[n];
-    if (datatype == Atom::DOUBLE) {
-      if (cols == 0) {
-        double *vec = *((double **)pdata);
-        vec[nlocal] = 0.0;
-      } else {
-        double **array = *((double ***)pdata);
-        for (m = 0; m < cols; m++)
-          array[nlocal][m] = 0.0;
-      }
-    } else if (datatype == Atom::INT) {
-      if (cols == 0) {
-        int *vec = *((int **)pdata);
-        vec[nlocal] = 0;
-      } else {
-        int **array = *((int ***)pdata);
-        for (m = 0; m < cols; m++)
-          array[nlocal][m] = 0;
-      }
-    } else if (datatype == Atom::BIGINT) {
-      if (cols == 0) {
-        bigint *vec = *((bigint **)pdata);
-        vec[nlocal] = 0;
-      } else {
-        bigint **array = *((bigint ***)pdata);
-        for (m = 0; m < cols; m++)
-          array[nlocal][m] = 0;
-      }
-    }
-  }
   create_atom_post(nlocal);
   atom->nlocal++;
 }
