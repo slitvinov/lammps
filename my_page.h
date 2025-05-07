@@ -16,19 +16,8 @@ public:
   T *vget() {
     if (index + maxchunk <= pagesize)
       return &page[index];
-    ipage++;
-    if (ipage == npage) {
-      allocate();
-      if (errorflag)
-        return nullptr;
-    }
-    page = pages[ipage];
-    index = 0;
-    return &page[index];
   }
   void vgot(int n) {
-    if (n > maxchunk)
-      errorflag = 1;
     ndatum += n;
     nchunk++;
     index += n;
