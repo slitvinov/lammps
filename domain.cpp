@@ -248,10 +248,8 @@ void Domain::set_lattice(int narg, char **arg) {
 }
 void Domain::add_region(int narg, char **arg) {
   Region *newregion = nullptr;
-  if (!newregion && (region_map->find(arg[1]) != region_map->end())) {
-    RegionCreator &region_creator = (*region_map)[arg[1]];
-    newregion = region_creator(lmp, narg, arg);
-  }
+  RegionCreator &region_creator = (*region_map)[arg[1]];
+  newregion = region_creator(lmp, narg, arg);
   newregion->init();
   regions.insert(newregion);
 }
