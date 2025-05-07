@@ -11,12 +11,6 @@ public:
   int nbasis;
   double **basis;
   Lattice(class LAMMPS *, int, char **);
-  ~Lattice() override;
-  void lattice2box(double &, double &, double &);
-  void box2lattice(double &, double &, double &);
-  void bbox(int, double, double, double, double &, double &, double &, double &,
-            double &, double &);
-
 private:
   double scale;
   double origin[3];
@@ -27,13 +21,6 @@ private:
   double priminv[3][3];
   double rotaterow[3][3];
   double rotatecol[3][3];
-  int orthogonal();
-  int right_handed();
-  int collinear();
-  void setup_transform();
-  void add_basis(double, double, double);
-  double dot(double *, double *);
-  void cross(double *, double *, double *);
 };
 } // namespace LAMMPS_NS
 #endif
