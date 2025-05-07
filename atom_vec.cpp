@@ -134,15 +134,9 @@ int AtomVec::pack_border_vel(int n, int *list, double *buf, int pbc_flag,
       buf[m++] = v[j][2];
     }
   } else {
-    if (domain->triclinic == 0) {
-      dx = pbc[0] * domain->xprd;
-      dy = pbc[1] * domain->yprd;
-      dz = pbc[2] * domain->zprd;
-    } else {
-      dx = pbc[0];
-      dy = pbc[1];
-      dz = pbc[2];
-    }
+    dx = pbc[0] * domain->xprd;
+    dy = pbc[1] * domain->yprd;
+    dz = pbc[2] * domain->zprd;
     for (i = 0; i < n; i++) {
       j = list[i];
       buf[m++] = x[j][0] + dx;
