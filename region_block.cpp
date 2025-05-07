@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
+#include "region.h"
 #include "region_block.h"
 #include "domain.h"
 #include "input.h"

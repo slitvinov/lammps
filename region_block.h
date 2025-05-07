@@ -1,9 +1,5 @@
-#ifdef REGION_CLASS
-RegionStyle(block, RegBlock);
-#else
 #ifndef LMP_REGION_BLOCK_H
 #define LMP_REGION_BLOCK_H
-#include "region.h"
 namespace LAMMPS_NS {
 class RegBlock : public Region {
   friend class FixPour;
@@ -24,5 +20,4 @@ protected:
   char *xhistr, *yhistr, *zhistr;
 };
 } // namespace LAMMPS_NS
-#endif
 #endif

@@ -68,11 +68,7 @@ Domain::Domain(LAMMPS *lmp) : Pointers(lmp) {
   delete[] args;
   copymode = 0;
   region_map = new RegionCreatorMap();
-#define REGION_CLASS
-#define RegionStyle(key, Class) (*region_map)[#key] = &region_creator<Class>;
-#include "region_block.h"
-#undef RegionStyle
-#undef REGION_CLASS
+  (*region_map)["block"] = &region_creator<RegBlock>;
 }
 Domain::~Domain() {
   if (copymode)
