@@ -47,7 +47,6 @@ private:
   void neigh_modify();
   void neighbor_command();
   void pair_coeff();
-  void pair_style();
 };
 } // namespace LAMMPS_NS
 #endif

@@ -200,9 +200,11 @@ int Input::execute_command() {
     neighbor_command();
   else if (mycmd == "pair_coeff")
     pair_coeff();
-  else if (mycmd == "pair_style")
-    pair_style();
-  else if (mycmd == "region")
+  else if (mycmd == "pair_style") {
+    force->create_pair(arg[0], 1);
+    if (force->pair)
+      force->pair->settings(narg - 1, &arg[1]);
+  } else if (mycmd == "region")
     domain->add_region(narg, arg);
   else if (mycmd == "timestep") {
     update->update_time();
@@ -233,9 +235,4 @@ void Input::pair_coeff() {
     jtype = utils::inumeric(FLERR, arg[1], false, lmp);
   }
   force->pair->coeff(narg, arg);
-}
-void Input::pair_style() {
-  force->create_pair(arg[0], 1);
-  if (force->pair)
-    force->pair->settings(narg - 1, &arg[1]);
 }
