@@ -481,36 +481,11 @@ static int matchplus(regex_t p, regex_t *pattern, const char *text,
   }
   return 0;
 }
-static int matchquestion(regex_t p, regex_t *pattern, const char *text,
-                         int *matchlen) {
-  if (p.type == RX_UNUSED)
-    return 1;
-  if (matchpattern(pattern, text, matchlen))
-    return 1;
-  if (*text && matchone(p, *text++)) {
-    if (matchpattern(pattern, text, matchlen)) {
-      (*matchlen)++;
-      return 1;
-    }
-  }
-  return 0;
-}
 static int matchpattern(regex_t *pattern, const char *text, int *matchlen) {
   int pre = *matchlen;
-  do {
-    if ((pattern[0].type == RX_UNUSED) ||
-        (pattern[1].type == RX_QUESTIONMARK)) {
-      return matchquestion(pattern[0], &pattern[2], text, matchlen);
-    } else if (pattern[1].type == RX_STAR) {
-      return matchstar(pattern[0], &pattern[2], text, matchlen);
-    } else if (pattern[1].type == RX_PLUS) {
-      return matchplus(pattern[0], &pattern[2], text, matchlen);
-    } else if ((pattern[0].type == RX_END) && pattern[1].type == RX_UNUSED) {
-      return (text[0] == '\0');
-    }
-    (*matchlen)++;
-  } while ((text[0] != '\0') && matchone(*pattern++, *text++));
-  *matchlen = pre;
-  return 0;
-}
+  if (pattern[1].type == RX_PLUS) {
+    return matchplus(pattern[0], &pattern[2], text, matchlen);
+  } else if ((pattern[0].type == RX_END) && pattern[1].type == RX_UNUSED) {
+    return (text[0] == '\0');
+  }
 }
