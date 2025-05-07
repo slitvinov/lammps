@@ -84,11 +84,7 @@ void Update::set_units(const char *style) {
 void Update::create_integrate(int narg, char **arg, int trysuffix) {
   delete[] integrate_style;
   delete integrate;
-  if (narg - 1 > 0) {
-    new_integrate(arg[0], narg - 1, &arg[1]);
-  } else {
-    new_integrate(arg[0], 0, nullptr);
-  }
+  new_integrate(arg[0], 0, nullptr);
   std::string estyle = arg[0];
   integrate_style = utils::strdup(estyle);
 }
