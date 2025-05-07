@@ -19,10 +19,7 @@ Integrate::Integrate(LAMMPS *lmp, int, char **) : Pointers(lmp) {
 }
 void Integrate::init() {
   update->atimestep = update->ntimestep;
-  if (force->pair && force->pair->compute_flag)
-    pair_compute_flag = 1;
-  else
-    pair_compute_flag = 0;
+  pair_compute_flag = 1;
 }
 void Integrate::ev_setup() {
   delete[] elist_global;
