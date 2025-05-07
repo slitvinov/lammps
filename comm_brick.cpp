@@ -82,8 +82,6 @@ void CommBrick::setup() {
         maxneed[2];
   }
   nswap = 2 * (maxneed[0] + maxneed[1] + maxneed[2]);
-  if (nswap > maxswap)
-    grow_swap(nswap);
   int dim, ineed;
   int iswap = 0;
   for (dim = 0; dim < 3; dim++) {
@@ -356,18 +354,6 @@ void CommBrick::grow_list(int iswap, int n) {
   maxsendlist[iswap] = static_cast<int>(BUFFACTOR * n);
   memory->grow(sendlist[iswap], maxsendlist[iswap], "comm:sendlist[iswap]");
 }
-void CommBrick::grow_swap(int n) {
-  free_swap();
-  allocate_swap(n);
-  sendlist =
-      (int **)memory->srealloc(sendlist, n * sizeof(int *), "comm:sendlist");
-  memory->grow(maxsendlist, n, "comm:maxsendlist");
-  for (int i = maxswap; i < n; i++) {
-    maxsendlist[i] = BUFMIN;
-    memory->create(sendlist[i], BUFMIN, "comm:sendlist[i]");
-  }
-  maxswap = n;
-}
 void CommBrick::allocate_swap(int n) {
   memory->create(sendnum, n, "comm:sendnum");
   memory->create(recvnum, n, "comm:recvnum");
@@ -381,18 +367,4 @@ void CommBrick::allocate_swap(int n) {
   memory->create(firstrecv, n, "comm:firstrecv");
   memory->create(pbc_flag, n, "comm:pbc_flag");
   memory->create(pbc, n, 6, "comm:pbc");
-}
-void CommBrick::free_swap() {
-  memory->destroy(sendnum);
-  memory->destroy(recvnum);
-  memory->destroy(sendproc);
-  memory->destroy(recvproc);
-  memory->destroy(size_forward_recv);
-  memory->destroy(size_reverse_send);
-  memory->destroy(size_reverse_recv);
-  memory->destroy(slablo);
-  memory->destroy(slabhi);
-  memory->destroy(firstrecv);
-  memory->destroy(pbc_flag);
-  memory->destroy(pbc);
 }

@@ -40,9 +40,7 @@ protected:
   virtual void grow_send(int, int);
   virtual void grow_recv(int);
   virtual void grow_list(int, int);
-  virtual void grow_swap(int);
   virtual void allocate_swap(int);
-  virtual void free_swap();
 };
 } // namespace LAMMPS_NS
 #endif
