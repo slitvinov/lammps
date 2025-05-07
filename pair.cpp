@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstring>
 #include "utils.h"
+#include "lammps.h"
 #include "pointers.h"
 #include "pair.h"
 #include "atom.h"

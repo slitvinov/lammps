@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include "utils.h"
+#include "lammps.h"
 #include "pointers.h"
 #include "fix.h"
 #include "atom.h"

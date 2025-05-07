@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <cstring>
 #include "utils.h"
+#include "lammps.h"
 #include "pointers.h"
 #include "input.h"
 #include "atom.h"

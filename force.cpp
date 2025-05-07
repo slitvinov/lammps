@@ -5,6 +5,7 @@
 #include <map>
 #include <cstdio>
 #include <mpi.h>
+#include "lammps.h"
 #include "pointers.h"
 #include "force.h"
 #include "atom.h"

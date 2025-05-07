@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <mpi.h>
+#include "lammps.h"
 #include "pointers.h"
 #include "npair.h"
 #include "atom.h"

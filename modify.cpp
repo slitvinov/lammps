@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstring>
 #include "utils.h"
+#include "lammps.h"
 #include "pointers.h"
 #include "modify.h"
 #include "atom.h"

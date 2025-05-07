@@ -3,6 +3,7 @@
 #include <cstring>
 #include <map>
 #include "utils.h"
+#include "lammps.h"
 #include "pointers.h"
 #include "region.h"
 #include "domain.h"

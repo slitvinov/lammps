@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_set>
 #include "utils.h"
+#include "lammps.h"
 #include "pointers.h"
 #include "comm.h"
 #include "atom.h"

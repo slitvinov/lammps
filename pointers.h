@@ -1,7 +1,6 @@
 #ifndef LMP_POINTERS_H
 #define LMP_POINTERS_H
 #include "fmt/format.h"
-#include "lammps.h"
 #include "lmptype.h"
 namespace LAMMPS_NS {
 #define FLERR __FILE__, __LINE__

@@ -3,6 +3,7 @@
 #include <map>
 #include <cstdio>
 #include <mpi.h>
+#include "lammps.h"
 #include "pointers.h"
 #include "utils.h"
 #include "update.h"

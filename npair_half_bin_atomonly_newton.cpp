@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdio>
 #include <mpi.h>
+#include "lammps.h"
 #include "pointers.h"
 #include "npair_half_bin_atomonly_newton.h"
 #include "atom.h"

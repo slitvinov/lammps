@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstdio>
 #include <mpi.h>
+#include "lammps.h"
 #include "pointers.h"
 #include "verlet.h"
 #include "atom.h"

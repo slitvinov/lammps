@@ -6,6 +6,7 @@
 #include <utility>
 #include <cstdio>
 #include <mpi.h>
+#include "lammps.h"
 #include "pointers.h"
 #include "procmap.h"
 #include "comm.h"

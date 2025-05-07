@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <unordered_set>
 #include "utils.h"
+#include "lammps.h"
 #include "pointers.h"
 #include "atom.h"
 #include "atom_vec_atomic.h"

@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <mpi.h>
 #include <cmath>
+#include "lammps.h"
 #include "pointers.h"
 #include "random_park.h"
 using namespace LAMMPS_NS;

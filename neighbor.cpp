@@ -6,6 +6,7 @@
 #include <cstring>
 #include <vector>
 #include "utils.h"
+#include "lammps.h"
 #include "pointers.h"
 #include "neighbor.h"
 #include "atom.h"

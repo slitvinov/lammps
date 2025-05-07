@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdio>
 #include <mpi.h>
+#include "lammps.h"
 #include "pointers.h"
 #include "nbin.h"
 #include "domain.h"

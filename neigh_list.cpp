@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdio>
 #include <mpi.h>
+#include "lammps.h"
 #include "pointers.h"
 #include "neigh_list.h"
 #include "atom.h"
