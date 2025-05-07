@@ -21,7 +21,6 @@ create_box.o \
 domain.o \
 fix_nve.o \
 fix.o \
-fmtlib_format.o \
 force.o \
 group.o \
 input.o \
