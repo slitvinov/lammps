@@ -50,12 +50,6 @@ AtomVec::AtomVec(LAMMPS *lmp) : Pointers(lmp) {
   x = v = f = nullptr;
   threads = nullptr;
 }
-AtomVec::~AtomVec() {
-  int datatype, cols;
-  void *pdata;
-  delete[] argcopy;
-  delete[] threads;
-}
 void AtomVec::store_args(int narg, char **arg) {
   nargcopy = narg;
   argcopy = nullptr;

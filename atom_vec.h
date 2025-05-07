@@ -32,7 +32,6 @@ public:
   std::vector<std::string> fields_exchange, fields_restart, fields_create;
   std::vector<std::string> fields_data_atom, fields_data_vel;
   AtomVec(class LAMMPS *);
-  ~AtomVec() override;
   void store_args(int, char **);
   virtual void process_args(int, char **);
   virtual void init();
