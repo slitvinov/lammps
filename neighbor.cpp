@@ -14,7 +14,6 @@
 #include "atom_vec.h"
 #include "pointers.h"
 #include "comm.h"
-#include "compute.h"
 #include "domain.h"
 #include "fix.h"
 #include "force.h"
@@ -237,12 +236,6 @@ int Neighbor::init_pair() {
     if (requests[i]->pair && i < nrequest_original) {
       auto pair = (Pair *)requests[i]->requestor;
       pair->init_list(requests[i]->id, lists[i]);
-    } else if (requests[i]->fix && i < nrequest_original) {
-      Fix *fix = (Fix *)requests[i]->requestor;
-      fix->init_list(requests[i]->id, lists[i]);
-    } else if (requests[i]->compute && i < nrequest_original) {
-      auto compute = (Compute *)requests[i]->requestor;
-      compute->init_list(requests[i]->id, lists[i]);
     }
   }
   for (i = 0; i < nrequest; i++)

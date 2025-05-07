@@ -15,7 +15,6 @@ atom_vec_atomic.o \
 atom_vec.o \
 comm_brick.o \
 comm.o \
-compute.o \
 create_atoms.o \
 create_box.o \
 domain.o \
