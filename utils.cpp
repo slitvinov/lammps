@@ -148,18 +148,6 @@ char *utils::strdup(const std::string &text) {
   strcpy(tmp, text.c_str());
   return tmp;
 }
-std::string utils::lowercase(const std::string &text) {
-  std::string converted(text);
-  for (auto &c : converted)
-    c = ::tolower(c);
-  return converted;
-}
-std::string utils::uppercase(const std::string &text) {
-  std::string converted(text);
-  for (auto &c : converted)
-    c = ::toupper(c);
-  return converted;
-}
 std::string utils::trim(const std::string &line) {
   int beg = re_match(line.c_str(), "\\S+");
   int end = re_match(line.c_str(), "\\s+$");

@@ -41,8 +41,6 @@ template <typename TYPE>
 void bounds(const char *file, int line, const std::string &str, bigint nmin,
             bigint nmax, TYPE &nlo, TYPE &nhi, Error *error);
 char *strdup(const std::string &text);
-std::string lowercase(const std::string &line);
-std::string uppercase(const std::string &line);
 std::string trim(const std::string &line);
 std::string trim_comment(const std::string &line);
 std::string star_subst(const std::string &name, bigint step, int pad);
