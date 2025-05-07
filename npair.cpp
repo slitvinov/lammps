@@ -24,8 +24,6 @@ NPair::NPair(LAMMPS *lmp) : Pointers(lmp), nb(nullptr), bins(nullptr) {
 }
 void NPair::post_constructor(NeighRequest *nrq) {
   cutoff_custom = 0.0;
-  if (nrq->cut)
-    cutoff_custom = nrq->cutoff;
 }
 void NPair::copy_neighbor_info() {
   includegroup = neighbor->includegroup;
