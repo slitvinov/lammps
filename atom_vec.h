@@ -54,8 +54,6 @@ public:
   virtual int pack_exchange_bonus(int, double *) { return 0; }
   virtual int unpack_exchange_bonus(int, double *) { return 0; }
   virtual int size_restart();
-  virtual int pack_restart(int, double *);
-  virtual int unpack_restart(double *);
   virtual void pack_restart_pre(int) {}
   virtual void pack_restart_post(int) {}
   virtual void unpack_restart_init(int) {}
@@ -64,8 +62,6 @@ public:
   virtual int unpack_restart_bonus(int, double *) { return 0; }
   virtual void create_atom(int, double *);
   virtual void create_atom_post(int) {}
-  virtual void data_atom(double *, imageint, const std::vector<std::string> &,
-                         std::string &);
   virtual void data_body(int, int, int, int *, double *) {}
   virtual int property_atom(const std::string &) { return -1; }
   virtual void pack_property_atom(int, double *, int, int) {}
