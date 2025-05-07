@@ -122,15 +122,6 @@ char *utils::strdup(const std::string &text) {
   strcpy(tmp, text.c_str());
   return tmp;
 }
-std::string utils::trim(const std::string &line) {
-  int beg = re_match(line.c_str(), "\\S+");
-  int end = re_match(line.c_str(), "\\s+$");
-  if (beg < 0)
-    beg = 0;
-  if (end < 0)
-    end = line.size();
-  return line.substr(beg, end - beg);
-}
 std::string utils::strip_style_suffix(const std::string &style, LAMMPS *lmp) {
   std::string newstyle = style;
   return newstyle;
@@ -231,24 +222,6 @@ bool utils::is_id(const std::string &str) {
     return false;
   }
   return true;
-}
-int utils::get_supported_conversions(const int property) {
-  if (property == ENERGY)
-    return METAL2REAL | REAL2METAL;
-  else
-    return NOCONVERT;
-}
-double utils::get_conversion_factor(const int property, const int conversion) {
-  if (property == ENERGY) {
-    if (conversion == NOCONVERT) {
-      return 1.0;
-    } else if (conversion == METAL2REAL) {
-      return 23.060549;
-    } else if (conversion == REAL2METAL) {
-      return 1.0 / 23.060549;
-    }
-  }
-  return 0.0;
 }
 extern "C" {
 typedef struct regex_t *re_t;
