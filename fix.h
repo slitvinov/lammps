@@ -203,7 +203,6 @@ protected:
           vflag_global = vflag_atom = cvflag_atom = 0;
   }
   void ev_setup(int, int);
-  void ev_tally(int, int *, double, double, double *);
   void v_init(int vflag) {
     if (vflag && thermo_virial)
       v_setup(vflag);
@@ -211,13 +210,6 @@ protected:
       evflag = vflag_either = vflag_global = vflag_atom = cvflag_atom = 0;
   }
   void v_setup(int);
-  void v_tally(int, int *, double, double *);
-  void v_tally(int, int *, double, double *, int, int, int[][2], double *,
-               double[][3]);
-  void v_tally(int, int *, double, double *, double[][3], double[][3],
-               double[]);
-  void v_tally(int, double *);
-  void v_tally(int, int, double);
 };
 namespace FixConst {
 enum {
