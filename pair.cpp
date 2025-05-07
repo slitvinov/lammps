@@ -92,34 +92,7 @@ void Pair::init() {
       cut = init_one(i, j);
       cutsq[i][j] = cutsq[j][i] = cut * cut;
       cutforce = MAX(cutforce, cut);
-      if (i != j) {
-        if (setflag[i][j])
-          mixed_flag = 0;
-        if (did_mix)
-          ++mixed_count;
-      }
-      if (tail_flag) {
-        etail += etail_ij;
-        ptail += ptail_ij;
-        if (i != j) {
-          etail += etail_ij;
-          ptail += ptail_ij;
-        }
-      }
     }
-  if (!manybody_flag && (comm->me == 0)) {
-    const int num_mixed_pairs = atom->ntypes * (atom->ntypes - 1) / 2;
-    if (utils::strmatch(force->pair_style, "^lj/class2"))
-      utils::logmesg(
-          lmp,
-          "Generated {} of {} mixed pair_coeff terms from {}/{} mixing rule\n",
-          mixed_count, num_mixed_pairs, "sixthpower",
-          mixing_rule_names[mix_flag]);
-    else
-      utils::logmesg(
-          lmp,
-          "Generated {} of {} mixed pair_coeff terms from {} mixing rule\n",
-          mixed_count, num_mixed_pairs, mixing_rule_names[mix_flag]);
   }
 }
 void Pair::init_style() { neighbor->add_request(this); }

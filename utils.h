@@ -43,9 +43,6 @@ void bounds(const char *file, int line, const std::string &str, bigint nmin,
 char *strdup(const std::string &text);
 std::string trim(const std::string &line);
 std::string strip_style_suffix(const std::string &style, LAMMPS *lmp);
-size_t count_words(const std::string &text, const std::string &separators);
-size_t count_words(const std::string &text);
-size_t count_words(const char *text);
 std::vector<std::string> split_words(const std::string &text);
 bool is_integer(const std::string &str);
 bool is_double(const std::string &str);

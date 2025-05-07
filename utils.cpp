@@ -161,44 +161,6 @@ std::string utils::strip_style_suffix(const std::string &style, LAMMPS *lmp) {
   std::string newstyle = style;
   return newstyle;
 }
-size_t utils::count_words(const char *text) {
-  size_t count = 0;
-  const char *buf = text;
-  char c = *buf;
-  while (c) {
-    if (c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f') {
-      c = *++buf;
-      continue;
-    };
-    ++count;
-    c = *++buf;
-    while (c) {
-      if (c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f') {
-        break;
-      }
-      c = *++buf;
-    }
-  }
-  return count;
-}
-size_t utils::count_words(const std::string &text) {
-  return utils::count_words(text.c_str());
-}
-size_t utils::count_words(const std::string &text,
-                          const std::string &separators) {
-  size_t count = 0;
-  size_t start = text.find_first_not_of(separators);
-  while (start != std::string::npos) {
-    size_t end = text.find_first_of(separators, start);
-    ++count;
-    if (end == std::string::npos) {
-      return count;
-    } else {
-      start = text.find_first_not_of(separators, end + 1);
-    }
-  }
-  return count;
-}
 std::vector<std::string> utils::split_words(const std::string &text) {
   std::vector<std::string> list;
   const char *buf = text.c_str();
