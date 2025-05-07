@@ -17,7 +17,6 @@ public:
 
 protected:
   char *command;
-  int echo_log;
 
 private:
   int me;

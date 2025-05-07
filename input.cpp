@@ -44,7 +44,6 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp) {
   line = copy = work = nullptr;
   narg = maxarg = 0;
   arg = nullptr;
-  echo_log = 1;
   jump_skip = 0;
   utf8_warn = true;
   if (me == 0) {
@@ -97,10 +96,6 @@ void Input::file() {
     if (n > maxline)
       reallocate(line, maxline, n);
     MPI_Bcast(line, n, MPI_CHAR, 0, world);
-    if (me == 0) {
-      if (echo_log && logfile)
-	fprintf(logfile, "%s\n", line);
-    }
     parse();
     if (command == nullptr)
       continue;
