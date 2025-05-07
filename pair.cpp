@@ -93,7 +93,6 @@ void Pair::init() {
       cutsq[i][j] = cutsq[j][i] = cut * cut;
       cutforce = MAX(cutforce, cut);
     }
-  }
 }
 void Pair::init_style() { neighbor->add_request(this); }
 void Pair::init_list(int, NeighList *ptr) { list = ptr; }
