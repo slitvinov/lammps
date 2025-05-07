@@ -46,8 +46,6 @@ public:
   virtual void unpack_border_vel(int, int, double *);
   virtual int pack_border_bonus(int, int *, double *) { return 0; }
   virtual int unpack_border_bonus(int, int, double *) { return 0; }
-  virtual int pack_exchange(int, double *);
-  virtual int unpack_exchange(double *);
   virtual int pack_exchange_bonus(int, double *) { return 0; }
   virtual int unpack_exchange_bonus(int, double *) { return 0; }
   virtual int size_restart();
