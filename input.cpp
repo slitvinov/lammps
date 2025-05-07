@@ -44,7 +44,6 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp) {
   line = copy = work = nullptr;
   narg = maxarg = 0;
   arg = nullptr;
-  echo_screen = 0;
   echo_log = 1;
   jump_skip = 0;
   utf8_warn = true;
