@@ -1,6 +1,3 @@
-#ifdef FIX_CLASS
-FixStyle(nve, FixNVE);
-#else
 #ifndef LMP_FIX_NVE_H
 #define LMP_FIX_NVE_H
 namespace LAMMPS_NS {
@@ -18,5 +15,4 @@ protected:
   int mass_require;
 };
 } // namespace LAMMPS_NS
-#endif
 #endif

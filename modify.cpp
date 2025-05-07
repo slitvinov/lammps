@@ -70,11 +70,7 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp) {
 }
 void _noopt Modify::create_factories() {
   fix_map = new FixCreatorMap();
-#define FIX_CLASS
-#define FixStyle(key, Class) (*fix_map)[#key] = &style_creator<Fix, Class>;
-#include "fix_nve.h"
-#undef FixStyle
-#undef FIX_CLASS
+  (*fix_map)["nve"] = &style_creator<Fix, FixNVE>;
 }
 void Modify::init() {
   int i, j;
