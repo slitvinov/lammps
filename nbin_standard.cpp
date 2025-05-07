@@ -49,27 +49,13 @@ void NBinStandard::setup_bins(int style) {
   bbox[1] = bboxhi[1] - bboxlo[1];
   bbox[2] = bboxhi[2] - bboxlo[2];
   double binsize_optimal;
-  if (binsizeflag)
-    binsize_optimal = binsize_user;
-  else if (style == Neighbor::BIN)
-    binsize_optimal = 0.5 * cutneighmax;
-  else
-    binsize_optimal = 0.5 * cutneighmin;
+  binsize_optimal = binsize_user;
   if (binsize_optimal == 0.0)
     binsize_optimal = bbox[0];
   double binsizeinv = 1.0 / binsize_optimal;
   nbinx = static_cast<int>(bbox[0] * binsizeinv);
   nbiny = static_cast<int>(bbox[1] * binsizeinv);
-  if (dimension == 3)
-    nbinz = static_cast<int>(bbox[2] * binsizeinv);
-  else
-    nbinz = 1;
-  if (nbinx == 0)
-    nbinx = 1;
-  if (nbiny == 0)
-    nbiny = 1;
-  if (nbinz == 0)
-    nbinz = 1;
+  nbinz = static_cast<int>(bbox[2] * binsizeinv);
   binsizex = bbox[0] / nbinx;
   binsizey = bbox[1] / nbiny;
   binsizez = bbox[2] / nbinz;
