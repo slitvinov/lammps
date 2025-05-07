@@ -109,7 +109,6 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
         infile = stdin;
       else
         infile = fopen(arg[inflag], "r");
-      utils::flush_buffers(this);
     }
   }
   int mpisize;

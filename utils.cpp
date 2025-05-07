@@ -25,17 +25,6 @@ bool utils::strmatch(const std::string &text, const std::string &pattern) {
   const int pos = re_match(text.c_str(), pattern.c_str());
   return (pos >= 0);
 }
-void utils::flush_buffers(LAMMPS *lmp) {
-  if (lmp->screen)
-    fflush(lmp->screen);
-  if (lmp->logfile)
-    fflush(lmp->logfile);
-  if (lmp->universe->uscreen)
-    fflush(lmp->universe->uscreen);
-  if (lmp->universe->ulogfile)
-    fflush(lmp->universe->ulogfile);
-}
-std::string utils::getsyserror() { return {strerror(errno)}; }
 int utils::logical(const char *file, int line, const std::string &str,
                    bool do_abort, LAMMPS *lmp) {
   std::string buf(str);

@@ -8,8 +8,6 @@ class Error;
 class LAMMPS;
 namespace utils {
 bool strmatch(const std::string &text, const std::string &pattern);
-void flush_buffers(LAMMPS *lmp);
-std::string getsyserror();
 void sfgets(const char *srcname, int srcline, char *s, int size, FILE *fp,
             const char *filename, Error *error);
 int logical(const char *file, int line, const std::string &str, bool do_abort,
