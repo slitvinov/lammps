@@ -91,7 +91,6 @@ public:
   ExecutionSpace execution_space;
   unsigned int datamask_read, datamask_modify;
   Fix(class LAMMPS *, int, char **);
-  ~Fix() override;
   virtual int setmask() = 0;
   virtual void post_constructor() {}
   virtual void init() {}

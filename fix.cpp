@@ -69,15 +69,6 @@ Fix::Fix(LAMMPS *lmp, int, char **arg)
   forward_comm_device = 0;
   copymode = 0;
 }
-Fix::~Fix() {
-  if (copymode)
-    return;
-  delete[] id;
-  delete[] style;
-  memory->destroy(eatom);
-  memory->destroy(vatom);
-  memory->destroy(cvatom);
-}
 void Fix::ev_setup(int eflag, int vflag) {
   int i, n;
   evflag = 1;
