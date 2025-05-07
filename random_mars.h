@@ -1,6 +1,5 @@
 #ifndef LMP_RANMARS_H
 #define LMP_RANMARS_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class RanMars : protected Pointers {
 public:

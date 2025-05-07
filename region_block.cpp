@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <cstring>
 #include "utils.h"
+#include "pointers.h"
 #include "region_block.h"
 #include "domain.h"
 #include "input.h"

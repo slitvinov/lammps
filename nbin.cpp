@@ -1,11 +1,12 @@
 #include <map>
 #include <unordered_set>
+#include <cmath>
+#include "pointers.h"
 #include "nbin.h"
 #include "domain.h"
 #include "memory.h"
 #include "neigh_request.h"
 #include "neighbor.h"
-#include <cmath>
 using namespace LAMMPS_NS;
 NBin::NBin(LAMMPS *lmp) : Pointers(lmp) {
   last_bin = -1;

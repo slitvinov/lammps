@@ -1,5 +1,6 @@
 #include <vector>
 #include <map>
+#include "pointers.h"
 #include "integrate.h"
 #include "force.h"
 #include "modify.h"

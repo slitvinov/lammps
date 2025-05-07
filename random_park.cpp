@@ -1,3 +1,4 @@
+#include "pointers.h"
 #include "random_park.h"
 #include <cmath>
 using namespace LAMMPS_NS;

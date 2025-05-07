@@ -1,14 +1,15 @@
 #include <unordered_set>
 #include <map>
+#include <cmath>
+#include <cstring>
+#include <map>
+#include <utility>
+#include "pointers.h"
 #include "procmap.h"
 #include "comm.h"
 #include "domain.h"
 #include "memory.h"
 #include "universe.h"
-#include <cmath>
-#include <cstring>
-#include <map>
-#include <utility>
 using namespace LAMMPS_NS;
 #define MAXLINE 128
 ProcMap::ProcMap(LAMMPS *lmp) : Pointers(lmp) {}

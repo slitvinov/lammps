@@ -1,6 +1,5 @@
 #ifndef LMP_PROCMAP_H
 #define LMP_PROCMAP_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class ProcMap : protected Pointers {
 public:

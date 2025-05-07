@@ -1,3 +1,4 @@
+#include "pointers.h"
 #include "memory.h"
 #if defined(LMP_INTEL) &&                                                      \
     ((defined(__INTEL_COMPILER) || defined(__INTEL_LLVM_COMPILER)))

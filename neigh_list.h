@@ -1,6 +1,5 @@
 #ifndef LMP_NEIGH_LIST_H
 #define LMP_NEIGH_LIST_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class NeighList : protected Pointers {
 public:

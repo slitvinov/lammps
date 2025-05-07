@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include "utils.h"
+#include "pointers.h"
 #include "pair_dpd.h"
 #include "atom.h"
 #include "comm.h"

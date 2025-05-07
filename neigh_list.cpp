@@ -1,6 +1,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include "pointers.h"
 #include "neigh_list.h"
 #include "atom.h"
 #include "comm.h"

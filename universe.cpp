@@ -1,6 +1,7 @@
+#include <cstring>
+#include "pointers.h"
 #include "universe.h"
 #include "memory.h"
-#include <cstring>
 using namespace LAMMPS_NS;
 #define MAXLINE 256
 Universe::Universe(LAMMPS *lmp, MPI_Comm communicator) : Pointers(lmp) {

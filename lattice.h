@@ -1,6 +1,5 @@
 #ifndef LMP_LATTICE_H
 #define LMP_LATTICE_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class Lattice : protected Pointers {
 public:

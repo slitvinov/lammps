@@ -1,6 +1,5 @@
 #ifndef LMP_NBIN_H
 #define LMP_NBIN_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class NBin : protected Pointers {
 public:

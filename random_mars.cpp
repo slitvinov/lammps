@@ -1,7 +1,8 @@
-#include "random_mars.h"
-#include "math_const.h"
 #include <cmath>
 #include <cstring>
+#include "pointers.h"
+#include "random_mars.h"
+#include "math_const.h"
 using namespace LAMMPS_NS;
 enum { ADD, SUBTRACT };
 RanMars::RanMars(LAMMPS *lmp, int seed) : Pointers(lmp), u(nullptr) {

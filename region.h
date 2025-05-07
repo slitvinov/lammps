@@ -1,6 +1,5 @@
 #ifndef LMP_REGION_H
 #define LMP_REGION_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class Region : protected Pointers {
 public:

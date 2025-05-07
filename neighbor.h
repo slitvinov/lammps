@@ -1,6 +1,5 @@
 #ifndef LMP_NEIGHBOR_H
 #define LMP_NEIGHBOR_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class NeighRequest;
 class NeighList;

@@ -1,7 +1,5 @@
 #ifndef LMP_MODIFY_H
 #define LMP_MODIFY_H
-#include "pointers.h"
-#include <map>
 namespace LAMMPS_NS {
 class Fix;
 class Modify : protected Pointers {

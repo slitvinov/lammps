@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstring>
 #include "utils.h"
+#include "pointers.h"
 #include "pair.h"
 #include "atom.h"
 #include "atom_masks.h"

@@ -1,6 +1,8 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <cmath>
+#include "pointers.h"
 #include "npair.h"
 #include "atom.h"
 #include "memory.h"
@@ -8,7 +10,6 @@
 #include "neigh_request.h"
 #include "neighbor.h"
 #include "update.h"
-#include <cmath>
 using namespace LAMMPS_NS;
 NPair::NPair(LAMMPS *lmp) : Pointers(lmp), nb(nullptr), bins(nullptr) {
   last_build = -1;

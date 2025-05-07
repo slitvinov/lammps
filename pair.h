@@ -1,6 +1,5 @@
 #ifndef LMP_PAIR_H
 #define LMP_PAIR_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class Pair : protected Pointers {
   friend class FixQEq;

@@ -1,6 +1,5 @@
 #ifndef LMP_INTEGRATE_H
 #define LMP_INTEGRATE_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class Integrate : protected Pointers {
 public:

@@ -1,6 +1,5 @@
 #ifndef LMP_NEIGH_REQUEST_H
 #define LMP_NEIGH_REQUEST_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class NeighRequest : protected Pointers {
   friend class Neighbor;

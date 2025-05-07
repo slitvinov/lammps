@@ -1,6 +1,5 @@
 #ifndef LMP_MEMORY_H
 #define LMP_MEMORY_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class Memory : protected Pointers {
 public:

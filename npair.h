@@ -1,6 +1,5 @@
 #ifndef LMP_NPAIR_H
 #define LMP_NPAIR_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class NPair : protected Pointers {
 public:

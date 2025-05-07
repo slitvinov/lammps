@@ -2,6 +2,7 @@
 #include <set>
 #include <vector>
 #include <unordered_set>
+#include "pointers.h"
 #include "nbin_standard.h"
 #include "atom.h"
 #include "comm.h"
