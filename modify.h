@@ -37,7 +37,6 @@ public:
   virtual void pre_force(int);
   virtual void final_integrate();
   virtual void post_run();
-  void reset_grid();
   Fix *add_fix(int, char **, int trysuffix = 1);
   Fix *add_fix(const std::string &, int trysuffix = 1);
   void delete_fix(int);

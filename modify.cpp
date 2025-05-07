@@ -240,11 +240,6 @@ void Modify::post_run() {
     fix[i]->post_run();
   n_timeflag = -1;
 }
-void Modify::reset_grid() {
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->pergrid_flag)
-      fix[i]->reset_grid();
-}
 Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
   const char *exceptions[] = {"GPU",
                               "OMP",
