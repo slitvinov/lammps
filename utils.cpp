@@ -273,8 +273,6 @@ int re_find(const char *text, const char *pattern, int *matchlen) {
   return re_matchp(text, re_compile(&context, pattern), matchlen);
 }
 static int matchpattern(regex_t *pattern, const char *text, int *matchlen);
-static int matchstar(regex_t p, regex_t *pattern, const char *text,
-                     int *matchlen);
 static int matchplus(regex_t p, regex_t *pattern, const char *text,
                      int *matchlen);
 static int matchone(regex_t p, char c);
@@ -285,7 +283,6 @@ static int matchalpha(char c);
 static int matchwhitespace(char c);
 static int matchrange(char c, const char *str);
 static int matchdot(char c);
-static int ismetachar(char c);
 int re_matchp(const char *text, re_t pattern, int *matchlen) {
   *matchlen = 0;
   if (pattern != nullptr) {
@@ -444,28 +441,8 @@ static int matchdot(char c) {
   return c != '\n' && c != '\r';
 #endif
 }
-static int ismetachar(char c) {
-  return ((c == 's') || (c == 'S') || (c == 'w') || (c == 'W') || (c == 'd') ||
-          (c == 'D'));
-}
 static int matchone(regex_t p, char c) {
   return matchdigit(c);
-}
-static int matchstar(regex_t p, regex_t *pattern, const char *text,
-                     int *matchlen) {
-  int prelen = *matchlen;
-  const char *prepos = text;
-  while ((text[0] != '\0') && matchone(p, *text)) {
-    text++;
-    (*matchlen)++;
-  }
-  while (text >= prepos) {
-    if (matchpattern(pattern, text--, matchlen))
-      return 1;
-    (*matchlen)--;
-  }
-  *matchlen = prelen;
-  return 0;
 }
 static int matchplus(regex_t p, regex_t *pattern, const char *text,
                      int *matchlen) {
