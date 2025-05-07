@@ -66,10 +66,8 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   int *plast = nullptr;
   iarg = 1;
   while (iarg < narg) {
-    if (strcmp(arg[iarg], "-in") == 0 || strcmp(arg[iarg], "-i") == 0) {
-      inflag = iarg + 1;
-      iarg += 2;
-    }
+    inflag = iarg + 1;
+    iarg += 2;
   }
   universe->add_world(nullptr);
   if (universe->me == 0) {
