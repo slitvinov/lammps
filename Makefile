@@ -24,7 +24,6 @@ force.o \
 group.o \
 input.o \
 integrate.o \
-lattice.o \
 main.o \
 memory.o \
 modify.o \

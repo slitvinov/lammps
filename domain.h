@@ -36,7 +36,6 @@ public:
   int deform_flag;
   int deform_vremap;
   int deform_groupbit;
-  class Lattice *lattice;
   int copymode;
   enum { NO_REMAP, X_REMAP, V_REMAP };
   typedef Region *(*RegionCreator)(LAMMPS *, int, char **);
@@ -50,7 +49,6 @@ public:
   virtual void reset_box();
   virtual void pbc();
   void subbox_too_small_check(double);
-  void set_lattice(int, char **);
   void add_region(int, char **);
   Region *get_region_by_id(const std::string &) const;
   void box_corners();

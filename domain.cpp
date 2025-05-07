@@ -16,7 +16,6 @@
 #include "comm.h"
 #include "fix.h"
 #include "force.h"
-#include "lattice.h"
 #include "memory.h"
 #include "modify.h"
 #include "region.h"
@@ -60,12 +59,6 @@ Domain::Domain(LAMMPS *lmp) : Pointers(lmp) {
   prd_half_lamda[0] = prd_half_lamda[1] = prd_half_lamda[2] = 0.5;
   boxlo_lamda[0] = boxlo_lamda[1] = boxlo_lamda[2] = 0.0;
   boxhi_lamda[0] = boxhi_lamda[1] = boxhi_lamda[2] = 1.0;
-  lattice = nullptr;
-  auto args = new char *[2];
-  args[0] = (char *)"none";
-  args[1] = (char *)"1.0";
-  set_lattice(2, args);
-  delete[] args;
   copymode = 0;
   region_map = new RegionCreatorMap();
   (*region_map)["block"] = &region_creator<RegBlock>;
@@ -238,12 +231,6 @@ void Domain::subbox_too_small_check(double thresh) {
     flag = 1;
   int flagall;
   MPI_Allreduce(&flag, &flagall, 1, MPI_INT, MPI_SUM, world);
-}
-void Domain::set_lattice(int narg, char **arg) {
-  if (lattice)
-    delete lattice;
-  lattice = nullptr;
-  lattice = new Lattice(lmp, narg, arg);
 }
 void Domain::add_region(int narg, char **arg) {
   Region *newregion = nullptr;

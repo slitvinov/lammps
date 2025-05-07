@@ -7,7 +7,7 @@ public:
   void command(int, char **) override;
 
 private:
-  int ntype, style, mode, nbasis, seed;
+  int ntype, style, mode, seed;
   bigint nrandom;
   int remapflag;
   int maxtry;
@@ -16,7 +16,6 @@ private:
   int subsetflag;
   bigint nsubset;
   double subsetfrac;
-  int *basistype;
   double xone[3], quatone[4];
   double radscale, mesh_density;
   int varflag, vvar, xvar, yvar, zvar;

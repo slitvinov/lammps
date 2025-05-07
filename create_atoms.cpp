@@ -18,7 +18,6 @@
 #include "comm.h"
 #include "domain.h"
 #include "input.h"
-#include "lattice.h"
 #include "math_const.h"
 #include "memory.h"
 #include "modify.h"
@@ -42,9 +41,8 @@ enum { NONE, RATIO, SUBSET };
 enum { BISECTION, QUASIRANDOM };
 static constexpr const char *mesh_name[] = {"recursive bisection",
                                             "quasi-random"};
-CreateAtoms::CreateAtoms(LAMMPS *lmp) : Command(lmp), basistype(nullptr) {}
+CreateAtoms::CreateAtoms(LAMMPS *lmp) : Command(lmp) {}
 void CreateAtoms::command(int narg, char **arg) {
-  int latsty = domain->lattice->style;
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
   const char *meshfile;
   int iarg;
@@ -69,17 +67,9 @@ void CreateAtoms::command(int narg, char **arg) {
   radscale = 1.0;
   mesh_style = BISECTION;
   mesh_density = 1.0;
-  nbasis = domain->lattice->nbasis;
-  basistype = new int[nbasis];
-  for (int i = 0; i < nbasis; i++)
-    basistype[i] = ntype;
   ranlatt = nullptr;
   if (subsetflag != NONE)
     ranlatt = new RanMars(lmp, subsetseed + comm->me);
-  xone[0] *= domain->lattice->xlattice;
-  xone[1] *= domain->lattice->ylattice;
-  xone[2] *= domain->lattice->zlattice;
-  overlap *= domain->lattice->xlattice;
   triclinic = domain->triclinic;
   double epsilon[3];
   epsilon[0] = domain->prd[0] * EPSILON;
@@ -105,7 +95,6 @@ void CreateAtoms::command(int narg, char **arg) {
   atom->tag_check();
   delete ranmol;
   delete ranlatt;
-  delete[] basistype;
   delete[] vstr;
   delete[] xstr;
   delete[] ystr;

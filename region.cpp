@@ -12,7 +12,6 @@
 #include "region.h"
 #include "domain.h"
 #include "input.h"
-#include "lattice.h"
 #include "lmptype.h"
 #include "update.h"
 using namespace LAMMPS_NS;
