@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include "pointers.h"
+#include "fix.h"
 #include "fix_nve.h"
 #include "atom.h"
 #include "force.h"

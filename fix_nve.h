@@ -3,7 +3,6 @@ FixStyle(nve, FixNVE);
 #else
 #ifndef LMP_FIX_NVE_H
 #define LMP_FIX_NVE_H
-#include "fix.h"
 namespace LAMMPS_NS {
 class FixNVE : public Fix {
 public:
