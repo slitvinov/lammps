@@ -109,18 +109,6 @@ bigint utils::bnumeric(const char *file, int line, const char *str,
   else
     return bnumeric(file, line, std::string(""), do_abort, lmp);
 }
-tagint utils::tnumeric(const char *file, int line, const std::string &str,
-                       bool do_abort, LAMMPS *lmp) {
-  std::string buf(str);
-  return ATOTAGINT(buf.c_str());
-}
-tagint utils::tnumeric(const char *file, int line, const char *str,
-                       bool do_abort, LAMMPS *lmp) {
-  if (str)
-    return tnumeric(file, line, std::string(str), do_abort, lmp);
-  else
-    return tnumeric(file, line, std::string(""), do_abort, lmp);
-}
 template <typename TYPE>
 void utils::bounds(const char *file, int line, const std::string &str,
                    bigint nmin, bigint nmax, TYPE &nlo, TYPE &nhi,

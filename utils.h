@@ -37,10 +37,6 @@ bigint bnumeric(const char *file, int line, const std::string &str,
                 bool do_abort, LAMMPS *lmp);
 bigint bnumeric(const char *file, int line, const char *str, bool do_abort,
                 LAMMPS *lmp);
-tagint tnumeric(const char *file, int line, const std::string &str,
-                bool do_abort, LAMMPS *lmp);
-tagint tnumeric(const char *file, int line, const char *str, bool do_abort,
-                LAMMPS *lmp);
 template <typename TYPE>
 void bounds(const char *file, int line, const std::string &str, bigint nmin,
             bigint nmax, TYPE &nlo, TYPE &nhi, Error *error);
