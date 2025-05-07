@@ -14,7 +14,6 @@
 #include "atom.h"
 #include "atom_masks.h"
 #include "comm.h"
-#include "compute.h"
 #include "domain.h"
 #include "force.h"
 #include "math_const.h"
