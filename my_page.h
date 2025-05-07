@@ -13,7 +13,6 @@ public:
   virtual ~MyPage();
   int init(int user_maxchunk = 1, int user_pagesize = 1024,
            int user_pagedelta = 1);
-  T *get(int n = 1);
   T *vget() {
     if (index + maxchunk <= pagesize)
       return &page[index];
@@ -35,9 +34,6 @@ public:
     index += n;
   }
   void reset();
-  double size() const { return (double)npage * pagesize * sizeof(T); }
-  int status() const { return errorflag; }
-
 private:
   char padding[1024];
   T **pages;
