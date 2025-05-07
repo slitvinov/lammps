@@ -1,8 +1,5 @@
 #ifndef LMP_EXCEPTIONS_H
 #define LMP_EXCEPTIONS_H
-#include <exception>
-#include <mpi.h>
-#include <string>
 namespace LAMMPS_NS {
 class LAMMPSException : public std::exception {
 public:
