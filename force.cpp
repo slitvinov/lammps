@@ -12,6 +12,7 @@
 #include "lmptype.h"
 #include "atom.h"
 #include "comm.h"
+#include "pair.h"
 #include "pair_dpd.h"
 #include "utils.h"
 using namespace LAMMPS_NS;
@@ -29,11 +30,7 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp) {
 }
 void _noopt Force::create_factories() {
   pair_map = new PairCreatorMap();
-#define PAIR_CLASS
-#define PairStyle(key, Class) (*pair_map)[#key] = &style_creator<Pair, Class>;
-#include "pair_dpd.h"
-#undef PairStyle
-#undef PAIR_CLASS
+  (*pair_map)["dpd"] = &style_creator<Pair, PairDPD>;
 }
 Force::~Force() {
   delete[] pair_style;

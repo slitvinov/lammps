@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
+#include "pair.h"
 #include "pair_dpd.h"
 #include "atom.h"
 #include "comm.h"

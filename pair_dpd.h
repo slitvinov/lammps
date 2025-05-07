@@ -1,9 +1,5 @@
-#ifdef PAIR_CLASS
-PairStyle(dpd, PairDPD);
-#else
 #ifndef LMP_PAIR_DPD_H
 #define LMP_PAIR_DPD_H
-#include "pair.h"
 namespace LAMMPS_NS {
 class PairDPD : public Pair {
 public:
@@ -25,5 +21,4 @@ protected:
   virtual void allocate();
 };
 } // namespace LAMMPS_NS
-#endif
 #endif

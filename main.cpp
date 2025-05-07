@@ -26,7 +26,6 @@
 #include "memory.h"
 #include "modify.h"
 #include "neighbor.h"
-#include "pair_dpd.h"
 #include "universe.h"
 #include "update.h"
 using namespace LAMMPS_NS;
