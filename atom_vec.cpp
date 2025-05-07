@@ -1045,59 +1045,13 @@ void AtomVec::setup_fields() {
   init_method(ncreate, &mcreate);
   init_method(ndata_atom, &mdata_atom);
   init_method(ndata_vel, &mdata_vel);
-  if (ngrow)
-    threads = new bool[ngrow];
-  else
-    threads = nullptr;
-  for (int i = 0; i < ngrow; i++) {
-    const auto &field = atom->peratom[mgrow.index[i]];
-    threads[i] = field.threadflag == 1;
-  }
+  threads = nullptr;
   comm_x_only = 1;
-  if (ncomm)
-    comm_x_only = 0;
-  if (bonus_flag && size_forward_bonus)
-    comm_x_only = 0;
-  if (nreverse == 0)
-    comm_f_only = 1;
-  else
-    comm_f_only = 0;
+  comm_f_only = 1;
   size_forward = 3;
-  for (n = 0; n < ncomm; n++) {
-    cols = mcomm.cols[n];
-    if (cols == 0)
-      size_forward++;
-    else
-      size_forward += cols;
-  }
-  if (bonus_flag)
-    size_forward += size_forward_bonus;
   size_reverse = 3;
-  for (n = 0; n < nreverse; n++) {
-    cols = mreverse.cols[n];
-    if (cols == 0)
-      size_reverse++;
-    else
-      size_reverse += cols;
-  }
   size_border = 6;
-  for (n = 0; n < nborder; n++) {
-    cols = mborder.cols[n];
-    if (cols == 0)
-      size_border++;
-    else
-      size_border += cols;
-  }
-  if (bonus_flag)
-    size_border += size_border_bonus;
   size_velocity = 3;
-  for (n = 0; n < ncomm_vel; n++) {
-    cols = mcomm_vel.cols[n];
-    if (cols == 0)
-      size_velocity++;
-    else
-      size_velocity += cols;
-  }
   size_data_atom = 0;
   for (n = 0; n < ndata_atom; n++) {
     cols = mdata_atom.cols[n];
