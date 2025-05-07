@@ -47,14 +47,6 @@ Group::Group(LAMMPS *lmp) : Pointers(lmp) {
   names[0] = utils::strdup("all");
   ngroup = 1;
 }
-Group::~Group() {
-  for (int i = 0; i < MAX_GROUP; i++)
-    delete[] names[i];
-  delete[] names;
-  delete[] bitmask;
-  delete[] inversemask;
-  delete[] dynamic;
-}
 int Group::find(const std::string &name) {
   for (int igroup = 0; igroup < MAX_GROUP; igroup++)
     if (names[igroup] && (name == names[igroup]))

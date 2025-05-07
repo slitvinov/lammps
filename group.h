@@ -10,7 +10,6 @@ public:
   int *inversemask;
   int *dynamic;
   Group(class LAMMPS *);
-  ~Group() override;
   int find(const std::string &);
 
 private:
