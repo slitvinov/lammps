@@ -36,7 +36,6 @@ public:
   virtual void initial_integrate(int);
   virtual void pre_force(int);
   virtual void final_integrate();
-  virtual double energy_global();
   virtual void post_run();
   void reset_grid();
   Fix *add_fix(int, char **, int trysuffix = 1);

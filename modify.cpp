@@ -235,12 +235,6 @@ void Modify::final_integrate() {
   for (int i = 0; i < n_final_integrate; i++)
     fix[list_final_integrate[i]]->final_integrate();
 }
-double Modify::energy_global() {
-  double energy = 0.0;
-  for (int i = 0; i < n_energy_global; i++)
-    energy += fix[list_energy_global[i]]->compute_scalar();
-  return energy;
-}
 void Modify::post_run() {
   for (int i = 0; i < nfix; i++)
     fix[i]->post_run();
