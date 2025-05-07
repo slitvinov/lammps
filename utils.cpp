@@ -21,7 +21,6 @@
 #include <ctime>
 extern "C" {
 static int re_match(const char *text, const char *pattern);
-static int re_find(const char *text, const char *pattern, int *matchlen);
 }
 using namespace LAMMPS_NS;
 bool utils::strmatch(const std::string &text, const std::string &pattern) {
@@ -267,10 +266,6 @@ int re_match(const char *text, const char *pattern) {
   regex_context_t context;
   int dummy;
   return re_matchp(text, re_compile(&context, pattern), &dummy);
-}
-int re_find(const char *text, const char *pattern, int *matchlen) {
-  regex_context_t context;
-  return re_matchp(text, re_compile(&context, pattern), matchlen);
 }
 static int matchpattern(regex_t *pattern, const char *text, int *matchlen);
 static int matchplus(regex_t p, regex_t *pattern, const char *text,
