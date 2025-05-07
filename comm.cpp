@@ -111,18 +111,6 @@ void Comm::modify_params(int narg, char **arg) {
   }
 }
 void Comm::set_proc_grid(int outflag) {
-  if (recv_from_partition >= 0) {
-    if (me == 0) {
-      MPI_Recv(other_procgrid, 3, MPI_INT,
-               universe->root_proc[recv_from_partition], 0, universe->uworld,
-               MPI_STATUS_IGNORE);
-      MPI_Recv(other_coregrid, 3, MPI_INT,
-               universe->root_proc[recv_from_partition], 0, universe->uworld,
-               MPI_STATUS_IGNORE);
-    }
-    MPI_Bcast(other_procgrid, 3, MPI_INT, 0, world);
-    MPI_Bcast(other_coregrid, 3, MPI_INT, 0, world);
-  }
   auto pmap = new ProcMap(lmp);
   if (gridflag == ONELEVEL) {
     pmap->onelevel_grid(nprocs, user_procgrid, procgrid, otherflag, other_style,
