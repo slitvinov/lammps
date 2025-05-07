@@ -207,8 +207,6 @@ int Neighbor::init_pair() {
   int same = 1;
   if (nrequest != old_nrequest)
     same = 0;
-  if (same)
-    return same;
   requests_new2old();
   delete[] lists;
   delete[] neigh_bin;
@@ -230,10 +228,6 @@ int Neighbor::init_pair() {
     lists[i]->requestor = requests[i]->requestor;
     if (requests[i]->pair) {
       lists[i]->requestor_type = NeighList::PAIR;
-    } else if (requests[i]->fix) {
-      lists[i]->requestor_type = NeighList::FIX;
-    } else if (requests[i]->compute) {
-      lists[i]->requestor_type = NeighList::COMPUTE;
     }
     if (requests[i]->pair && i < nrequest_original) {
       auto pair = (Pair *)requests[i]->requestor;
