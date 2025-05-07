@@ -1,15 +1,5 @@
 #ifndef LAMMPS_LIBRARY_H
 #define LAMMPS_LIBRARY_H
-#if !defined(LAMMPS_BIGBIG) && !defined(LAMMPS_SMALLBIG) &&                    \
-    !defined(LAMMPS_SMALLSMALL)
-#define LAMMPS_SMALLBIG
-#endif
-#if defined(LAMMPS_LIB_MPI)
-#include <mpi.h>
-#endif
-#if defined(LAMMPS_BIGBIG) || defined(LAMMPS_SMALLBIG)
-#include <stdint.h>
-#endif
 enum _LMP_DATATYPE_CONST {
   LAMMPS_INT = 0,
   LAMMPS_INT_2D = 1,
