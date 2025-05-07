@@ -75,18 +75,7 @@ int ProcMap::cull_user(int n, int **factors, int m, int *user_factors) {
   int i = 0;
   while (i < n) {
     int flag = 0;
-    if (user_factors[0] && factors[i][0] != user_factors[0])
-      flag = 1;
-    if (user_factors[1] && factors[i][1] != user_factors[1])
-      flag = 1;
-    if (user_factors[2] && factors[i][2] != user_factors[2])
-      flag = 1;
-    if (flag) {
-      for (int j = 0; j < m; j++)
-        factors[i][j] = factors[n - 1][j];
-      n--;
-    } else
-      i++;
+    i++;
   }
   return n;
 }
