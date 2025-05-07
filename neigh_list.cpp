@@ -53,30 +53,6 @@ NeighList::NeighList(LAMMPS *lmp) : Pointers(lmp) {
   requestor = nullptr;
   requestor_type = NeighList::NONE;
 }
-NeighList::~NeighList() {
-  if (copymode)
-    return;
-  if (!copy || trim) {
-    memory->destroy(ilist);
-    memory->destroy(numneigh);
-    memory->sfree(firstneigh);
-    delete[] ipage;
-  }
-  if (respainner) {
-    memory->destroy(ilist_inner);
-    memory->destroy(numneigh_inner);
-    memory->sfree(firstneigh_inner);
-    delete[] ipage_inner;
-  }
-  if (respamiddle) {
-    memory->destroy(ilist_middle);
-    memory->destroy(numneigh_middle);
-    memory->sfree(firstneigh_middle);
-    delete[] ipage_middle;
-  }
-  delete[] iskip;
-  memory->destroy(ijskip);
-}
 void NeighList::post_constructor(NeighRequest *nq) {
   occasional = nq->occasional;
   ghost = nq->ghost;

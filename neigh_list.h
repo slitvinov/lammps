@@ -49,7 +49,6 @@ public:
   class Fix *fix_bond;
   class NPair *np;
   NeighList(class LAMMPS *);
-  ~NeighList() override;
   void post_constructor(class NeighRequest *);
   void setup_pages(int, int);
   void grow(int, int);
