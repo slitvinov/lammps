@@ -11,7 +11,6 @@ public:
 
 protected:
   double xlo, xhi, ylo, yhi, zlo, zhi;
-  double corners[6][4][3];
   int xlostyle, xlovar, xhistyle, xhivar;
   int ylostyle, ylovar, yhistyle, yhivar;
   int zlostyle, zlovar, zhistyle, zhivar;

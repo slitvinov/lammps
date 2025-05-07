@@ -52,46 +52,6 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
     tmax = 3;
   else
     tmax = 1;
-  corners[0][0][0] = xlo;
-  corners[0][0][1] = ylo;
-  corners[0][0][2] = zlo;
-  corners[0][1][0] = xlo;
-  corners[0][1][1] = ylo;
-  corners[0][1][2] = zhi;
-  corners[0][2][0] = xlo;
-  corners[0][2][1] = yhi;
-  corners[0][2][2] = zhi;
-  corners[0][3][0] = xlo;
-  corners[0][3][1] = yhi;
-  corners[0][3][2] = zlo;
-  corners[1][0][0] = xhi;
-  corners[1][0][1] = ylo;
-  corners[1][0][2] = zlo;
-  corners[1][1][0] = xhi;
-  corners[1][1][1] = ylo;
-  corners[1][1][2] = zhi;
-  corners[1][2][0] = xhi;
-  corners[1][2][1] = yhi;
-  corners[1][2][2] = zhi;
-  corners[1][3][0] = xhi;
-  corners[1][3][1] = yhi;
-  corners[1][3][2] = zlo;
-  copy3(corners[0][0], corners[2][0]);
-  copy3(corners[1][0], corners[2][1]);
-  copy3(corners[1][1], corners[2][2]);
-  copy3(corners[0][1], corners[2][3]);
-  copy3(corners[0][3], corners[3][0]);
-  copy3(corners[0][2], corners[3][1]);
-  copy3(corners[1][2], corners[3][2]);
-  copy3(corners[1][3], corners[3][3]);
-  copy3(corners[0][0], corners[4][0]);
-  copy3(corners[0][3], corners[4][1]);
-  copy3(corners[1][3], corners[4][2]);
-  copy3(corners[1][0], corners[4][3]);
-  copy3(corners[0][1], corners[5][0]);
-  copy3(corners[1][1], corners[5][1]);
-  copy3(corners[1][2], corners[5][2]);
-  copy3(corners[0][2], corners[5][3]);
 }
 void RegBlock::init() { Region::init(); }
 int RegBlock::inside(double x, double y, double z) {
