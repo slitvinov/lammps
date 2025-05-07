@@ -6,6 +6,8 @@
 #include <string>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
+#include "npair.h"
 #include "npair_half_bin_atomonly_newton.h"
 #include "atom.h"
 #include "my_page.h"
