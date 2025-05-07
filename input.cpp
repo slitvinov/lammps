@@ -258,8 +258,6 @@ void Input::pair_style() {
 }
 void Input::region() { domain->add_region(narg, arg); }
 void Input::timestep() {
-  if (narg != 1)
-    error->all(FLERR, "Illegal timestep command");
   update->update_time();
   update->dt = utils::numeric(FLERR, arg[0], false, lmp);
   update->dt_default = 0;

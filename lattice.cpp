@@ -36,10 +36,6 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
   else
     error->all(FLERR, "Unknown lattice keyword: {}", arg[0]);
   if (style == NONE) {
-    if (narg != 2)
-      error->all(FLERR,
-                 "Illegal lattice command: expected 2 arguments but found {}",
-                 narg);
     xlattice = ylattice = zlattice = utils::numeric(FLERR, arg[1], false, lmp);
     if (xlattice <= 0.0)
       error->all(FLERR, "Invalid lattice none argument: {}", arg[1]);
