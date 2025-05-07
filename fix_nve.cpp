@@ -15,7 +15,6 @@
 using namespace LAMMPS_NS;
 using namespace FixConst;
 FixNVE::FixNVE(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg) {
-  dynamic_group_allow = 1;
   time_integrate = 1;
 }
 int FixNVE::setmask() {

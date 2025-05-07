@@ -41,7 +41,6 @@ Fix::Fix(LAMMPS *lmp, int, char **arg)
   create_attribute = 0;
   restart_pbc = 0;
   wd_header = wd_section = 0;
-  dynamic_group_allow = 0;
   dynamic = 0;
   dof_flag = 0;
   special_alter_flag = 0;

@@ -43,7 +43,6 @@ public:
   int restart_pbc;
   int wd_header;
   int wd_section;
-  int dynamic_group_allow;
   int dof_flag;
   int special_alter_flag;
   int enforce2d_flag;
