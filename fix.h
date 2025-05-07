@@ -87,7 +87,6 @@ public:
   int centroidstressflag;
   int restart_reset;
   int forward_comm_device;
-  ExecutionSpace execution_space;
   unsigned int datamask_read, datamask_modify;
   Fix(class LAMMPS *, int, char **);
   virtual int setmask() = 0;

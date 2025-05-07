@@ -71,7 +71,6 @@ public:
   bool did_mix;
   enum { GEOMETRIC, ARITHMETIC, SIXTHPOWER };
   int beyond_contact, nondefault_history_transfer;
-  ExecutionSpace execution_space;
   unsigned int datamask_read, datamask_modify;
   int reverse_comm_device;
   Pair(class LAMMPS *);

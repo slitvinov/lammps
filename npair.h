@@ -85,7 +85,6 @@ protected:
     return 0;
   };
   int copymode;
-  ExecutionSpace execution_space;
 };
 } // namespace LAMMPS_NS
 #endif

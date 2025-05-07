@@ -4,7 +4,6 @@ namespace LAMMPS_NS {
 #define FLERR __FILE__, __LINE__
 #define MIN(A, B) ((A) < (B) ? (A) : (B))
 #define MAX(A, B) ((A) > (B) ? (A) : (B))
-enum ExecutionSpace { Host, Device };
 template <class T> class MyPoolChunk;
 template <class T> class MyPage;
 class Pointers {
