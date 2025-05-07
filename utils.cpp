@@ -277,8 +277,6 @@ static int matchplus(regex_t p, regex_t *pattern, const char *text,
                      int *matchlen);
 static int matchone(regex_t p, char c);
 static int matchdigit(char c);
-static int matchint(char c);
-static int matchfloat(char c);
 int re_matchp(const char *text, re_t pattern, int *matchlen) {
   *matchlen = 0;
   if (pattern != nullptr) {
@@ -314,17 +312,8 @@ re_t re_compile(re_ctx_t context, const char *pattern) {
     case '$': {
       re_compiled[j].type = RX_END;
     } break;
-    case '.': {
-      re_compiled[j].type = RX_DOT;
-    } break;
-    case '*': {
-      re_compiled[j].type = RX_STAR;
-    } break;
     case '+': {
       re_compiled[j].type = RX_PLUS;
-    } break;
-    case '?': {
-      re_compiled[j].type = RX_QUESTIONMARK;
     } break;
     case '\\': {
       if (pattern[i + 1] != '\0') {
@@ -332,33 +321,6 @@ re_t re_compile(re_ctx_t context, const char *pattern) {
         switch (pattern[i]) {
         case 'd': {
           re_compiled[j].type = RX_DIGIT;
-        } break;
-        case 'D': {
-          re_compiled[j].type = RX_NOT_DIGIT;
-        } break;
-        case 'i': {
-          re_compiled[j].type = RX_INTEGER;
-        } break;
-        case 'I': {
-          re_compiled[j].type = RX_NOT_INTEGER;
-        } break;
-        case 'f': {
-          re_compiled[j].type = RX_FLOAT;
-        } break;
-        case 'F': {
-          re_compiled[j].type = RX_NOT_FLOAT;
-        } break;
-        case 'w': {
-          re_compiled[j].type = RX_ALPHA;
-        } break;
-        case 'W': {
-          re_compiled[j].type = RX_NOT_ALPHA;
-        } break;
-        case 's': {
-          re_compiled[j].type = RX_WHITESPACE;
-        } break;
-        case 'S': {
-          re_compiled[j].type = RX_NOT_WHITESPACE;
         } break;
         default: {
           re_compiled[j].type = RX_CHAR;
@@ -413,12 +375,6 @@ re_t re_compile(re_ctx_t context, const char *pattern) {
   return (re_t)re_compiled;
 }
 static int matchdigit(char c) { return isdigit(c); }
-static int matchint(char c) {
-  return (matchdigit(c) || (c == '-') || (c == '+'));
-}
-static int matchfloat(char c) {
-  return (matchint(c) || (c == '.') || (c == 'e') || (c == 'E'));
-}
 static int matchone(regex_t p, char c) {
   return matchdigit(c);
 }
