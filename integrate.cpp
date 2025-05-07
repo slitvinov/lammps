@@ -17,13 +17,6 @@ Integrate::Integrate(LAMMPS *lmp, int, char **) : Pointers(lmp) {
   vlist_global = vlist_atom = cvlist_atom = nullptr;
   external_force_clear = 0;
 }
-Integrate::~Integrate() {
-  delete[] elist_global;
-  delete[] elist_atom;
-  delete[] vlist_global;
-  delete[] vlist_atom;
-  delete[] cvlist_atom;
-}
 void Integrate::init() {
   update->atimestep = update->ntimestep;
   if (force->pair && force->pair->compute_flag)

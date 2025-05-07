@@ -4,7 +4,6 @@ namespace LAMMPS_NS {
 class Integrate : protected Pointers {
 public:
   Integrate(class LAMMPS *, int, char **);
-  ~Integrate() override;
   virtual void init();
   virtual void setup(int flag) = 0;
   virtual void run(int) = 0;
