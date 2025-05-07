@@ -1,10 +1,5 @@
-#ifdef INTEGRATE_CLASS
-IntegrateStyle(verlet, Verlet);
-#else
 #ifndef LMP_VERLET_H
 #define LMP_VERLET_H
-#include "lmptype.h"
-#include "integrate.h"
 namespace LAMMPS_NS {
 class Verlet : public Integrate {
 public:
@@ -20,5 +15,4 @@ protected:
   int torqueflag, extraflag;
 };
 } // namespace LAMMPS_NS
-#endif
 #endif

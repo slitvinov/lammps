@@ -14,6 +14,8 @@
 #include "integrate.h"
 #include "modify.h"
 #include "neighbor.h"
+#include "lmptype.h"
+#include "integrate.h"
 #include "verlet.h"
 using namespace LAMMPS_NS;
 template <typename T>
@@ -41,12 +43,7 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp) {
   integrate_style = nullptr;
   integrate = nullptr;
   integrate_map = new IntegrateCreatorMap();
-#define INTEGRATE_CLASS
-#define IntegrateStyle(key, Class)                                             \
-  (*integrate_map)[#key] = &integrate_creator<Class>;
-#include "verlet.h"
-#undef IntegrateStyle
-#undef INTEGRATE_CLASS
+  (*integrate_map)["verlet"] = &integrate_creator<Verlet>;
   str = (char *)"verlet";
   create_integrate(1, &str, 1);
 }

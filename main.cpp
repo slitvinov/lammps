@@ -29,7 +29,6 @@
 #include "region_block.h"
 #include "universe.h"
 #include "update.h"
-#include "verlet.h"
 using namespace LAMMPS_NS;
 LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     : memory(nullptr), error(nullptr), universe(nullptr), input(nullptr),

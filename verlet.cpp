@@ -10,6 +10,8 @@
 #include <mpi.h>
 #include "lammps.h"
 #include "pointers.h"
+#include "lmptype.h"
+#include "integrate.h"
 #include "verlet.h"
 #include "atom.h"
 #include "atom_vec.h"
