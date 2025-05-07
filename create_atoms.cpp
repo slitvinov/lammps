@@ -50,7 +50,6 @@ void CreateAtoms::command(int narg, char **arg) {
   seed = utils::inumeric(FLERR, arg[3], false, lmp);
   region = domain->get_region_by_id(arg[4]);
   region->init();
-  region->prematch();
   iarg = 5;
   int scaleflag = 1;
   remapflag = 0;

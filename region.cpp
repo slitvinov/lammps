@@ -24,7 +24,6 @@ Region::Region(LAMMPS *lmp, int, char **arg)
   nregion = 1;
 }
 void Region::init() { vel_timestep = -1; }
-void Region::prematch() {}
 int Region::match(double x, double y, double z) {
   return !(inside(x, y, z) ^ interior);
 }
