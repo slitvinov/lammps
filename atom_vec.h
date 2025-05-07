@@ -38,27 +38,12 @@ public:
   virtual void grow(int);
   virtual void grow_pointers() {}
   virtual void copy(int, int, int);
-  virtual void copy_bonus(int, int, int) {}
   virtual void clear_bonus() {}
-  virtual int pack_comm_bonus(int, int *, double *) { return 0; }
   virtual void unpack_reverse(int, int *, double *);
   virtual int pack_border_vel(int, int *, double *, int, int *);
   virtual void unpack_border_vel(int, int, double *);
-  virtual int pack_border_bonus(int, int *, double *) { return 0; }
-  virtual int unpack_border_bonus(int, int, double *) { return 0; }
-  virtual int pack_exchange_bonus(int, double *) { return 0; }
-  virtual int unpack_exchange_bonus(int, double *) { return 0; }
-  virtual void pack_restart_pre(int) {}
-  virtual void pack_restart_post(int) {}
-  virtual void unpack_restart_init(int) {}
-  virtual int size_restart_bonus() { return 0; }
-  virtual int pack_restart_bonus(int, double *) { return 0; }
-  virtual int unpack_restart_bonus(int, double *) { return 0; }
   virtual void create_atom(int, double *);
   virtual void create_atom_post(int) {}
-  virtual void data_body(int, int, int, int *, double *) {}
-  virtual int property_atom(const std::string &) { return -1; }
-  virtual void pack_property_atom(int, double *, int, int) {}
 
 protected:
   int nmax;
