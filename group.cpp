@@ -6,6 +6,7 @@
 #include <map>
 #include <utility>
 #include <string>
+#include <vector>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

@@ -3,6 +3,7 @@
 #include <cstring>
 #include <map>
 #include <string>
+#include <vector>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

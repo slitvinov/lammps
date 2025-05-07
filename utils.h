@@ -2,7 +2,6 @@
 #define LMP_UTILS_H
 #include "lmptype.h"
 #include <mpi.h>
-#include <vector>
 namespace LAMMPS_NS {
 class Error;
 class LAMMPS;

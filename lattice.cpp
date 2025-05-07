@@ -3,6 +3,7 @@
 #include <map>
 #include <unordered_set>
 #include <string>
+#include <vector>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
