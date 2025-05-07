@@ -203,10 +203,12 @@ int Input::execute_command() {
   else if (mycmd == "pair_style")
     pair_style();
   else if (mycmd == "region")
-    domain->add_region(narg, arg)
-  else if (mycmd == "timestep")
-    timestep();
-  else
+    domain->add_region(narg, arg);
+  else if (mycmd == "timestep") {
+    update->update_time();
+    update->dt = utils::numeric(FLERR, arg[0], false, lmp);
+    update->dt_default = 0;
+  } else
     flag = 0;
   if (flag)
     return 0;
@@ -236,9 +238,4 @@ void Input::pair_style() {
   force->create_pair(arg[0], 1);
   if (force->pair)
     force->pair->settings(narg - 1, &arg[1]);
-}
-void Input::timestep() {
-  update->update_time();
-  update->dt = utils::numeric(FLERR, arg[0], false, lmp);
-  update->dt_default = 0;
 }
