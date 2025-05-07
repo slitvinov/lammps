@@ -42,8 +42,6 @@ void bounds(const char *file, int line, const std::string &str, bigint nmin,
             bigint nmax, TYPE &nlo, TYPE &nhi, Error *error);
 char *strdup(const std::string &text);
 std::string trim(const std::string &line);
-std::string trim_comment(const std::string &line);
-std::string star_subst(const std::string &name, bigint step, int pad);
 std::string strip_style_suffix(const std::string &style, LAMMPS *lmp);
 size_t count_words(const std::string &text, const std::string &separators);
 size_t count_words(const std::string &text);

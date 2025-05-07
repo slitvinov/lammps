@@ -157,20 +157,6 @@ std::string utils::trim(const std::string &line) {
     end = line.size();
   return line.substr(beg, end - beg);
 }
-std::string utils::trim_comment(const std::string &line) {
-  auto end = line.find('#');
-  if (end != std::string::npos) {
-    return line.substr(0, end);
-  }
-  return {line};
-}
-std::string utils::star_subst(const std::string &name, bigint step, int pad) {
-  auto star = name.find('*');
-  if (star == std::string::npos)
-    return name;
-  return fmt::format("{}{:0{}}{}", name.substr(0, star), step, pad,
-                     name.substr(star + 1));
-}
 std::string utils::strip_style_suffix(const std::string &style, LAMMPS *lmp) {
   std::string newstyle = style;
   return newstyle;
