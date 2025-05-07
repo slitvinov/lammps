@@ -10,7 +10,7 @@ template <class T> class MyPage;
 class Pointers {
 public:
   Pointers(LAMMPS *ptr)
-      : lmp(ptr), memory(ptr->memory), error(ptr->error),
+    : lmp(ptr), memory(ptr->memory),
         universe(ptr->universe), input(ptr->input), atom(ptr->atom),
         update(ptr->update), neighbor(ptr->neighbor), comm(ptr->comm),
         domain(ptr->domain), force(ptr->force), modify(ptr->modify),
@@ -26,7 +26,6 @@ public:
 protected:
   LAMMPS *lmp;
   Memory *&memory;
-  Error *&error;
   Universe *&universe;
   Input *&input;
   Atom *&atom;

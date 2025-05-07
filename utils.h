@@ -1,12 +1,11 @@
 #ifndef LMP_UTILS_H
 #define LMP_UTILS_H
 namespace LAMMPS_NS {
-class Error;
 class LAMMPS;
 namespace utils {
 bool strmatch(const std::string &text, const std::string &pattern);
 void sfgets(const char *srcname, int srcline, char *s, int size, FILE *fp,
-            const char *filename, Error *error);
+            const char *filename);
 int logical(const char *file, int line, const std::string &str, bool do_abort,
             LAMMPS *lmp);
 int logical(const char *file, int line, const char *str, bool do_abort,
@@ -25,7 +24,7 @@ bigint bnumeric(const char *file, int line, const char *str, bool do_abort,
                 LAMMPS *lmp);
 template <typename TYPE>
 void bounds(const char *file, int line, const std::string &str, bigint nmin,
-            bigint nmax, TYPE &nlo, TYPE &nhi, Error *error);
+            bigint nmax, TYPE &nlo, TYPE &nhi);
 char *strdup(const std::string &text);
 std::string strip_style_suffix(const std::string &style, LAMMPS *lmp);
 std::vector<std::string> split_words(const std::string &text);

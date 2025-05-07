@@ -119,8 +119,8 @@ void PairDPD::coeff(int narg, char **arg) {
   if (!allocated)
     allocate();
   int ilo, ihi, jlo, jhi;
-  utils::bounds(FLERR, arg[0], 1, atom->ntypes, ilo, ihi, error);
-  utils::bounds(FLERR, arg[1], 1, atom->ntypes, jlo, jhi, error);
+  utils::bounds(FLERR, arg[0], 1, atom->ntypes, ilo, ihi);
+  utils::bounds(FLERR, arg[1], 1, atom->ntypes, jlo, jhi);
   double a0_one = utils::numeric(FLERR, arg[2], false, lmp);
   double gamma_one = utils::numeric(FLERR, arg[3], false, lmp);
   double cut_one = cut_global;

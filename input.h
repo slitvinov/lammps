@@ -4,7 +4,6 @@ namespace LAMMPS_NS {
 class Command;
 class Input : protected Pointers {
   friend class Info;
-  friend class Error;
   friend class Deprecated;
   friend class SimpleCommandsTest_Echo_Test;
 

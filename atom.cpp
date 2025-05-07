@@ -239,7 +239,7 @@ void Atom::allocate_type_arrays() {
 void Atom::set_mass(const char *file, int line, int, char **arg) {
   const std::string str = arg[0];
   int lo, hi;
-  utils::bounds(file, line, str, 1, ntypes, lo, hi, error);
+  utils::bounds(file, line, str, 1, ntypes, lo, hi);
   const double value = utils::numeric(FLERR, arg[1], false, lmp);
   for (int itype = lo; itype <= hi; itype++) {
     mass[itype] = value;

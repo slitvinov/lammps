@@ -30,7 +30,7 @@
 #include "update.h"
 using namespace LAMMPS_NS;
 LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
-    : memory(nullptr), error(nullptr), universe(nullptr), input(nullptr),
+    : memory(nullptr), universe(nullptr), input(nullptr),
       atom(nullptr), update(nullptr), neighbor(nullptr), comm(nullptr),
       domain(nullptr), force(nullptr), modify(nullptr), group(nullptr) {
   memory = new Memory(this);

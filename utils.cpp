@@ -83,8 +83,7 @@ bigint utils::bnumeric(const char *file, int line, const char *str,
 }
 template <typename TYPE>
 void utils::bounds(const char *file, int line, const std::string &str,
-                   bigint nmin, bigint nmax, TYPE &nlo, TYPE &nhi,
-                   Error *error) {
+                   bigint nmin, bigint nmax, TYPE &nlo, TYPE &nhi) {
   nlo = nhi = -1;
   size_t found = str.find_first_not_of("*-0123456789");
   if (found != std::string::npos) {
@@ -108,11 +107,11 @@ void utils::bounds(const char *file, int line, const std::string &str,
   }
 }
 template void utils::bounds<>(const char *, int, const std::string &, bigint,
-                              bigint, int &, int &, Error *);
+                              bigint, int &, int &);
 template void utils::bounds<>(const char *, int, const std::string &, bigint,
-                              bigint, long &, long &, Error *);
+                              bigint, long &, long &);
 template void utils::bounds<>(const char *, int, const std::string &, bigint,
-                              bigint, long long &, long long &, Error *);
+                              bigint, long long &, long long &);
 static const char *labeltypes[] = {"Atom", "Bond", "Angle", "Dihedral",
                                    "Improper"};
 char *utils::strdup(const std::string &text) {
