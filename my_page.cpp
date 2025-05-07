@@ -1,3 +1,4 @@
+#include "lmptype.h"
 #include "my_page.h"
 #if defined(LMP_INTEL) && !defined(LAMMPS_MEMALIGN) && !defined(_WIN32)
 #define LAMMPS_MEMALIGN 64

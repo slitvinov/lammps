@@ -1,6 +1,5 @@
 #ifndef LAMMPS_MY_PAGE_H
 #define LAMMPS_MY_PAGE_H
-#include "lmptype.h"
 namespace LAMMPS_NS {
 struct HyperOneCoeff {
   double biascoeff;
