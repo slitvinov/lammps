@@ -24,9 +24,6 @@
 #include "universe.h"
 #include "update.h"
 #include <cstring>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 using namespace LAMMPS_NS;
 #define BUFEXTRA 1024
 enum { ONELEVEL, TWOLEVEL, NUMA, CUSTOM };
@@ -58,20 +55,6 @@ Comm::Comm(LAMMPS *lmp) : Pointers(lmp) {
   rcbnew = 0;
   multi_reduce = 0;
   nthreads = 1;
-#ifdef _OPENMP
-  if (getenv("OMP_NUM_THREADS") == nullptr) {
-    nthreads = 1;
-    if (me == 0)
-      error->message(FLERR, "OMP_NUM_THREADS environment is not set. "
-                            "Defaulting to 1 thread.");
-  } else {
-    nthreads = omp_get_max_threads();
-  }
-  MPI_Bcast(&nthreads, 1, MPI_INT, 0, world);
-  omp_set_num_threads(nthreads);
-  if (me == 0)
-    utils::logmesg(lmp, "  using {} OpenMP thread(s) per MPI task\n", nthreads);
-#endif
 }
 void Comm::init() {
   triclinic = domain->triclinic;
