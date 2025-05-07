@@ -176,21 +176,6 @@ protected:
   int maxeatom, maxvatom, maxcvatom;
   int copymode;
   int dynamic;
-  void ev_init(int eflag, int vflag) {
-    if ((eflag && thermo_energy) || (vflag && thermo_virial))
-      ev_setup(eflag, vflag);
-    else
-      evflag = eflag_either = eflag_global = eflag_atom = vflag_either =
-          vflag_global = vflag_atom = cvflag_atom = 0;
-  }
-  void ev_setup(int, int);
-  void v_init(int vflag) {
-    if (vflag && thermo_virial)
-      v_setup(vflag);
-    else
-      evflag = vflag_either = vflag_global = vflag_atom = cvflag_atom = 0;
-  }
-  void v_setup(int);
 };
 namespace FixConst {
 enum {
