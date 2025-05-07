@@ -418,35 +418,6 @@ void Neighbor::morph_halffull() {
         continue;
       if (!jrq->full)
         continue;
-      if (irq->cut)
-        icut = irq->cutoff;
-      else
-        icut = cutneighmax;
-      if (jrq->cut)
-        jcut = jrq->cutoff;
-      else
-        jcut = cutneighmax;
-      if (icut > jcut)
-        continue;
-      else if (icut != jcut)
-        trim_flag = 1;
-      if (irq->ghost != jrq->ghost)
-        continue;
-      if (irq->size != jrq->size)
-        continue;
-      if (irq->history != jrq->history)
-        continue;
-      if (irq->bond != jrq->bond)
-        continue;
-      if (irq->omp != jrq->omp)
-        continue;
-      if (irq->ssa != jrq->ssa)
-        continue;
-      if (irq->skip != jrq->skip)
-        continue;
-      if (irq->skip && irq->same_skip(jrq) == 0)
-        continue;
-      break;
     }
   }
 }
