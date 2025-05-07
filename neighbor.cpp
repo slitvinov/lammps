@@ -448,11 +448,6 @@ void Neighbor::morph_halffull() {
         continue;
       break;
     }
-    if (jj < nrequest) {
-      irq->halffull = 1;
-      irq->halffulllist = j;
-      irq->trim = trim_flag;
-    }
   }
 }
 void Neighbor::morph_copy_trim() {
@@ -471,64 +466,6 @@ void Neighbor::morph_copy_trim() {
         j = jj;
       if (i == j)
         continue;
-      jrq = requests[j];
-      if (jrq->copy && jrq->copylist == i)
-        continue;
-      if (irq->cut)
-        icut = irq->cutoff;
-      else
-        icut = cutneighmax;
-      if (jrq->cut)
-        jcut = jrq->cutoff;
-      else
-        jcut = cutneighmax;
-      if (icut > jcut)
-        continue;
-      else if (icut != jcut)
-        trim_flag = 1;
-      if (jrq->occasional)
-        continue;
-      if (!irq->occasional && !irq->cut && j > i)
-        continue;
-      if (irq->half != jrq->half)
-        continue;
-      if (irq->full != jrq->full)
-        continue;
-      inewton = irq->newton;
-      if (inewton == 0)
-        inewton = force->newton_pair ? 1 : 2;
-      jnewton = jrq->newton;
-      if (jnewton == 0)
-        jnewton = force->newton_pair ? 1 : 2;
-      if (inewton != jnewton)
-        continue;
-      if (irq->ghost && !jrq->ghost)
-        continue;
-      if (jrq->respamiddle)
-        continue;
-      if (jrq->respainner)
-        continue;
-      if (irq->size != jrq->size)
-        continue;
-      if (irq->history != jrq->history)
-        continue;
-      if (irq->bond != jrq->bond)
-        continue;
-      if (irq->ssa != jrq->ssa)
-        continue;
-      if (irq->skip != jrq->skip)
-        continue;
-      if (irq->skip && irq->same_skip(jrq) == 0)
-        continue;
-      break;
-    }
-    if (jj < nrequest) {
-      irq->copy = 1;
-      irq->trim = trim_flag;
-      if (jrq->copy && irq->cutoff == requests[jrq->copylist]->cutoff)
-        irq->copylist = jrq->copylist;
-      else
-        irq->copylist = j;
     }
   }
 }
