@@ -12,8 +12,6 @@ public:
   double extent_zlo, extent_zhi;
   int bboxflag;
   int open_faces[6];
-  int cmax;
-  int tmax;
   double dx, dy, dz, theta;
   double v[3];
   double rpoint[3];

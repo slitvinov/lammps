@@ -11,11 +11,6 @@ public:
 
 protected:
   double xlo, xhi, ylo, yhi, zlo, zhi;
-  int xlostyle, xlovar, xhistyle, xhivar;
-  int ylostyle, ylovar, yhistyle, yhivar;
-  int zlostyle, zlovar, zhistyle, zhivar;
-  char *xlostr, *ylostr, *zlostr;
-  char *xhistr, *yhistr, *zhistr;
 };
 } // namespace LAMMPS_NS
 #endif
