@@ -444,3 +444,4 @@ static int matchpattern(regex_t *pattern, const char *text, int *matchlen) {
     return (text[0] == '\0');
   }
 }
+}
