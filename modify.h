@@ -25,7 +25,6 @@ public:
   Fix **fix;
   int *fmask;
   Modify(class LAMMPS *);
-  ~Modify() override;
   virtual void init();
   virtual void setup(int);
   virtual void setup_pre_exchange();

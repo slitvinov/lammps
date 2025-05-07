@@ -76,41 +76,6 @@ void _noopt Modify::create_factories() {
 #undef FixStyle
 #undef FIX_CLASS
 }
-Modify::~Modify() {
-  while (nfix)
-    delete_fix(0);
-  memory->sfree(fix);
-  memory->destroy(fmask);
-  delete[] list_initial_integrate;
-  delete[] list_post_integrate;
-  delete[] list_pre_exchange;
-  delete[] list_pre_neighbor;
-  delete[] list_post_neighbor;
-  delete[] list_pre_force;
-  delete[] list_pre_reverse;
-  delete[] list_post_force;
-  delete[] list_post_force_group;
-  delete[] list_final_integrate;
-  delete[] list_end_of_step;
-  delete[] list_energy_couple;
-  delete[] list_energy_global;
-  delete[] list_energy_atom;
-  delete[] list_initial_integrate_respa;
-  delete[] list_post_integrate_respa;
-  delete[] list_pre_force_respa;
-  delete[] list_post_force_respa;
-  delete[] list_final_integrate_respa;
-  delete[] list_min_pre_exchange;
-  delete[] list_min_pre_neighbor;
-  delete[] list_min_post_neighbor;
-  delete[] list_min_pre_force;
-  delete[] list_min_pre_reverse;
-  delete[] list_min_post_force;
-  delete[] list_min_energy;
-  delete[] end_of_step_every;
-  delete[] list_timeflag;
-  delete fix_map;
-}
 void Modify::init() {
   int i, j;
   for (i = 0; i < nfix; i++)
