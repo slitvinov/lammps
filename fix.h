@@ -1,6 +1,5 @@
 #ifndef LMP_FIX_H
 #define LMP_FIX_H
-#include "pointers.h"
 namespace LAMMPS_NS {
 class Fix : protected Pointers {
   friend class Neighbor;

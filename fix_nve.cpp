@@ -1,6 +1,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include "pointers.h"
 #include "fix_nve.h"
 #include "atom.h"
 #include "force.h"
