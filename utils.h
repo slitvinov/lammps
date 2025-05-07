@@ -51,13 +51,6 @@ std::string trim(const std::string &line);
 std::string trim_comment(const std::string &line);
 std::string star_subst(const std::string &name, bigint step, int pad);
 std::string strip_style_suffix(const std::string &style, LAMMPS *lmp);
-inline bool has_utf8(const std::string &line) {
-  for (auto c : line)
-    if (c & 0x80U)
-      return true;
-  return false;
-}
-std::string utf8_subst(const std::string &line);
 size_t count_words(const std::string &text, const std::string &separators);
 size_t count_words(const std::string &text);
 size_t count_words(const char *text);

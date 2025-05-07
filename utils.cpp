@@ -57,8 +57,6 @@ std::string utils::getsyserror() { return {strerror(errno)}; }
 int utils::logical(const char *file, int line, const std::string &str,
                    bool do_abort, LAMMPS *lmp) {
   std::string buf(str);
-  if (has_utf8(buf))
-    buf = utf8_subst(buf);
   int rv = 0;
   if ((buf == "yes") || (buf == "on") || (buf == "true") || (buf == "1")) {
     rv = 1;
@@ -78,8 +76,6 @@ int utils::logical(const char *file, int line, const char *str, bool do_abort,
 double utils::numeric(const char *file, int line, const std::string &str,
                       bool do_abort, LAMMPS *lmp) {
   std::string buf(str);
-  if (has_utf8(buf))
-    buf = utf8_subst(buf);
   return atof(buf.c_str());
 }
 double utils::numeric(const char *file, int line, const char *str,
@@ -92,8 +88,6 @@ double utils::numeric(const char *file, int line, const char *str,
 int utils::inumeric(const char *file, int line, const std::string &str,
                     bool do_abort, LAMMPS *lmp) {
   std::string buf(str);
-  if (has_utf8(buf))
-    buf = utf8_subst(buf);
   return atoi(buf.c_str());
 }
 int utils::inumeric(const char *file, int line, const char *str, bool do_abort,
@@ -106,8 +100,6 @@ int utils::inumeric(const char *file, int line, const char *str, bool do_abort,
 bigint utils::bnumeric(const char *file, int line, const std::string &str,
                        bool do_abort, LAMMPS *lmp) {
   std::string buf(str);
-  if (has_utf8(buf))
-    buf = utf8_subst(buf);
   return ATOBIGINT(buf.c_str());
 }
 bigint utils::bnumeric(const char *file, int line, const char *str,
@@ -120,8 +112,6 @@ bigint utils::bnumeric(const char *file, int line, const char *str,
 tagint utils::tnumeric(const char *file, int line, const std::string &str,
                        bool do_abort, LAMMPS *lmp) {
   std::string buf(str);
-  if (has_utf8(buf))
-    buf = utf8_subst(buf);
   return ATOTAGINT(buf.c_str());
 }
 tagint utils::tnumeric(const char *file, int line, const char *str,
@@ -208,76 +198,6 @@ std::string utils::star_subst(const std::string &name, bigint step, int pad) {
 std::string utils::strip_style_suffix(const std::string &style, LAMMPS *lmp) {
   std::string newstyle = style;
   return newstyle;
-}
-std::string utils::utf8_subst(const std::string &line) {
-  const auto *const in = (const unsigned char *)line.c_str();
-  const int len = line.size();
-  std::string out;
-  for (int i = 0; i < len; ++i) {
-    if ((in[i] & 0xe0U) == 0xc0U) {
-      if ((i + 1) < len) {
-        if ((in[i] == 0xc2U) && (in[i + 1] == 0xa0U))
-          out += ' ', ++i;
-        if ((in[i] == 0xcbU) && (in[i + 1] == 0x96U))
-          out += '+', ++i;
-        if ((in[i] == 0xcbU) && (in[i + 1] == 0x97U))
-          out += '-', ++i;
-      }
-    } else if ((in[i] & 0xf0U) == 0xe0U) {
-      if ((i + 2) < len) {
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x80U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x81U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x82U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x83U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x84U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x85U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x86U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x87U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x88U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x89U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x8aU))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x8bU))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x98U))
-          out += '\'', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x99U))
-          out += '\'', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x9cU))
-          out += '"', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0x9dU))
-          out += '"', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x80U) && (in[i + 2] == 0xafU))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x81U) && (in[i + 2] == 0xa0U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x81U) && (in[i + 2] == 0xa3U))
-          out += ' ', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x81U) && (in[i + 2] == 0xa4U))
-          out += '+', i += 2;
-        if ((in[i] == 0xe2U) && (in[i + 1] == 0x88U) && (in[i + 2] == 0x92U))
-          out += '-', i += 2;
-        if ((in[i] == 0xefU) && (in[i + 1] == 0xbbU) && (in[i + 2] == 0xbfU))
-          out += ' ', i += 2;
-      }
-    } else if ((in[i] & 0xf8U) == 0xf0U) {
-      if ((i + 3) < len) {
-        ;
-      }
-    } else
-      out += in[i];
-  }
-  return out;
 }
 size_t utils::count_words(const char *text) {
   size_t count = 0;
