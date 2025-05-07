@@ -239,7 +239,6 @@ void Domain::subbox_too_small_check(double thresh) {
   int flagall;
   MPI_Allreduce(&flag, &flagall, 1, MPI_INT, MPI_SUM, world);
 }
-static constexpr double MAXIMGCOUNT = 16;
 void Domain::set_lattice(int narg, char **arg) {
   if (lattice)
     delete lattice;
