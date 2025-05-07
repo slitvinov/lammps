@@ -48,7 +48,6 @@ private:
   void neighbor_command();
   void pair_coeff();
   void pair_style();
-  void region();
   void timestep();
 };
 } // namespace LAMMPS_NS
