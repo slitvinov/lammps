@@ -268,15 +268,6 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
   fmask[ifix] = fix[ifix]->setmask();
   return fix[ifix];
 }
-Fix *Modify::add_fix(const std::string &fixcmd, int trysuffix) {
-  auto args = utils::split_words(fixcmd);
-  std::vector<char *> newarg(args.size());
-  int i = 0;
-  for (const auto &arg : args) {
-    newarg[i++] = (char *)arg.c_str();
-  }
-  return add_fix(args.size(), newarg.data(), trysuffix);
-}
 const std::vector<Fix *> &Modify::get_fix_list() {
   fix_list = std::vector<Fix *>(fix, fix + nfix);
   return fix_list;

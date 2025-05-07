@@ -37,7 +37,6 @@ public:
   virtual void final_integrate();
   virtual void post_run();
   Fix *add_fix(int, char **, int trysuffix = 1);
-  Fix *add_fix(const std::string &, int trysuffix = 1);
   const std::vector<Fix *> &get_fix_list();
 
 protected:
