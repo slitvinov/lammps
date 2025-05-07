@@ -59,16 +59,6 @@ void NPair::copy_neighbor_info() {
   special_flag = neighbor->special_flag;
   ncollections = neighbor->ncollections;
   cutcollectionsq = neighbor->cutcollectionsq;
-  if (cutoff_custom > 0.0) {
-    memory->destroy(mycutneighsq);
-    int n = atom->ntypes;
-    memory->create(mycutneighsq, n + 1, n + 1, "npair:cutneighsq");
-    int i, j;
-    for (i = 1; i <= n; i++)
-      for (j = 1; j <= n; j++)
-        mycutneighsq[i][j] = cutoff_custom * cutoff_custom;
-    cutneighsq = mycutneighsq;
-  }
 }
 void NPair::copy_bin_info() {
   nbinx = nb->nbinx;
