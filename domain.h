@@ -43,7 +43,6 @@ public:
   typedef std::map<std::string, RegionCreator> RegionCreatorMap;
   RegionCreatorMap *region_map;
   Domain(class LAMMPS *);
-  ~Domain() override;
   virtual void init();
   void set_initial_box(int expandflag = 1);
   virtual void set_global_box();

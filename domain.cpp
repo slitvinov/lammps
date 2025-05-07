@@ -70,45 +70,12 @@ Domain::Domain(LAMMPS *lmp) : Pointers(lmp) {
   region_map = new RegionCreatorMap();
   (*region_map)["block"] = &region_creator<RegBlock>;
 }
-Domain::~Domain() {
-  if (copymode)
-    return;
-  for (auto &reg : regions)
-    delete reg;
-  regions.clear();
-  delete lattice;
-  delete region_map;
-}
 void Domain::init() {
   box_change_size = box_change_shape = box_change_domain = 0;
   int box_change_x = 0, box_change_y = 0, box_change_z = 0;
   int box_change_yz = 0, box_change_xz = 0, box_change_xy = 0;
   const auto &fixes = modify->get_fix_list();
-  if (nonperiodic == 2)
-    box_change_size = 1;
-  for (const auto &fix : fixes) {
-    if (fix->box_change & Fix::BOX_CHANGE_SIZE)
-      box_change_size = 1;
-    if (fix->box_change & Fix::BOX_CHANGE_SHAPE)
-      box_change_shape = 1;
-    if (fix->box_change & Fix::BOX_CHANGE_DOMAIN)
-      box_change_domain = 1;
-    if (fix->box_change & Fix::BOX_CHANGE_X)
-      box_change_x++;
-    if (fix->box_change & Fix::BOX_CHANGE_Y)
-      box_change_y++;
-    if (fix->box_change & Fix::BOX_CHANGE_Z)
-      box_change_z++;
-    if (fix->box_change & Fix::BOX_CHANGE_YZ)
-      box_change_yz++;
-    if (fix->box_change & Fix::BOX_CHANGE_XZ)
-      box_change_xz++;
-    if (fix->box_change & Fix::BOX_CHANGE_XY)
-      box_change_xy++;
-  }
   box_change = 0;
-  if (box_change_size || box_change_shape || box_change_domain)
-    box_change = 1;
   deform_flag = deform_vremap = deform_groupbit = 0;
   for (auto &reg : regions)
     reg->init();
