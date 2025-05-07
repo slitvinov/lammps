@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
+#include "command.h"
 #include "run.h"
 #include "domain.h"
 #include "input.h"

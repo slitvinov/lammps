@@ -28,8 +28,6 @@
 #include "neighbor.h"
 #include "pair_dpd.h"
 #include "region_block.h"
-#include "create_atoms.h"
-#include "run.h"
 #include "universe.h"
 #include "update.h"
 #include "verlet.h"

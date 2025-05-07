@@ -54,13 +54,9 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp) {
   } else
     infiles = nullptr;
   command_map = new CommandCreatorMap();
-#define COMMAND_CLASS
-#define CommandStyle(key, Class) (*command_map)[#key] = &command_creator<Class>;
-#include "create_atoms.h"
-#include "create_box.h"
-#include "run.h"
-#undef CommandStyle
-#undef COMMAND_CLASS
+  (*command_map)["run"] = &command_creator<Run>;
+  (*command_map)["create_atoms"] = &command_creator<CreateAtoms>;
+  (*command_map)["create_box"] = &command_creator<CreateBox>;
 }
 Input::~Input() {
   memory->sfree(line);
@@ -78,39 +74,39 @@ void Input::file() {
       endfile = 0;
       m = 0;
       while (true) {
-        mstart = m;
-        while (true) {
-          if (maxline - m < 2)
-            reallocate(line, maxline, 0);
-          if (fgets(&line[m], maxline - m, infile) == nullptr) {
-            endfile = 1;
-            if (m)
-              n = strlen(line) + 1;
-            else
-              n = 0;
-            break;
-          }
-          m += strlen(&line[m]);
-          if (line[m - 1] != '\n')
-            continue;
-          break;
-        }
-        if (endfile)
-          break;
-        ntriple += numtriple(&line[mstart]);
-        m--;
-        while (m >= 0 && isspace(line[m]))
-          m--;
-        if (m >= 0 && line[m] == '&')
-          continue;
-        if (ntriple % 2) {
-          line[m + 1] = '\n';
-          m += 2;
-          continue;
-        }
-        line[m + 1] = '\0';
-        n = m + 2;
-        break;
+	mstart = m;
+	while (true) {
+	  if (maxline - m < 2)
+	    reallocate(line, maxline, 0);
+	  if (fgets(&line[m], maxline - m, infile) == nullptr) {
+	    endfile = 1;
+	    if (m)
+	      n = strlen(line) + 1;
+	    else
+	      n = 0;
+	    break;
+	  }
+	  m += strlen(&line[m]);
+	  if (line[m - 1] != '\n')
+	    continue;
+	  break;
+	}
+	if (endfile)
+	  break;
+	ntriple += numtriple(&line[mstart]);
+	m--;
+	while (m >= 0 && isspace(line[m]))
+	  m--;
+	if (m >= 0 && line[m] == '&')
+	  continue;
+	if (ntriple % 2) {
+	  line[m + 1] = '\n';
+	  m += 2;
+	  continue;
+	}
+	line[m + 1] = '\0';
+	n = m + 2;
+	break;
       }
     }
     MPI_Bcast(&n, 1, MPI_INT, 0, world);
@@ -122,7 +118,7 @@ void Input::file() {
     MPI_Bcast(line, n, MPI_CHAR, 0, world);
     if (me == 0) {
       if (echo_log && logfile)
-        fprintf(logfile, "%s\n", line);
+	fprintf(logfile, "%s\n", line);
     }
     parse();
     if (command == nullptr)
@@ -151,7 +147,7 @@ void Input::parse() {
     if (narg == maxarg) {
       maxarg += DELTA;
       arg =
-          (char **)memory->srealloc(arg, maxarg * sizeof(char *), "input:arg");
+	  (char **)memory->srealloc(arg, maxarg * sizeof(char *), "input:arg");
     }
     arg[narg] = nextword(ptr, &next);
     if (!arg[narg])

@@ -1,9 +1,5 @@
-#ifdef COMMAND_CLASS
-CommandStyle(create_atoms, CreateAtoms);
-#else
 #ifndef LMP_CREATE_ATOMS_H
 #define LMP_CREATE_ATOMS_H
-#include "command.h"
 namespace LAMMPS_NS {
 class CreateAtoms : public Command {
 public:
@@ -40,5 +36,4 @@ private:
   void add_random();
 };
 } // namespace LAMMPS_NS
-#endif
 #endif

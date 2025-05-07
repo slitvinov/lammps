@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
+#include "command.h"
 #include "create_box.h"
 #include "atom.h"
 #include "atom_vec.h"
