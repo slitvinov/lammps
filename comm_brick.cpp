@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <cstdio>
 #include <mpi.h>
+#include <string>
 #include "lammps.h"
 #include "pointers.h"
 #include "comm.h"

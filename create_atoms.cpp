@@ -5,6 +5,7 @@
 #include <cstring>
 #include <exception>
 #include <unordered_set>
+#include <string>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

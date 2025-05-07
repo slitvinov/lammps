@@ -4,11 +4,13 @@
 #include <vector>
 #include <cstdio>
 #include <mpi.h>
+#include <string>
+#include <vector>
+#include <cmath>
 #include "lammps.h"
 #include "pointers.h"
 #include "atom_vec.h"
 #include "pointers.h"
-#include <vector>
 #include "atom.h"
 #include "comm.h"
 #include "domain.h"

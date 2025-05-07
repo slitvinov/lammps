@@ -2,6 +2,8 @@
 #include <set>
 #include <vector>
 #include <unordered_set>
+#include <string>
+#include <cmath>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
@@ -160,14 +162,6 @@ void Comm::set_proc_grid(int outflag) {
       pmap->cart_map(0, procgrid, myloc, procneigh, grid2proc);
     else if (mapflag == CARTREORDER)
       pmap->cart_map(1, procgrid, myloc, procneigh, grid2proc);
-  }
-  if (outflag && me == 0) {
-    auto mesg = fmt::format("  {} by {} by {} MPI processor grid\n",
-                            procgrid[0], procgrid[1], procgrid[2]);
-    if (gridflag == NUMA || gridflag == TWOLEVEL)
-      mesg += fmt::format("  {} by {} by {} core grid within node\n",
-                          coregrid[0], coregrid[1], coregrid[2]);
-    utils::logmesg(lmp, mesg);
   }
   delete pmap;
   memory->destroy(xsplit);

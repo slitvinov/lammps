@@ -6,6 +6,7 @@
 #include <climits>
 #include <cmath>
 #include <cstring>
+#include <string>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

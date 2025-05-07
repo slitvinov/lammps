@@ -3,6 +3,8 @@
 #include <unordered_set>
 #include <vector>
 #include <cstring>
+#include <string>
+#include <cmath>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
@@ -303,11 +305,6 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
       fix[ifix]->restart(state_restart_global[i]);
       used_restart_global[i] = 1;
       fix[ifix]->restart_reset = 1;
-      if (comm->me == 0)
-        utils::logmesg(lmp,
-                       "Resetting global fix info from restart file:\n"
-                       "  fix style: {}, fix ID: {}\n",
-                       fix[ifix]->style, fix[ifix]->id);
     }
   for (int i = 0; i < nfix_restart_peratom; i++)
     if (strcmp(id_restart_peratom[i], fix[ifix]->id) == 0 &&
@@ -316,11 +313,6 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
       for (int j = 0; j < atom->nlocal; j++)
         fix[ifix]->unpack_restart(j, index_restart_peratom[i]);
       fix[ifix]->restart_reset = 1;
-      if (comm->me == 0)
-        utils::logmesg(lmp,
-                       "Resetting peratom fix info from restart file:\n"
-                       "  fix style: {}, fix ID: {}\n",
-                       fix[ifix]->style, fix[ifix]->id);
     }
   fmask[ifix] = fix[ifix]->setmask();
   return fix[ifix];

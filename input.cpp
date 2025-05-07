@@ -5,6 +5,8 @@
 #include <cctype>
 #include <cerrno>
 #include <cstring>
+#include <string>
+#include <cmath>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

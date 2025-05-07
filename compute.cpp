@@ -1,6 +1,8 @@
 #include <map>
 #include <unordered_set>
 #include <vector>
+#include <string>
+#include <cmath>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

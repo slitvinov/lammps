@@ -5,6 +5,7 @@
 #include <map>
 #include <utility>
 #include <cstdio>
+#include <string>
 #include <mpi.h>
 #include "lammps.h"
 #include "pointers.h"

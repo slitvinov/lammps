@@ -1,6 +1,5 @@
 #ifndef LMP_UTILS_H
 #define LMP_UTILS_H
-#include "fmt/format.h"
 #include "lmptype.h"
 #include <mpi.h>
 #include <vector>
@@ -9,14 +8,6 @@ class Error;
 class LAMMPS;
 namespace utils {
 bool strmatch(const std::string &text, const std::string &pattern);
-void fmtargs_logmesg(LAMMPS *lmp, fmt::string_view format,
-                     fmt::format_args args);
-template <typename... Args>
-void logmesg(LAMMPS *lmp, const std::string &format, Args &&... args) {
-  fmtargs_logmesg(lmp, format, fmt::make_format_args(args...));
-}
-void logmesg(LAMMPS *lmp, const std::string &mesg);
-std::string errorurl(int errorcode);
 void flush_buffers(LAMMPS *lmp);
 std::string getsyserror();
 void sfgets(const char *srcname, int srcline, char *s, int size, FILE *fp,

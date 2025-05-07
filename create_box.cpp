@@ -4,6 +4,8 @@
 #include <vector>
 #include <unordered_set>
 #include <cstdio>
+#include <string>
+#include <cmath>
 #include <mpi.h>
 #include "lammps.h"
 #include "utils.h"

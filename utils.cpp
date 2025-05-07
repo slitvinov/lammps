@@ -1,12 +1,12 @@
 #include <map>
 #include <set>
+#include <string>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
 #include "atom.h"
 #include "comm.h"
 #include "fix.h"
-#include "fmt/chrono.h"
 #include "input.h"
 #include "memory.h"
 #include "modify.h"
@@ -24,25 +24,6 @@ using namespace LAMMPS_NS;
 bool utils::strmatch(const std::string &text, const std::string &pattern) {
   const int pos = re_match(text.c_str(), pattern.c_str());
   return (pos >= 0);
-}
-void utils::logmesg(LAMMPS *lmp, const std::string &mesg) {
-  if (lmp->screen)
-    fputs(mesg.c_str(), lmp->screen);
-  if (lmp->logfile)
-    fputs(mesg.c_str(), lmp->logfile);
-}
-void utils::fmtargs_logmesg(LAMMPS *lmp, fmt::string_view format,
-                            fmt::format_args args) {
-  try {
-    logmesg(lmp, fmt::vformat(format, args));
-  } catch (fmt::format_error &e) {
-    logmesg(lmp, std::string(e.what()) + "\n");
-  }
-}
-std::string utils::errorurl(int errorcode) {
-  return fmt::format(
-      "\nFor more information see https://docs.lammps.org/err{:04d}",
-      errorcode);
 }
 void utils::flush_buffers(LAMMPS *lmp) {
   if (lmp->screen)

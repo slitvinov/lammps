@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdio>
 #include <mpi.h>
+#include <string>
 #include "lammps.h"
 #include "pointers.h"
 #include "atom_vec_atomic.h"

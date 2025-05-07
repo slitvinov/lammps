@@ -5,6 +5,7 @@
 #include <cstring>
 #include <map>
 #include <utility>
+#include <string>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

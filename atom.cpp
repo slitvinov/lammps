@@ -2,6 +2,8 @@
 #include <set>
 #include <vector>
 #include <unordered_set>
+#include <string>
+#include <cmath>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

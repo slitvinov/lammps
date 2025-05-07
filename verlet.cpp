@@ -5,6 +5,8 @@
 #include <cstring>
 #include <vector>
 #include <cstdio>
+#include <string>
+#include <cmath>
 #include <mpi.h>
 #include "lammps.h"
 #include "pointers.h"

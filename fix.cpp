@@ -1,6 +1,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <string>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

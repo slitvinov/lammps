@@ -2,6 +2,7 @@
 #include <set>
 #include <vector>
 #include <cmath>
+#include <string>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
