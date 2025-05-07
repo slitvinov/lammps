@@ -167,23 +167,6 @@ public:
   virtual int get_griddata_by_name(int, const std::string &, int &) {
     return -1;
   };
-  virtual void *get_griddata_by_index(int) { return nullptr; };
-  virtual double compute_scalar() { return 0.0; }
-  virtual double compute_vector(int) { return 0.0; }
-  virtual double compute_array(int, int) { return 0.0; }
-  virtual int dof(int) { return 0; }
-  virtual void deform(int) {}
-  virtual void reset_target(double) {}
-  virtual void enforce2d() {}
-  virtual void read_data_header(char *) {}
-  virtual void read_data_section(char *, int, char *, tagint) {}
-  virtual bigint read_data_skip_lines(char *) { return 0; }
-  virtual void zero_momentum() {}
-  virtual void zero_rotation() {}
-  virtual void rebuild_special() {}
-  virtual int image(int *&, double **&) { return 0; }
-  virtual int modify_param(int, char **) { return 0; }
-  virtual void *extract(const char *, int &) { return nullptr; }
 
 protected:
   int instance_me;
