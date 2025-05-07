@@ -300,7 +300,6 @@ int re_find(const char *text, const char *pattern, int *matchlen) {
   return re_matchp(text, re_compile(&context, pattern), matchlen);
 }
 static int matchpattern(regex_t *pattern, const char *text, int *matchlen);
-static int matchcharclass(char c, const char *str);
 static int matchstar(regex_t p, regex_t *pattern, const char *text,
                      int *matchlen);
 static int matchplus(regex_t p, regex_t *pattern, const char *text,
@@ -311,7 +310,6 @@ static int matchint(char c);
 static int matchfloat(char c);
 static int matchalpha(char c);
 static int matchwhitespace(char c);
-static int matchmetachar(char c, const char *str);
 static int matchrange(char c, const char *str);
 static int matchdot(char c);
 static int ismetachar(char c);
@@ -476,53 +474,6 @@ static int matchdot(char c) {
 static int ismetachar(char c) {
   return ((c == 's') || (c == 'S') || (c == 'w') || (c == 'W') || (c == 'd') ||
           (c == 'D'));
-}
-static int matchmetachar(char c, const char *str) {
-  switch (str[0]) {
-  case 'd':
-    return matchdigit(c);
-  case 'D':
-    return !matchdigit(c);
-  case 'i':
-    return matchint(c);
-  case 'I':
-    return !matchint(c);
-  case 'f':
-    return matchfloat(c);
-  case 'F':
-    return !matchfloat(c);
-  case 'w':
-    return matchalphanum(c);
-  case 'W':
-    return !matchalphanum(c);
-  case 's':
-    return matchwhitespace(c);
-  case 'S':
-    return !matchwhitespace(c);
-  default:
-    return (c == str[0]);
-  }
-}
-static int matchcharclass(char c, const char *str) {
-  do {
-    if (matchrange(c, str)) {
-      return 1;
-    } else if (str[0] == '\\') {
-      str += 1;
-      if (matchmetachar(c, str)) {
-        return 1;
-      } else if ((c == str[0]) && !ismetachar(c)) {
-        return 1;
-      }
-    } else if (c == str[0]) {
-      if (c == '-') {
-        return ((str[-1] == '\0') || (str[1] == '\0'));
-      } else {
-        return 1;
-      }
-    }
-  } while (*str++ != '\0');
-  return 0;
 }
 static int matchone(regex_t p, char c) {
   return matchdigit(c);
