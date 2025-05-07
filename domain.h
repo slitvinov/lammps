@@ -48,7 +48,6 @@ public:
   virtual void set_local_box();
   virtual void reset_box();
   virtual void pbc();
-  void subbox_too_small_check(double);
   void add_region(int, char **);
   Region *get_region_by_id(const std::string &) const;
   void box_corners();

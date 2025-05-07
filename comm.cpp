@@ -59,7 +59,6 @@ Comm::Comm(LAMMPS *lmp) : Pointers(lmp) {
 void Comm::init() {
   triclinic = domain->triclinic;
   map_style = atom->map_style;
-  domain->subbox_too_small_check(neighbor->skin);
   comm_x_only = atom->avec->comm_x_only;
   comm_f_only = atom->avec->comm_f_only;
   if (ghost_velocity)

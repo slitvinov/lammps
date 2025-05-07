@@ -142,15 +142,6 @@ void Domain::pbc() {
   hi = boxhi;
   period = prd;
 }
-void Domain::subbox_too_small_check(double thresh) {
-  int flag = 0;
-  if (subhi[0] - sublo[0] < thresh || subhi[1] - sublo[1] < thresh)
-    flag = 1;
-  if (dimension == 3 && subhi[2] - sublo[2] < thresh)
-    flag = 1;
-  int flagall;
-  MPI_Allreduce(&flag, &flagall, 1, MPI_INT, MPI_SUM, world);
-}
 void Domain::add_region(int narg, char **arg) {
   Region *newregion = nullptr;
   RegionCreator &region_creator = (*region_map)[arg[1]];
