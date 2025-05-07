@@ -1,7 +1,5 @@
 #ifndef LMP_GROUP_H
 #define LMP_GROUP_H
-#include "pointers.h"
-#include <map>
 namespace LAMMPS_NS {
 class Region;
 class Group : protected Pointers {

@@ -1,7 +1,5 @@
 #ifndef LMP_UPDATE_H
 #define LMP_UPDATE_H
-#include "pointers.h"
-#include <map>
 namespace LAMMPS_NS {
 class Update : protected Pointers {
 public:

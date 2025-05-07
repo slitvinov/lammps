@@ -1,5 +1,7 @@
 #include <vector>
 #include <cstring>
+#include <map>
+#include "pointers.h"
 #include "utils.h"
 #include "update.h"
 #include "comm.h"

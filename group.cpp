@@ -6,6 +6,7 @@
 #include <map>
 #include <utility>
 #include "utils.h"
+#include "pointers.h"
 #include "group.h"
 #include "atom.h"
 #include "comm.h"

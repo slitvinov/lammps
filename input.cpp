@@ -2,12 +2,15 @@
 #include <set>
 #include <vector>
 #include <unordered_set>
+#include <cctype>
+#include <cerrno>
+#include <cstring>
 #include "utils.h"
+#include "pointers.h"
 #include "input.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "pointers.h"
-#include <vector>
 #include "comm.h"
 #include "comm_brick.h"
 #include "pointers.h"
@@ -24,9 +27,6 @@
 #include "run.h"
 #include "universe.h"
 #include "update.h"
-#include <cctype>
-#include <cerrno>
-#include <cstring>
 using namespace LAMMPS_NS;
 #define DELTALINE 256
 #define DELTA 4
