@@ -103,65 +103,6 @@ void AtomVec::copy(int i, int j, int delflag) {
   v[j][1] = v[i][1];
   v[j][2] = v[i][2];
 }
-int AtomVec::pack_reverse(int n, int first, double *buf) {
-  int i, m, last, mm, nn, datatype, cols;
-  void *pdata;
-  m = 0;
-  last = first + n;
-  for (i = first; i < last; i++) {
-    buf[m++] = f[i][0];
-    buf[m++] = f[i][1];
-    buf[m++] = f[i][2];
-  }
-  if (nreverse) {
-    for (nn = 0; nn < nreverse; nn++) {
-      pdata = mreverse.pdata[nn];
-      datatype = mreverse.datatype[nn];
-      cols = mreverse.cols[nn];
-      if (datatype == Atom::DOUBLE) {
-        if (cols == 0) {
-          double *vec = *((double **)pdata);
-          for (i = first; i < last; i++) {
-            buf[m++] = vec[i];
-          }
-        } else {
-          double **array = *((double ***)pdata);
-          for (i = first; i < last; i++) {
-            for (mm = 0; mm < cols; mm++)
-              buf[m++] = array[i][mm];
-          }
-        }
-      } else if (datatype == Atom::INT) {
-        if (cols == 0) {
-          int *vec = *((int **)pdata);
-          for (i = first; i < last; i++) {
-            buf[m++] = ubuf(vec[i]).d;
-          }
-        } else {
-          int **array = *((int ***)pdata);
-          for (i = first; i < last; i++) {
-            for (mm = 0; mm < cols; mm++)
-              buf[m++] = ubuf(array[i][mm]).d;
-          }
-        }
-      } else if (datatype == Atom::BIGINT) {
-        if (cols == 0) {
-          bigint *vec = *((bigint **)pdata);
-          for (i = first; i < last; i++) {
-            buf[m++] = ubuf(vec[i]).d;
-          }
-        } else {
-          bigint **array = *((bigint ***)pdata);
-          for (i = first; i < last; i++) {
-            for (mm = 0; mm < cols; mm++)
-              buf[m++] = ubuf(array[i][mm]).d;
-          }
-        }
-      }
-    }
-  }
-  return m;
-}
 void AtomVec::unpack_reverse(int n, int *list, double *buf) {
   int i, j, m, mm, nn, datatype, cols;
   void *pdata;
