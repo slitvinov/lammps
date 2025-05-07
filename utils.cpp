@@ -279,10 +279,6 @@ static int matchone(regex_t p, char c);
 static int matchdigit(char c);
 static int matchint(char c);
 static int matchfloat(char c);
-static int matchalpha(char c);
-static int matchwhitespace(char c);
-static int matchrange(char c, const char *str);
-static int matchdot(char c);
 int re_matchp(const char *text, re_t pattern, int *matchlen) {
   *matchlen = 0;
   if (pattern != nullptr) {
@@ -422,24 +418,6 @@ static int matchint(char c) {
 }
 static int matchfloat(char c) {
   return (matchint(c) || (c == '.') || (c == 'e') || (c == 'E'));
-}
-static int matchalpha(char c) { return isalpha(c); }
-static int matchwhitespace(char c) { return isspace(c); }
-static int matchalphanum(char c) {
-  return ((c == '_') || matchalpha(c) || matchdigit(c));
-}
-static int matchrange(char c, const char *str) {
-  return ((c != '-') && (str[0] != '\0') && (str[0] != '-') &&
-          (str[1] == '-') && (str[1] != '\0') && (str[2] != '\0') &&
-          ((c >= str[0]) && (c <= str[2])));
-}
-static int matchdot(char c) {
-#if defined(RE_DOT_MATCHES_NEWLINE) && (RE_DOT_MATCHES_NEWLINE == 1)
-  (void)c;
-  return 1;
-#else
-  return c != '\n' && c != '\r';
-#endif
 }
 static int matchone(regex_t p, char c) {
   return matchdigit(c);
