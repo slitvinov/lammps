@@ -201,13 +201,6 @@ void CommBrick::exchange() {
       }
     }
     m = 0;
-    while (m < nrecv) {
-      value = buf_recv[m + dim + 1];
-      if (value >= lo && value < hi)
-        m += avec->unpack_exchange(&buf_recv[m]);
-      else
-        m += static_cast<int>(buf_recv[m]);
-    }
   }
 }
 void CommBrick::borders() {
