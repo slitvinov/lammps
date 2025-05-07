@@ -17,7 +17,6 @@
 #include "atom.h"
 #include "comm.h"
 #include "domain.h"
-#include "exceptions.h"
 #include "fix.h"
 #include "force.h"
 #include "memory.h"
