@@ -1,3 +1,6 @@
+#include <vector>
+#include <cstring>
+#include "utils.h"
 #include "update.h"
 #include "comm.h"
 #include "fix.h"
@@ -6,7 +9,6 @@
 #include "modify.h"
 #include "neighbor.h"
 #include "verlet.h"
-#include <cstring>
 using namespace LAMMPS_NS;
 template <typename T>
 static Integrate *integrate_creator(LAMMPS *lmp, int narg, char **arg) {

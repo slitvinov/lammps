@@ -1,5 +1,7 @@
 #include <set>
 #include <map>
+#include <vector>
+#include "utils.h"
 #include "fix.h"
 #include "atom.h"
 #include "atom_masks.h"

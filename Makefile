@@ -56,4 +56,4 @@ main: $(S:.cpp=.o)
 .cpp.o:
 	$(MPICXX) -o $@ -c $< $(FLAGS) $(CXXFLAGS)
 clean:
-	-rm main $(S:.cpp=.o)
+	rm -f main $(S:.cpp=.o)

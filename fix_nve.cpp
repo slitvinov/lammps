@@ -1,5 +1,6 @@
 #include <set>
 #include <map>
+#include <vector>
 #include "fix_nve.h"
 #include "atom.h"
 #include "force.h"

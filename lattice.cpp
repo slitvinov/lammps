@@ -2,6 +2,7 @@
 #include <cstring>
 #include <map>
 #include <unordered_set>
+#include "utils.h"
 #include "lattice.h"
 #include "comm.h"
 #include "domain.h"

@@ -1,3 +1,4 @@
+#include <vector>
 #include "integrate.h"
 #include "force.h"
 #include "modify.h"

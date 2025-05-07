@@ -1,10 +1,12 @@
 #include <set>
 #include <map>
+#include <vector>
+#include <cstring>
 #include "force.h"
 #include "atom.h"
 #include "comm.h"
 #include "pair_dpd.h"
-#include <cstring>
+#include "utils.h"
 using namespace LAMMPS_NS;
 template <typename S, typename T> static S *style_creator(LAMMPS *lmp) {
   return new T(lmp);

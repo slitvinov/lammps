@@ -1,5 +1,7 @@
 #include <map>
 #include <unordered_set>
+#include <vector>
+#include "utils.h"
 #include "pointers.h"
 #include "compute.h"
 #include "atom_masks.h"

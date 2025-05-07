@@ -1,5 +1,6 @@
 #include <map>
 #include <set>
+#include <vector>
 #include "npair.h"
 #include "atom.h"
 #include "memory.h"

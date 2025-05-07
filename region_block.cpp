@@ -1,9 +1,10 @@
 #include <map>
 #include <unordered_set>
+#include <cstring>
+#include "utils.h"
 #include "region_block.h"
 #include "domain.h"
 #include "input.h"
-#include <cstring>
 using namespace LAMMPS_NS;
 enum { CONSTANT, VARIABLE };
 #define BIG 1.0e20

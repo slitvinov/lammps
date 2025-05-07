@@ -1,11 +1,13 @@
 #include <map>
 #include <set>
 #include <unordered_set>
+#include <vector>
+#include <cstring>
+#include <vector>
 #include "verlet.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "pointers.h"
-#include <vector>
 #include "comm.h"
 #include "domain.h"
 #include "fix.h"
@@ -14,7 +16,6 @@
 #include "neighbor.h"
 #include "pair.h"
 #include "update.h"
-#include <cstring>
 using namespace LAMMPS_NS;
 Verlet::Verlet(LAMMPS *lmp, int narg, char **arg) : Integrate(lmp, narg, arg) {}
 void Verlet::init() {

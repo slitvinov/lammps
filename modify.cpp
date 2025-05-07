@@ -1,6 +1,9 @@
 #include <map>
 #include <set>
 #include <unordered_set>
+#include <vector>
+#include <cstring>
+#include "utils.h"
 #include "modify.h"
 #include "atom.h"
 #include "comm.h"
@@ -12,7 +15,6 @@
 #include "memory.h"
 #include "region.h"
 #include "update.h"
-#include <cstring>
 using namespace LAMMPS_NS;
 using namespace FixConst;
 #define DELTA 4

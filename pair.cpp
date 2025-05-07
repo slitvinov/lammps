@@ -1,6 +1,12 @@
 #include <map>
 #include <set>
 #include <unordered_set>
+#include <vector>
+#include <cfloat>
+#include <climits>
+#include <cmath>
+#include <cstring>
+#include "utils.h"
 #include "pair.h"
 #include "atom.h"
 #include "atom_masks.h"
@@ -12,10 +18,6 @@
 #include "memory.h"
 #include "neighbor.h"
 #include "update.h"
-#include <cfloat>
-#include <climits>
-#include <cmath>
-#include <cstring>
 using namespace LAMMPS_NS;
 using MathConst::MY_ISPI4;
 using MathConst::THIRD;

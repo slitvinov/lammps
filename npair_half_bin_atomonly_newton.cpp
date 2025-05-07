@@ -1,5 +1,6 @@
 #include <map>
 #include <set>
+#include <vector>
 #include "npair_half_bin_atomonly_newton.h"
 #include "atom.h"
 #include "my_page.h"

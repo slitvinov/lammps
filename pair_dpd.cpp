@@ -1,5 +1,8 @@
 #include <map>
 #include <set>
+#include <vector>
+#include <cmath>
+#include "utils.h"
 #include "pair_dpd.h"
 #include "atom.h"
 #include "comm.h"
@@ -9,7 +12,6 @@
 #include "neighbor.h"
 #include "random_mars.h"
 #include "update.h"
-#include <cmath>
 using namespace LAMMPS_NS;
 #define EPSILON 1.0e-10
 PairDPD::PairDPD(LAMMPS *lmp) : Pair(lmp) {

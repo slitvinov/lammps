@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstring>
 #include <map>
+#include "utils.h"
 #include "region.h"
 #include "domain.h"
 #include "input.h"

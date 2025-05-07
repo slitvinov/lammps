@@ -3,7 +3,6 @@
 #include "fmt/format.h"
 #include "lammps.h"
 #include "lmptype.h"
-#include "utils.h"
 namespace LAMMPS_NS {
 #define FLERR __FILE__, __LINE__
 #define MIN(A, B) ((A) < (B) ? (A) : (B))

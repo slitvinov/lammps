@@ -1,11 +1,15 @@
 #include <map>
 #include <set>
 #include <unordered_set>
+#include <vector>
+#include <cmath>
+#include <cstring>
+#include <vector>
+#include "utils.h"
 #include "neighbor.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "pointers.h"
-#include <vector>
 #include "comm.h"
 #include "compute.h"
 #include "domain.h"
@@ -22,8 +26,6 @@
 #include "pair.h"
 #include "npair_half_bin_atomonly_newton.h"
 #include "update.h"
-#include <cmath>
-#include <cstring>
 using namespace LAMMPS_NS;
 using namespace NeighConst;
 #define RQDELTA 1

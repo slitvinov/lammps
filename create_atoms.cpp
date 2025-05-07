@@ -5,6 +5,7 @@
 #include <cstring>
 #include <exception>
 #include <unordered_set>
+#include "utils.h"
 #include "pointers.h"
 #include "create_atoms.h"
 #include "atom.h"

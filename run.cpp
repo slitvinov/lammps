@@ -1,6 +1,8 @@
 #include <cstring>
 #include <unordered_set>
 #include <map>
+#include <vector>
+#include "utils.h"
 #include "pointers.h"
 #include "run.h"
 #include "domain.h"
