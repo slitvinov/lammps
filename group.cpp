@@ -32,14 +32,11 @@ Group::Group(LAMMPS *lmp) : Pointers(lmp) {
   MPI_Comm_rank(world, &me);
   names = new char *[MAX_GROUP];
   bitmask = new int[MAX_GROUP];
-  inversemask = new int[MAX_GROUP];
   dynamic = new int[MAX_GROUP];
   for (int i = 0; i < MAX_GROUP; i++)
     names[i] = nullptr;
   for (int i = 0; i < MAX_GROUP; i++)
     bitmask[i] = 1 << i;
-  for (int i = 0; i < MAX_GROUP; i++)
-    inversemask[i] = bitmask[i] ^ ~0;
   for (int i = 0; i < MAX_GROUP; i++)
     dynamic[i] = 0;
   names[0] = utils::strdup("all");

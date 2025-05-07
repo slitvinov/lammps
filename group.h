@@ -7,7 +7,6 @@ public:
   int ngroup;
   char **names;
   int *bitmask;
-  int *inversemask;
   int *dynamic;
   Group(class LAMMPS *);
   int find(const std::string &);
