@@ -41,11 +41,6 @@ private:
   int numtriple(char *);
   void reallocate(char *&, int &, int);
   int execute_command();
-  void comm_modify();
-  void fix();
-  void mass();
-  void neigh_modify();
-  void neighbor_command();
 };
 } // namespace LAMMPS_NS
 #endif

@@ -189,15 +189,15 @@ int Input::execute_command() {
   int flag = 1;
   std::string mycmd = command;
   if (mycmd == "comm_modify")
-    comm_modify();
+    comm->modify_params(narg, arg);
   else if (mycmd == "fix")
-    fix();
+    modify->add_fix(narg, arg);
   else if (mycmd == "mass")
-    mass();
+    atom->set_mass(FLERR, narg, arg);
   else if (mycmd == "neigh_modify")
-    neigh_modify();
+    neighbor->modify_params(narg, arg);
   else if (mycmd == "neighbor")
-    neighbor_command();
+    neighbor->set(narg, arg);
   else if (mycmd == "pair_coeff") {
     int itype, jtype;
     if (utils::strmatch(arg[0], "^\\d+$") && utils::strmatch(arg[1], "^\\d+$")) {
@@ -228,9 +228,4 @@ int Input::execute_command() {
   }
   return -1;
 }
-void Input::comm_modify() { comm->modify_params(narg, arg); }
-void Input::fix() { modify->add_fix(narg, arg); }
-void Input::mass() { atom->set_mass(FLERR, narg, arg); }
-void Input::neigh_modify() { neighbor->modify_params(narg, arg); }
-void Input::neighbor_command() { neighbor->set(narg, arg); }
 }
