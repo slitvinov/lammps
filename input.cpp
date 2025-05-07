@@ -198,9 +198,14 @@ int Input::execute_command() {
     neigh_modify();
   else if (mycmd == "neighbor")
     neighbor_command();
-  else if (mycmd == "pair_coeff")
-    pair_coeff();
-  else if (mycmd == "pair_style") {
+  else if (mycmd == "pair_coeff") {
+    int itype, jtype;
+    if (utils::strmatch(arg[0], "^\\d+$") && utils::strmatch(arg[1], "^\\d+$")) {
+      itype = utils::inumeric(FLERR, arg[0], false, lmp);
+      jtype = utils::inumeric(FLERR, arg[1], false, lmp);
+    }
+    force->pair->coeff(narg, arg);
+  } else if (mycmd == "pair_style") {
     force->create_pair(arg[0], 1);
     if (force->pair)
       force->pair->settings(narg - 1, &arg[1]);
@@ -228,11 +233,4 @@ void Input::fix() { modify->add_fix(narg, arg); }
 void Input::mass() { atom->set_mass(FLERR, narg, arg); }
 void Input::neigh_modify() { neighbor->modify_params(narg, arg); }
 void Input::neighbor_command() { neighbor->set(narg, arg); }
-void Input::pair_coeff() {
-  int itype, jtype;
-  if (utils::strmatch(arg[0], "^\\d+$") && utils::strmatch(arg[1], "^\\d+$")) {
-    itype = utils::inumeric(FLERR, arg[0], false, lmp);
-    jtype = utils::inumeric(FLERR, arg[1], false, lmp);
-  }
-  force->pair->coeff(narg, arg);
 }
