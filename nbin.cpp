@@ -1,6 +1,8 @@
 #include <map>
 #include <unordered_set>
 #include <cmath>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "nbin.h"
 #include "domain.h"

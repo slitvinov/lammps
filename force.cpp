@@ -3,6 +3,8 @@
 #include <vector>
 #include <cstring>
 #include <map>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "force.h"
 #include "atom.h"

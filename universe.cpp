@@ -1,4 +1,6 @@
 #include <cstring>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "universe.h"
 #include "memory.h"

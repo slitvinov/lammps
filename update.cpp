@@ -1,6 +1,8 @@
 #include <vector>
 #include <cstring>
 #include <map>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "utils.h"
 #include "update.h"

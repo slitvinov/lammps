@@ -1,5 +1,7 @@
 #include <cmath>
 #include <cstring>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "random_mars.h"
 #include "math_const.h"

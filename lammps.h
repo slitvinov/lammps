@@ -1,7 +1,5 @@
 #ifndef LMP_LAMMPS_H
 #define LMP_LAMMPS_H
-#include <cstdio>
-#include <mpi.h>
 namespace LAMMPS_NS {
 class LAMMPS {
 public:

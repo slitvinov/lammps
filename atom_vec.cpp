@@ -2,6 +2,8 @@
 #include <map>
 #include <unordered_set>
 #include <vector>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "atom_vec.h"
 #include "pointers.h"

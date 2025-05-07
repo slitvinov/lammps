@@ -4,6 +4,8 @@
 #include <vector>
 #include <cstring>
 #include <vector>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "verlet.h"
 #include "atom.h"

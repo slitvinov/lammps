@@ -1,6 +1,8 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "fix.h"
 #include "fix_nve.h"

@@ -2,6 +2,8 @@
 #include <set>
 #include <vector>
 #include <cmath>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "npair.h"
 #include "atom.h"

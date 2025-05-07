@@ -2,6 +2,8 @@
 #include <set>
 #include <vector>
 #include <unordered_set>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "nbin_standard.h"
 #include "atom.h"

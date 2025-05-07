@@ -1,3 +1,5 @@
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "memory.h"
 #if defined(LMP_INTEL) &&                                                      \

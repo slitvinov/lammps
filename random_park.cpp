@@ -1,6 +1,8 @@
+#include <cstdio>
+#include <mpi.h>
+#include <cmath>
 #include "pointers.h"
 #include "random_park.h"
-#include <cmath>
 using namespace LAMMPS_NS;
 #define IA 16807
 #define IM 2147483647

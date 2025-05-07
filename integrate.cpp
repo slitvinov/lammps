@@ -1,5 +1,7 @@
 #include <vector>
 #include <map>
+#include <cstdio>
+#include <mpi.h>
 #include "pointers.h"
 #include "integrate.h"
 #include "force.h"
