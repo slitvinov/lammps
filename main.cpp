@@ -14,7 +14,6 @@
 #include "lammps.h"
 #include "pointers.h"
 #include "atom.h"
-#include "atom_vec_atomic.h"
 #include "comm.h"
 #include "comm_brick.h"
 #include "domain.h"

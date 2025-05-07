@@ -102,11 +102,7 @@ Atom::Atom(LAMMPS *_lmp) : Pointers(_lmp) {
   atom_style = nullptr;
   avec = nullptr;
   avec_map = new AtomVecCreatorMap();
-#define ATOM_CLASS
-#define AtomStyle(key, Class) (*avec_map)[#key] = &avec_creator<Class>;
-#include "atom_vec_atomic.h"
-#undef AtomStyle
-#undef ATOM_CLASS
+  (*avec_map)["atomic"] = &avec_creator<AtomVecAtomic>;
 }
 void Atom::peratom_create() {
   peratom.clear();
