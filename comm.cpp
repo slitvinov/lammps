@@ -156,13 +156,5 @@ void Comm::set_proc_grid(int outflag) {
 double Comm::get_comm_cutoff() {
   double maxcommcutoff, maxbondcutoff = 0.0;
   maxcommcutoff = MAX(cutghostuser, neighbor->cutneighmax);
-  if (!force->pair && (cutghostuser == 0.0)) {
-    maxcommcutoff = MAX(maxcommcutoff, maxbondcutoff);
-  }
-  if (neighbor->interval_collection_flag) {
-    for (int i = 0; i < neighbor->ncollections; i++) {
-      maxcommcutoff = MAX(maxcommcutoff, neighbor->collection2cut[i]);
-    }
-  }
   return maxcommcutoff;
 }
