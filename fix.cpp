@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <mpi.h>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

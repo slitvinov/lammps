@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <string>
+#include <mpi.h>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

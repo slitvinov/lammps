@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstring>
 #include <string>
+#include <mpi.h>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

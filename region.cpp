@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <mpi.h>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"

@@ -7,6 +7,7 @@
 #include <utility>
 #include <string>
 #include <vector>
+#include <mpi.h>
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
