@@ -199,29 +199,6 @@ std::vector<std::string> utils::split_words(const std::string &text) {
   }
   return list;
 }
-bool utils::is_integer(const std::string &str) {
-  if (str.empty())
-    return false;
-  return strmatch(str, "^[+-]?\\d+$");
-}
-bool utils::is_double(const std::string &str) {
-  if (str.empty())
-    return false;
-  return strmatch(str, "^[+-]?\\d+\\.?\\d*$") ||
-         strmatch(str, "^[+-]?\\d+\\.?\\d*[eE][+-]?\\d+$") ||
-         strmatch(str, "^[+-]?\\d*\\.?\\d+$") ||
-         strmatch(str, "^[+-]?\\d*\\.?\\d+[eE][+-]?\\d+$");
-}
-bool utils::is_id(const std::string &str) {
-  if (str.empty())
-    return false;
-  for (const auto &c : str) {
-    if (isalnum(c) || (c == '_'))
-      continue;
-    return false;
-  }
-  return true;
-}
 extern "C" {
 typedef struct regex_t *re_t;
 typedef struct regex_context_t *re_ctx_t;

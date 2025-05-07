@@ -29,9 +29,6 @@ void bounds(const char *file, int line, const std::string &str, bigint nmin,
 char *strdup(const std::string &text);
 std::string strip_style_suffix(const std::string &style, LAMMPS *lmp);
 std::vector<std::string> split_words(const std::string &text);
-bool is_integer(const std::string &str);
-bool is_double(const std::string &str);
-bool is_id(const std::string &str);
 enum { NOCONVERT = 0, METAL2REAL = 1, REAL2METAL = 1 << 1 };
 enum { UNKNOWN = 0, ENERGY };
 } // namespace utils
