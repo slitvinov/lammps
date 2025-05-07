@@ -60,14 +60,6 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp) {
   (*command_map)["create_atoms"] = &command_creator<CreateAtoms>;
   (*command_map)["create_box"] = &command_creator<CreateBox>;
 }
-Input::~Input() {
-  memory->sfree(line);
-  memory->sfree(copy);
-  memory->sfree(work);
-  memory->sfree(arg);
-  delete[] infiles;
-  delete command_map;
-}
 void Input::file() {
   int m, n, mstart, ntriple, endfile;
   while (true) {

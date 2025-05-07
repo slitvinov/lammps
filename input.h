@@ -12,7 +12,6 @@ public:
   int narg;
   char **arg;
   Input(class LAMMPS *, int, char **);
-  ~Input() override;
   void file();
   void substitute(char *&, char *&, int &, int &, int);
 
