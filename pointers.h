@@ -4,11 +4,6 @@
 #include "lammps.h"
 #include "lmptype.h"
 #include "utils.h"
-#include <cstddef>
-#include <cstdio>
-#include <mpi.h>
-#include <string>
-#include <vector>
 namespace LAMMPS_NS {
 #define FLERR __FILE__, __LINE__
 #define MIN(A, B) ((A) < (B) ? (A) : (B))
