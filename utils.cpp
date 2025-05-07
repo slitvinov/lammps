@@ -139,8 +139,6 @@ void utils::bounds(const char *file, int line, const std::string &str,
   nlo = nhi = -1;
   size_t found = str.find_first_not_of("*-0123456789");
   if (found != std::string::npos) {
-    if (error)
-      error->all(file, line, fmt::format("Invalid range string: {}", str));
     return;
   }
   found = str.find_first_of('*');
@@ -158,22 +156,6 @@ void utils::bounds(const char *file, int line, const std::string &str,
   } else {
     nlo = strtol(str.c_str(), nullptr, 10);
     nhi = strtol(str.substr(found + 1).c_str(), nullptr, 10);
-  }
-  if (error) {
-    if ((nlo <= 0) || (nhi <= 0))
-      error->all(file, line, fmt::format("Invalid range string: {}", str));
-    if (nlo < nmin)
-      error->all(file, line,
-                 fmt::format("Numeric index {} is out of bounds ({}-{})", nlo,
-                             nmin, nmax));
-    else if (nhi > nmax)
-      error->all(file, line,
-                 fmt::format("Numeric index {} is out of bounds ({}-{})", nhi,
-                             nmin, nmax));
-    else if (nlo > nhi)
-      error->all(file, line,
-                 fmt::format("Numeric index {} is out of bounds ({}-{})", nlo,
-                             nmin, nhi));
   }
 }
 template void utils::bounds<>(const char *, int, const std::string &, bigint,

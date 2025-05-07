@@ -33,27 +33,12 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
     style = HEX;
   else if (strcmp(arg[0], "custom") == 0)
     style = CUSTOM;
-  else
-    error->all(FLERR, "Unknown lattice keyword: {}", arg[0]);
   if (style == NONE) {
     xlattice = ylattice = zlattice = utils::numeric(FLERR, arg[1], false, lmp);
-    if (xlattice <= 0.0)
-      error->all(FLERR, "Invalid lattice none argument: {}", arg[1]);
     return;
   }
   int dimension = domain->dimension;
-  if (dimension == 2) {
-    if (style == SC || style == BCC || style == FCC || style == HCP ||
-        style == DIAMOND)
-      error->all(FLERR, "Lattice style incompatible with simulation dimension");
-  }
-  if (dimension == 3) {
-    if (style == SQ || style == SQ2 || style == HEX)
-      error->all(FLERR, "Lattice style incompatible with simulation dimension");
-  }
   scale = utils::numeric(FLERR, arg[1], false, lmp);
-  if (scale <= 0.0)
-    error->all(FLERR, "Invalid lattice {} argument: {}", arg[0], arg[1]);
   if (style == SC) {
     add_basis(0.0, 0.0, 0.0);
   } else if (style == BCC) {
@@ -119,12 +104,6 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
       origin[0] = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       origin[1] = utils::numeric(FLERR, arg[iarg + 2], false, lmp);
       origin[2] = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
-      if (origin[0] < 0.0 || origin[0] >= 1.0)
-        error->all(FLERR, "Invalid lattice origin argument: {}", origin[0]);
-      if (origin[1] < 0.0 || origin[1] >= 1.0)
-        error->all(FLERR, "Invalid lattice origin argument: {}", origin[1]);
-      if (origin[2] < 0.0 || origin[2] >= 1.0)
-        error->all(FLERR, "Invalid lattice origin argument: {}", origin[2]);
       iarg += 4;
     } else if (strcmp(arg[iarg], "orient") == 0) {
       int dim = -1;
@@ -134,8 +113,6 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
         dim = 1;
       else if (strcmp(arg[iarg + 1], "z") == 0)
         dim = 2;
-      else
-        error->all(FLERR, "Unknown lattice orient argument: {}", arg[iarg + 1]);
       int *orient = nullptr;
       if (dim == 0)
         orient = orientx;
@@ -154,71 +131,27 @@ Lattice::Lattice(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {
       zlattice = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
       iarg += 4;
     } else if (strcmp(arg[iarg], "a1") == 0) {
-      if (style != CUSTOM)
-        error->all(FLERR,
-                   "Invalid a1 option in lattice command for non-custom style");
       a1[0] = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       a1[1] = utils::numeric(FLERR, arg[iarg + 2], false, lmp);
       a1[2] = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
       iarg += 4;
     } else if (strcmp(arg[iarg], "a2") == 0) {
-      if (style != CUSTOM)
-        error->all(FLERR,
-                   "Invalid a2 option in lattice command for non-custom style");
       a2[0] = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       a2[1] = utils::numeric(FLERR, arg[iarg + 2], false, lmp);
       a2[2] = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
       iarg += 4;
     } else if (strcmp(arg[iarg], "a3") == 0) {
-      if (style != CUSTOM)
-        error->all(FLERR,
-                   "Invalid a3 option in lattice command for non-custom style");
       a3[0] = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       a3[1] = utils::numeric(FLERR, arg[iarg + 2], false, lmp);
       a3[2] = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
       iarg += 4;
     } else if (strcmp(arg[iarg], "basis") == 0) {
-      if (style != CUSTOM)
-        error->all(
-            FLERR,
-            "Invalid basis option in lattice command for non-custom style");
       double x = utils::numeric(FLERR, arg[iarg + 1], false, lmp);
       double y = utils::numeric(FLERR, arg[iarg + 2], false, lmp);
       double z = utils::numeric(FLERR, arg[iarg + 3], false, lmp);
-      if (x < 0.0 || x >= 1.0)
-        error->all(FLERR, "Invalid lattice basis argument: {}", x);
-      if (y < 0.0 || y >= 1.0)
-        error->all(FLERR, "Invalid lattice basis argument: {}", y);
-      if (z < 0.0 || z >= 1.0)
-        error->all(FLERR, "Invalid lattice basis argument: {}", z);
       add_basis(x, y, z);
       iarg += 4;
-    } else
-      error->all(FLERR, "Unknown lattice keyword: {}", arg[iarg]);
-  }
-  if (nbasis == 0)
-    error->all(FLERR, "No basis atoms in lattice");
-  if (!orthogonal())
-    error->all(FLERR, "Lattice orient vectors are not orthogonal");
-  if (!right_handed())
-    error->all(FLERR, "Lattice orient vectors are not right-handed");
-  if (collinear())
-    error->all(FLERR, "Lattice primitive vectors are collinear");
-  if (dimension == 2) {
-    if (origin[2] != 0.0)
-      error->all(FLERR,
-                 "Lattice settings are not compatible with 2d simulation");
-    if (orientx[2] != 0 || orienty[2] != 0 || orientz[0] != 0 ||
-        orientz[1] != 0)
-      error->all(FLERR,
-                 "Lattice settings are not compatible with 2d simulation");
-    if (a1[2] != 0.0 || a2[2] != 0.0 || a3[0] != 0.0 || a3[1] != 0.0)
-      error->all(FLERR,
-                 "Lattice settings are not compatible with 2d simulation");
-  }
-  if (spaceflag) {
-    if (xlattice <= 0.0 || ylattice <= 0.0 || zlattice <= 0.0)
-      error->all(FLERR, "Lattice spacings are invalid");
+    }
   }
   if (strcmp(update->unit_style, "lj") == 0) {
     double vec[3];
@@ -303,8 +236,6 @@ void Lattice::setup_transform() {
                        primitive[0][0] * primitive[1][2] * primitive[2][1] -
                        primitive[0][1] * primitive[1][0] * primitive[2][2] -
                        primitive[0][2] * primitive[1][1] * primitive[2][0];
-  if (determinant == 0.0)
-    error->all(FLERR, "Degenerate lattice primitive vectors");
   priminv[0][0] =
       (primitive[1][1] * primitive[2][2] - primitive[1][2] * primitive[2][1]) /
       determinant;
@@ -335,24 +266,18 @@ void Lattice::setup_transform() {
   int lensq = orientx[0] * orientx[0] + orientx[1] * orientx[1] +
               orientx[2] * orientx[2];
   length = sqrt((double)lensq);
-  if (length == 0.0)
-    error->all(FLERR, "Zero-length lattice orient vector");
   rotaterow[0][0] = orientx[0] / length;
   rotaterow[0][1] = orientx[1] / length;
   rotaterow[0][2] = orientx[2] / length;
   lensq = orienty[0] * orienty[0] + orienty[1] * orienty[1] +
           orienty[2] * orienty[2];
   length = sqrt((double)lensq);
-  if (length == 0.0)
-    error->all(FLERR, "Zero-length lattice orient vector");
   rotaterow[1][0] = orienty[0] / length;
   rotaterow[1][1] = orienty[1] / length;
   rotaterow[1][2] = orienty[2] / length;
   lensq = orientz[0] * orientz[0] + orientz[1] * orientz[1] +
           orientz[2] * orientz[2];
   length = sqrt((double)lensq);
-  if (length == 0.0)
-    error->all(FLERR, "Zero-length lattice orient vector");
   rotaterow[2][0] = orientz[0] / length;
   rotaterow[2][1] = orientz[1] / length;
   rotaterow[2][2] = orientz[2] / length;

@@ -21,8 +21,6 @@ void ProcMap::onelevel_grid(int nprocs, int *user_procgrid, int *procgrid,
   memory->create(factors, npossible, 3, "procmap:factors");
   npossible = factor(nprocs, factors);
   npossible = cull_user(npossible, factors, 3, user_procgrid);
-  if (npossible == 0)
-    error->all(FLERR, "Could not create 3d grid of processors");
   best_factors(npossible, factors, procgrid, 1, 1, 1);
   memory->destroy(factors);
 }

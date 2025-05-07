@@ -123,8 +123,7 @@ void Input::file() {
     parse();
     if (command == nullptr)
       continue;
-    if (execute_command() && line)
-      error->all(FLERR, "Unknown command: {}", line);
+    execute_command();
   }
 }
 void Input::parse() {

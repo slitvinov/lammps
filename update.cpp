@@ -71,8 +71,7 @@ void Update::set_units(const char *style) {
     force->qelectron = 1.0;
     dt = 0.005;
     neighbor->skin = 0.3;
-  } else
-    error->all(FLERR, "Illegal units command");
+  }
   delete[] unit_style;
   unit_style = utils::strdup(style);
   if (!dt_default && (comm->me == 0)) {
@@ -84,8 +83,6 @@ void Update::set_units(const char *style) {
   dt_default = 1;
 }
 void Update::create_integrate(int narg, char **arg, int trysuffix) {
-  if (narg < 1)
-    error->all(FLERR, "Illegal run_style command");
   delete[] integrate_style;
   delete integrate;
   if (narg - 1 > 0) {
@@ -102,7 +99,6 @@ void Update::new_integrate(char *style, int narg, char **arg) {
     integrate = integrate_creator(lmp, narg, arg);
     return;
   }
-  error->all(FLERR, "Illegal integrate style");
 }
 void Update::update_time() {
   atime += (ntimestep - atimestep) * dt;

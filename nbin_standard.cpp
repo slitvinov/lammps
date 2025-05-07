@@ -50,9 +50,6 @@ void NBinStandard::setup_bins(int style) {
   if (binsize_optimal == 0.0)
     binsize_optimal = bbox[0];
   double binsizeinv = 1.0 / binsize_optimal;
-  if (bbox[0] * binsizeinv > MAXSMALLINT ||
-      bbox[1] * binsizeinv > MAXSMALLINT || bbox[2] * binsizeinv > MAXSMALLINT)
-    error->all(FLERR, "Domain too large for neighbor bins");
   nbinx = static_cast<int>(bbox[0] * binsizeinv);
   nbiny = static_cast<int>(bbox[1] * binsizeinv);
   if (dimension == 3)
@@ -71,10 +68,6 @@ void NBinStandard::setup_bins(int style) {
   bininvx = 1.0 / binsizex;
   bininvy = 1.0 / binsizey;
   bininvz = 1.0 / binsizez;
-  if (binsize_optimal * bininvx > CUT2BIN_RATIO ||
-      binsize_optimal * bininvy > CUT2BIN_RATIO ||
-      binsize_optimal * bininvz > CUT2BIN_RATIO)
-    error->all(FLERR, "Cannot use neighbor bins - box size << cutoff");
   int mbinxhi, mbinyhi, mbinzhi;
   double coord;
   coord = bsubboxlo[0] - SMALL * bbox[0];

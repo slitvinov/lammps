@@ -81,10 +81,6 @@ Pair::Pair(LAMMPS *lmp)
 }
 void Pair::init() {
   int i, j;
-  if (offset_flag && tail_flag)
-    error->all(FLERR, "Cannot have both pair_modify shift and tail set to yes");
-  if (tail_flag && domain->dimension == 2)
-    error->all(FLERR, "Cannot use pair tail corrections with 2d simulations");
   if (tail_flag && domain->nonperiodic && comm->me == 0)
     error->warning(FLERR,
                    "Using pair tail corrections with non-periodic system");
@@ -94,11 +90,6 @@ void Pair::init() {
   if (!compute_flag && offset_flag && comm->me == 0)
     error->warning(FLERR,
                    "Using pair potential shift with pair_modify compute no");
-  if (!allocated)
-    error->all(FLERR, "All pair coeffs are not set");
-  for (i = 1; i <= atom->ntypes; i++)
-    if (setflag[i][i] == 0)
-      error->all(FLERR, "All pair coeffs are not set");
   init_style();
   cutforce = 0.0;
   etail = ptail = 0.0;

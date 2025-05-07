@@ -285,8 +285,6 @@ int Neighbor::init_pair() {
     neigh_pair[i]->istyle = flag;
     if (lists[i]->bin_method > 0) {
       neigh_pair[i]->nb = neigh_bin[requests[i]->index_bin];
-      if (neigh_pair[i]->nb == nullptr)
-        error->all(FLERR, "Could not assign bin method to neighbor pair");
     }
     requests[i]->index_pair = i;
   }

@@ -143,10 +143,6 @@ void Modify::init() {
   list_init(MIN_ENERGY, n_min_energy, list_min_energy);
   n_post_force_any = n_post_force + n_post_force_group;
   n_post_force_respa_any = n_post_force_respa + n_post_force_group;
-  for (i = 0; i < nfix; i++)
-    if (!fix[i]->dynamic_group_allow && group->dynamic[fix[i]->igroup])
-      error->all(FLERR, "Fix {} does not allow use with a dynamic group",
-                 fix[i]->style);
   int nlocal = atom->nlocal;
   int *mask = atom->mask;
   int *flag = new int[nlocal];
@@ -269,12 +265,8 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
     for (m = 0; exceptions[m] != nullptr; m++)
       if (strcmp(arg[2], exceptions[m]) == 0)
         break;
-    if (exceptions[m] == nullptr)
-      error->all(FLERR, "Fix command before simulation box is defined");
   }
   int igroup = group->find(arg[1]);
-  if (igroup == -1)
-    error->all(FLERR, "Could not find fix group ID {}", arg[1]);
   int ifix, newflag;
   for (ifix = 0; ifix < nfix; ifix++)
     if (strcmp(arg[0], fix[ifix]->id) == 0)
@@ -284,10 +276,6 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
     int match = 0;
     if (strcmp(arg[2], fix[ifix]->style) == 0)
       match = 1;
-    if (!match)
-      error->all(FLERR, "Replacing a fix, but new style != old style");
-    if (fix[ifix]->igroup != igroup && comm->me == 0)
-      error->warning(FLERR, "Replacing a fix, but new group != old group");
     delete fix[ifix];
     fix[ifix] = nullptr;
   } else {
