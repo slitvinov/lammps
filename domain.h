@@ -35,8 +35,6 @@ public:
   int box_change_domain;
   int copymode;
   enum { NO_REMAP, X_REMAP, V_REMAP };
-  typedef Region *(*RegionCreator)(LAMMPS *, int, char **);
-  typedef std::map<std::string, RegionCreator> RegionCreatorMap;
   Domain(class LAMMPS *);
   virtual void init();
   void set_initial_box(int expandflag = 1);
