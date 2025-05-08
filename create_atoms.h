@@ -7,12 +7,10 @@ public:
   void command(int, char **) override;
 
 private:
-  int ntype, style, seed;
+  int ntype, seed;
   bigint nrandom;
-  int quat_user;
   double overlap;
   bigint nsubset;
-  double xone[3], quatone[4];
   int varflag, vvar, xvar, yvar, zvar;
   int ilo, ihi, jlo, jhi, klo, khi;
   int *flag;

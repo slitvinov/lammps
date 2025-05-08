@@ -43,15 +43,12 @@ void CreateAtoms::command(int narg, char **arg) {
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
   const char *meshfile;
   int iarg;
-  style = RANDOM;
   nrandom = utils::bnumeric(FLERR, arg[2], false, lmp);
   seed = utils::inumeric(FLERR, arg[3], false, lmp);
   region = domain->get_region_by_id(arg[4]);
   region->init();
   iarg = 5;
   int scaleflag = 1;
-  quat_user = 0;
-  quatone[0] = quatone[1] = quatone[2] = quatone[3] = 0.0;
   int subsetseed;
   double epsilon[3];
   epsilon[0] = domain->prd[0] * EPSILON;
@@ -79,7 +76,7 @@ void CreateAtoms::command(int narg, char **arg) {
 void CreateAtoms::add_random() {
   double xlo, ylo, zlo, xhi, yhi, zhi;
   double *coord;
-  double *boxlo, *boxhi;
+  double *boxlo, *boxhi, xone[3];
   RanPark *random = new RanPark(lmp, seed);
   xlo = domain->boxlo[0];
   xhi = domain->boxhi[0];
