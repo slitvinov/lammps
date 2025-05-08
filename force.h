@@ -24,13 +24,9 @@ public:
   double qe2f;
   double vxmu2f;
   double xxt2kmu;
-  double dielectric;
-  double qqrd2e;
   double e_mass;
-  double hhmrr2e;
   double mvh2r;
   double angstrom;
-  double femtosecond;
   double qelectron;
   double qqr2e_lammps_real;
   double qqr2e_charmm_real;

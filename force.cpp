@@ -21,7 +21,6 @@ template <typename S, typename T> static S *style_creator(LAMMPS *lmp) {
 }
 Force::Force(LAMMPS *lmp) : Pointers(lmp) {
   newton = newton_pair = 1;
-  dielectric = 1.0;
   qqr2e_lammps_real = 332.06371;
   qqr2e_charmm_real = 332.0716;
   pair = nullptr;
@@ -33,7 +32,6 @@ void _noopt Force::create_factories() {
   (*pair_map)["dpd"] = &style_creator<Pair, PairDPD>;
 }
 void Force::init() {
-  qqrd2e = qqr2e / dielectric;
   if (pair)
     pair->init();
 }

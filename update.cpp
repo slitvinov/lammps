@@ -69,10 +69,8 @@ void Update::set_units(const char *style) {
     force->vxmu2f = 1.0;
     force->xxt2kmu = 1.0;
     force->e_mass = 0.0;
-    force->hhmrr2e = 0.0;
     force->mvh2r = 0.0;
     force->angstrom = 1.0;
-    force->femtosecond = 1.0;
     force->qelectron = 1.0;
     dt = 0.005;
     neighbor->skin = 0.3;
