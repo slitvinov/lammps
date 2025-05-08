@@ -53,8 +53,6 @@ void Force::create_pair(const std::string &style, int trysuffix) {
 }
 Pair *Force::new_pair(const std::string &style, int trysuffix, int &sflag) {
   sflag = 0;
-  if (style == "none")
-    return nullptr;
   if (pair_map->find(style) != pair_map->end()) {
     PairCreator &pair_creator = (*pair_map)[style];
     return pair_creator(lmp);
