@@ -8,24 +8,6 @@ public:
   static int instance_total;
   char *id, *style;
   int igroup, groupbit;
-  int restart_global;
-  int restart_peratom;
-  int restart_file;
-  int force_reneighbor;
-  int box_change;
-  enum {
-    NO_BOX_CHANGE = 0,
-    BOX_CHANGE_ANY = 1 << 0,
-    BOX_CHANGE_DOMAIN = 1 << 1,
-    BOX_CHANGE_X = 1 << 2,
-    BOX_CHANGE_Y = 1 << 3,
-    BOX_CHANGE_Z = 1 << 4,
-    BOX_CHANGE_YZ = 1 << 5,
-    BOX_CHANGE_XZ = 1 << 6,
-    BOX_CHANGE_XY = 1 << 7,
-    BOX_CHANGE_SIZE = BOX_CHANGE_X | BOX_CHANGE_Y | BOX_CHANGE_Z,
-    BOX_CHANGE_SHAPE = BOX_CHANGE_YZ | BOX_CHANGE_XZ | BOX_CHANGE_XY
-  };
   int nevery;
   int time_integrate;
   int maxexchange;
@@ -41,14 +23,7 @@ public:
   int global_freq;
   int peratom_flag;
   int size_peratom_cols;
-  int peratom_freq;
   int local_flag;
-  int size_local_rows;
-  int size_local_cols;
-  int local_freq;
-  int extscalar;
-  int extvector;
-  int *extlist;
   int extarray;
   double *vector_atom;
   double **array_atom;
