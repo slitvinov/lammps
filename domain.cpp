@@ -26,7 +26,6 @@ using namespace LAMMPS_NS;
 #define SMALL 1.0e-4
 #define DELTAREGION 4
 #define BONDSTRETCH 1.1
-template <typename T>
 Domain::Domain(LAMMPS *lmp) : Pointers(lmp) {
   box_exist = 0;
   box_change = 0;
