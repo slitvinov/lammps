@@ -20,7 +20,6 @@
 #include "math_const.h"
 #include "memory.h"
 #include "random_park.h"
-#include "region.h"
 #include "region_block.h"
 using namespace LAMMPS_NS;
 using MathConst::MY_2PI;

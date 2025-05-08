@@ -17,7 +17,6 @@
 #include "fix.h"
 #include "force.h"
 #include "memory.h"
-#include "region.h"
 #include "region_block.h"
 #include "universe.h"
 #include "update.h"

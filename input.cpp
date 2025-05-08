@@ -32,7 +32,6 @@
 #include "universe.h"
 #include "update.h"
 #include "fix_nve.h"
-#include "region.h"
 #include "region_block.h"
 
 using namespace LAMMPS_NS;

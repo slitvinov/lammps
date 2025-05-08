@@ -19,7 +19,6 @@
 #include "comm.h"
 #include "domain.h"
 #include "force.h"
-#include "region.h"
 #include "region_block.h"
 #include "update.h"
 using namespace LAMMPS_NS;

@@ -9,13 +9,10 @@
 #include "utils.h"
 #include "lammps.h"
 #include "pointers.h"
-#include "region.h"
 #include "region_block.h"
 #include "domain.h"
 using namespace LAMMPS_NS;
-RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
-    : Region(lmp, narg, arg) {
-  options(narg - 8, &arg[8]);
+RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg) {
   xlo = utils::numeric(FLERR, arg[2], false, lmp);
   xhi = utils::numeric(FLERR, arg[3], false, lmp);
   ylo = utils::numeric(FLERR, arg[4], false, lmp);

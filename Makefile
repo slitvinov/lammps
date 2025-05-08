@@ -40,7 +40,6 @@ procmap.o \
 random_mars.o \
 random_park.o \
 region_block.o \
-region.o \
 run.o \
 universe.o \
 update.o \
