@@ -59,8 +59,7 @@ void CreateAtoms::command(int narg, char **arg) {
   add_random();
   bigint nblocal = atom->nlocal;
   MPI_Allreduce(&nblocal, &atom->natoms, 1, MPI_LMP_BIGINT, MPI_SUM, world);
-  if (atom->tag_enable)
-    atom->tag_extend();
+  atom->tag_extend();
   atom->tag_check();
   MPI_Barrier(world);
 }
