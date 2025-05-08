@@ -70,7 +70,7 @@ void Verlet::run(int n) {
   for (int i = 0; i < n; i++) {
     ntimestep = ++update->ntimestep;
     ev_set(ntimestep);
-    modify->initial_integrate(0);
+    lmp->fix_nve->initial_integrate(0);
     nflag = neighbor->decide();
     domain->pbc();
     comm->exchange();
@@ -81,7 +81,7 @@ void Verlet::run(int n) {
     force_clear();
     force->pair->compute(0, 0);
     comm->reverse_comm();
-    modify->final_integrate();
+    lmp->fix_nve->final_integrate();
   }
 }
 void Verlet::cleanup() {

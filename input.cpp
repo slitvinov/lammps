@@ -32,6 +32,7 @@
 #include "run.h"
 #include "universe.h"
 #include "update.h"
+#include "fix_nve.h"
 using namespace LAMMPS_NS;
 #define DELTALINE 256
 #define DELTA 4
@@ -184,8 +185,9 @@ int Input::execute_command() {
   std::string mycmd = command;
   if (mycmd == "comm_modify")
     comm->modify_params(narg, arg);
-  else if (mycmd == "fix")
-    modify->add_fix(narg, arg);
+  else if (mycmd == "fix") {
+    lmp->fix_nve = modify->add_fix(narg, arg);
+  }
   else if (mycmd == "mass")
     atom->set_mass(FLERR, narg, arg);
   else if (mycmd == "neigh_modify")

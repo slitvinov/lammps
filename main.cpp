@@ -108,6 +108,7 @@ void LAMMPS::init() {
   neighbor->init();
   comm->init();
 }
+
 int main(int argc, char **argv) {
   MPI_Init(&argc, &argv);
   MPI_Comm lammps_comm = MPI_COMM_WORLD;
