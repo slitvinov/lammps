@@ -9,9 +9,6 @@ public:
   void run(int);
   void force_clear();
   void cleanup();
-
-protected:
-  int torqueflag, extraflag;
 };
 } // namespace LAMMPS_NS
 #endif

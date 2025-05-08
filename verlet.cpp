@@ -27,7 +27,6 @@ using namespace LAMMPS_NS;
 Verlet::Verlet(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {}
 void Verlet::init() {
   update->atimestep = update->ntimestep;
-  torqueflag = extraflag = 0;
 }
 void Verlet::setup(int flag) {
   update->setupflag = 1;
