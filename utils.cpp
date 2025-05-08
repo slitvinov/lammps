@@ -18,14 +18,7 @@
 #include <cerrno>
 #include <cstring>
 #include <ctime>
-extern "C" {
-static int re_match(const char *text, const char *pattern);
-}
 using namespace LAMMPS_NS;
-bool utils::strmatch(const std::string &text, const std::string &pattern) {
-  const int pos = re_match(text.c_str(), pattern.c_str());
-  return (pos >= 0);
-}
 int utils::logical(const char *file, int line, const std::string &str,
                    bool do_abort, LAMMPS *lmp) {
   std::string buf(str);
@@ -122,80 +115,6 @@ char *utils::strdup(const std::string &text) {
 std::string utils::strip_style_suffix(const std::string &style, LAMMPS *lmp) {
   std::string newstyle = style;
   return newstyle;
-}
-std::vector<std::string> utils::split_words(const std::string &text) {
-  std::vector<std::string> list;
-  const char *buf = text.c_str();
-  std::size_t beg = 0;
-  std::size_t len = 0;
-  std::size_t add = 0;
-  char c = *buf;
-  while (c) {
-    if (c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f') {
-      c = *++buf;
-      ++beg;
-      continue;
-    };
-    len = 0;
-  quoted:
-    if (c == '\'') {
-      ++beg;
-      add = 1;
-      c = *++buf;
-      while (((c != '\'') && (c != '\0')) ||
-             ((c == '\\') && (buf[1] == '\''))) {
-        if ((c == '\\') && (buf[1] == '\'')) {
-          ++buf;
-          ++len;
-        }
-        c = *++buf;
-        ++len;
-      }
-      if (c != '\'')
-        ++len;
-      c = *++buf;
-    } else if ((c == '"') && (buf[1] == '"') && (buf[2] == '"') &&
-               (buf[3] != '"')) {
-      len = 3;
-      add = 1;
-      buf += 3;
-      c = *buf;
-    } else if (c == '"') {
-      ++beg;
-      add = 1;
-      c = *++buf;
-      while (((c != '"') && (c != '\0')) || ((c == '\\') && (buf[1] == '"'))) {
-        if ((c == '\\') && (buf[1] == '"')) {
-          ++buf;
-          ++len;
-        }
-        c = *++buf;
-        ++len;
-      }
-      if (c != '"')
-        ++len;
-      c = *++buf;
-    }
-    while (true) {
-      if ((c == '\'') || (c == '"'))
-        goto quoted;
-      if ((c == '\\') && ((buf[1] == '\'') || (buf[1] == '"'))) {
-        ++buf;
-        ++len;
-        c = *++buf;
-        ++len;
-      }
-      if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n') ||
-          (c == '\f') || (c == '\0')) {
-        list.push_back(text.substr(beg, len));
-        beg += len + add;
-        break;
-      }
-      c = *++buf;
-      ++len;
-    }
-  }
-  return list;
 }
 extern "C" {
 typedef struct regex_t *re_t;
