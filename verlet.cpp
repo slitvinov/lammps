@@ -57,7 +57,7 @@ void Verlet::setup(int flag) {
   modify->setup_pre_reverse(0, 0);
   if (force->newton)
     comm->reverse_comm();
-  modify->setup(vflag);
+  modify->setup(0);
   update->setupflag = 0;
 }
 void Verlet::run(int n) {

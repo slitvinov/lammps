@@ -46,8 +46,6 @@ public:
   int dof_flag;
   int special_alter_flag;
   int enforce2d_flag;
-  int respa_level_support;
-  int respa_level;
   int maxexchange;
   int maxexchange_dynamic;
   int pre_exchange_migrate;
@@ -97,9 +95,7 @@ public:
   virtual void setup_pre_exchange() {}
   virtual void setup_pre_neighbor() {}
   virtual void setup_post_neighbor() {}
-  virtual void setup_pre_force(int) {}
   virtual void setup_pre_reverse(int, int) {}
-  virtual void min_setup(int) {}
   virtual void initial_integrate(int) {}
   virtual void post_integrate() {}
   virtual void pre_exchange() {}
@@ -110,7 +106,6 @@ public:
   virtual void post_force(int) {}
   virtual void final_integrate() {}
   virtual void post_run() {}
-  virtual void restart(char *) {}
   virtual void grow_arrays(int) {}
   virtual void copy_arrays(int, int, int) {}
   virtual void set_arrays(int) {}
@@ -120,29 +115,7 @@ public:
   virtual int unpack_border(int, int, double *) { return 0; }
   virtual int pack_exchange(int, double *) { return 0; }
   virtual int unpack_exchange(int, double *) { return 0; }
-  virtual int pack_restart(int, double *) { return 0; }
-  virtual void unpack_restart(int, int) {}
-  virtual void setup_pre_force_respa(int, int) {}
-  virtual void initial_integrate_respa(int, int, int) {}
-  virtual void post_integrate_respa(int, int) {}
-  virtual void pre_force_respa(int, int, int) {}
-  virtual void post_force_respa(int, int, int) {}
-  virtual void final_integrate_respa(int, int) {}
-  virtual void min_pre_exchange() {}
-  virtual void min_pre_neighbor() {}
-  virtual void min_post_neighbor() {}
-  virtual void min_pre_force(int) {}
-  virtual void min_pre_reverse(int, int) {}
-  virtual void min_post_force(int) {}
-  virtual double min_energy(double *) { return 0.0; }
-  virtual void min_store() {}
-  virtual void min_clearstore() {}
-  virtual void min_pushstore() {}
-  virtual void min_popstore() {}
-  virtual int min_reset_ref() { return 0; }
-  virtual void min_step(double, double *) {}
   virtual double max_alpha(double *) { return 0.0; }
-  virtual int min_dof() { return 0; }
   virtual int pack_forward_comm(int, int *, double *, int, int *) { return 0; }
   virtual void unpack_forward_comm(int, int, double *) {}
   virtual int pack_reverse_comm_size(int, int) { return 0; }
