@@ -19,7 +19,6 @@
 #include "domain.h"
 #include "math_const.h"
 #include "memory.h"
-#include "random_mars.h"
 #include "random_park.h"
 #include "region.h"
 using namespace LAMMPS_NS;
@@ -54,7 +53,6 @@ void CreateAtoms::command(int narg, char **arg) {
   remapflag = 0;
   mode = ATOM;
   int molseed;
-  ranmol = nullptr;
   vstr = xstr = ystr = zstr = nullptr;
   quat_user = 0;
   quatone[0] = quatone[1] = quatone[2] = quatone[3] = 0.0;
@@ -64,9 +62,6 @@ void CreateAtoms::command(int narg, char **arg) {
   radscale = 1.0;
   mesh_style = BISECTION;
   mesh_density = 1.0;
-  ranlatt = nullptr;
-  if (subsetflag != NONE)
-    ranlatt = new RanMars(lmp, subsetseed + comm->me);
   triclinic = domain->triclinic;
   double epsilon[3];
   epsilon[0] = domain->prd[0] * EPSILON;
@@ -90,8 +85,6 @@ void CreateAtoms::command(int narg, char **arg) {
   if (atom->tag_enable)
     atom->tag_extend();
   atom->tag_check();
-  delete ranmol;
-  delete ranlatt;
   delete[] vstr;
   delete[] xstr;
   delete[] ystr;

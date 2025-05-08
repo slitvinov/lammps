@@ -28,8 +28,6 @@ private:
   int *next;
   int mesh_style;
   class Region *region;
-  class RanMars *ranmol;
-  class RanMars *ranlatt;
   int triclinic;
   double sublo[3], subhi[3];
   void add_random();

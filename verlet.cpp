@@ -43,7 +43,6 @@ void Verlet::setup(int flag) {
   neighbor->build(1);
   neighbor->ncalls = 0;
   force->setup();
-  ev_set(update->ntimestep);
   force_clear();
   force->pair->compute(0, 0);
   if (force->newton)
@@ -56,7 +55,6 @@ void Verlet::run(int n) {
   sortflag = 1;
   for (int i = 0; i < n; i++) {
     ntimestep = ++update->ntimestep;
-    ev_set(ntimestep);
     lmp->fix_nve->initial_integrate(0);
     nflag = neighbor->decide();
     domain->pbc();

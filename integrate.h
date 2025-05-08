@@ -9,9 +9,6 @@ public:
   virtual void run(int) = 0;
   virtual void force_clear() = 0;
   virtual void cleanup() {}
-
-protected:
-  void ev_set(bigint);
 };
 } // namespace LAMMPS_NS
 #endif
