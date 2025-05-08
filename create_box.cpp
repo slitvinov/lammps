@@ -20,20 +20,20 @@
 #include "domain.h"
 #include "force.h"
 #include "region.h"
+#include "region_block.h"
 #include "update.h"
 using namespace LAMMPS_NS;
 CreateBox::CreateBox(LAMMPS *lmp) : Command(lmp) {}
 void CreateBox::command(int narg, char **arg) {
   domain->box_exist = 1;
-  auto region = domain->get_region_by_id(arg[1]);
-  region->init();
+  lmp->region_block->init();
   domain->triclinic = 0;
-  domain->boxlo[0] = region->extent_xlo;
-  domain->boxhi[0] = region->extent_xhi;
-  domain->boxlo[1] = region->extent_ylo;
-  domain->boxhi[1] = region->extent_yhi;
-  domain->boxlo[2] = region->extent_zlo;
-  domain->boxhi[2] = region->extent_zhi;
+  domain->boxlo[0] = lmp->region_block->extent_xlo;
+  domain->boxhi[0] = lmp->region_block->extent_xhi;
+  domain->boxlo[1] = lmp->region_block->extent_ylo;
+  domain->boxhi[1] = lmp->region_block->extent_yhi;
+  domain->boxlo[2] = lmp->region_block->extent_zlo;
+  domain->boxhi[2] = lmp->region_block->extent_zhi;
   atom->ntypes = utils::inumeric(FLERR, arg[0], false, lmp);
   int iarg = 2;
   update->ntimestep = 0;

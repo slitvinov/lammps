@@ -29,6 +29,7 @@ public:
   void init();
 
   class FixNVE *fix_nve;
+  class RegBlock *region_block;
 
 private:
   LAMMPS(){};

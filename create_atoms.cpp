@@ -21,6 +21,7 @@
 #include "memory.h"
 #include "random_park.h"
 #include "region.h"
+#include "region_block.h"
 using namespace LAMMPS_NS;
 using MathConst::MY_2PI;
 using MathConst::MY_PI;
@@ -43,8 +44,7 @@ void CreateAtoms::command(int narg, char **arg) {
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
   nrandom = utils::bnumeric(FLERR, arg[2], false, lmp);
   seed = utils::inumeric(FLERR, arg[3], false, lmp);
-  region = domain->get_region_by_id(arg[4]);
-  region->init();
+  lmp->region_block->init();
   sublo[0] = domain->sublo[0];
   subhi[0] = domain->subhi[0];
   sublo[1] = domain->sublo[1];

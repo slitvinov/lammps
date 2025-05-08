@@ -32,6 +32,9 @@
 #include "universe.h"
 #include "update.h"
 #include "fix_nve.h"
+#include "region.h"
+#include "region_block.h"
+
 using namespace LAMMPS_NS;
 #define DELTALINE 256
 #define DELTA 4
@@ -199,9 +202,9 @@ int Input::execute_command() {
     force->create_pair(arg[0], 1);
     if (force->pair)
       force->pair->settings(narg - 1, &arg[1]);
-  } else if (mycmd == "region")
-    domain->add_region(narg, arg);
-  else if (mycmd == "timestep") {
+  } else if (mycmd == "region") {
+    lmp->region_block = new RegBlock(lmp, narg, arg);
+  } else if (mycmd == "timestep") {
     update->update_time();
     update->dt = utils::numeric(FLERR, arg[0], false, lmp);
     update->dt_default = 0;

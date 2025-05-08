@@ -138,16 +138,3 @@ void Domain::pbc() {
   hi = boxhi;
   period = prd;
 }
-void Domain::add_region(int narg, char **arg) {
-  Region *newregion = nullptr;
-  RegionCreator &region_creator = (*region_map)[arg[1]];
-  newregion = region_creator(lmp, narg, arg);
-  newregion->init();
-  regions.insert(newregion);
-}
-Region *Domain::get_region_by_id(const std::string &name) const {
-  for (auto &reg : regions)
-    if (name == reg->id)
-      return reg;
-  return nullptr;
-}

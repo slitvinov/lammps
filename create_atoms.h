@@ -15,7 +15,6 @@ private:
   int ilo, ihi, jlo, jhi, klo, khi;
   int *flag;
   int *next;
-  class Region *region;
   double sublo[3], subhi[3];
   void add_random();
 };

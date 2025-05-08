@@ -45,8 +45,6 @@ public:
   virtual void set_local_box();
   virtual void reset_box();
   virtual void pbc();
-  void add_region(int, char **);
-  Region *get_region_by_id(const std::string &) const;
   inline int minimum_image_check(double dx, double dy, double dz) {
     if (xperiodic && fabs(dx) > xprd_half)
       return 1;
