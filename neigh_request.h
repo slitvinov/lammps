@@ -55,7 +55,6 @@ public:
   void archive();
   int same_skip(NeighRequest *);
   void copy_request(NeighRequest *, int);
-  void apply_flags(int);
   int get_size() const { return size; }
   void *get_requestor() const { return requestor; }
 };

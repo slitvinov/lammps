@@ -490,7 +490,6 @@ int Neighbor::request(void *requestor, int instance) {
 NeighRequest *Neighbor::add_request(Pair *requestor, int flags) {
   int irequest = request(requestor, requestor->instance_me);
   auto req = requests[irequest];
-  req->apply_flags(flags);
   return req;
 }
 void Neighbor::setup_bins() {

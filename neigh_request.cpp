@@ -112,36 +112,3 @@ void NeighRequest::copy_request(NeighRequest *other, int skipflag) {
         ijskip[i][j] = other->ijskip[i][j];
   }
 }
-void NeighRequest::apply_flags(int flags) {
-  if (flags & REQ_FULL) {
-    half = 0;
-    full = 1;
-  }
-  if (flags & REQ_GHOST) {
-    ghost = 1;
-  }
-  if (flags & REQ_SIZE) {
-    size = 1;
-  }
-  if (flags & REQ_HISTORY) {
-    history = 1;
-  }
-  if (flags & REQ_NEWTON_ON) {
-    newton = 1;
-  }
-  if (flags & REQ_NEWTON_OFF) {
-    newton = 2;
-  }
-  if (flags & REQ_OCCASIONAL) {
-    occasional = 1;
-  }
-  if (flags & REQ_RESPA_INOUT) {
-    respainner = respaouter = 1;
-  }
-  if (flags & REQ_RESPA_ALL) {
-    respainner = respamiddle = respaouter = 1;
-  }
-  if (flags & REQ_SSA) {
-    ssa = 1;
-  }
-}
