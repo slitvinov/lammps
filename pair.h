@@ -32,14 +32,10 @@ public:
   int ghostneigh;
   double **cutghost;
   int ewaldflag;
-  int pppmflag;
   int msmflag;
-  int dispersionflag;
   int tip4pflag;
-  int dipoleflag;
   int spinflag;
   int reinitflag;
-  int centroidstressflag;
   int tail_flag;
   double etail, ptail;
   double etail_ij, ptail_ij;
@@ -71,7 +67,6 @@ public:
   enum { GEOMETRIC, ARITHMETIC, SIXTHPOWER };
   int beyond_contact, nondefault_history_transfer;
   unsigned int datamask_read, datamask_modify;
-  int reverse_comm_device;
   Pair(class LAMMPS *);
   void init();
   virtual void setup() {}

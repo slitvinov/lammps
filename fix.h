@@ -65,8 +65,6 @@ public:
   int size_local_rows;
   int size_local_cols;
   int local_freq;
-  int pergrid_flag;
-  int pergrid_freq;
   int extscalar;
   int extvector;
   int *extlist;
@@ -81,9 +79,7 @@ public:
   double virial[6];
   double *eatom, **vatom;
   double **cvatom;
-  int centroidstressflag;
   int restart_reset;
-  int forward_comm_device;
   unsigned int datamask_read, datamask_modify;
   Fix(class LAMMPS *, int, char **);
   virtual int setmask() = 0;
@@ -101,36 +97,6 @@ public:
   virtual void post_force(int) {}
   virtual void final_integrate() {}
   virtual void post_run() {}
-  virtual void grow_arrays(int) {}
-  virtual void copy_arrays(int, int, int) {}
-  virtual void set_arrays(int) {}
-  virtual void update_arrays(int, int) {}
-  virtual void clear_bonus() {}
-  virtual int pack_border(int, int *, double *) { return 0; }
-  virtual int unpack_border(int, int, double *) { return 0; }
-  virtual int pack_exchange(int, double *) { return 0; }
-  virtual int unpack_exchange(int, double *) { return 0; }
-  virtual double max_alpha(double *) { return 0.0; }
-  virtual int pack_forward_comm(int, int *, double *, int, int *) { return 0; }
-  virtual void unpack_forward_comm(int, int, double *) {}
-  virtual int pack_reverse_comm_size(int, int) { return 0; }
-  virtual int pack_reverse_comm(int, int, double *) { return 0; }
-  virtual void unpack_reverse_comm(int, int *, double *) {}
-  virtual void reset_grid(){};
-  virtual void pack_forward_grid(int, void *, int, int *){};
-  virtual void unpack_forward_grid(int, void *, int, int *){};
-  virtual void pack_reverse_grid(int, void *, int, int *){};
-  virtual void unpack_reverse_grid(int, void *, int, int *){};
-  virtual void pack_remap_grid(int, void *, int, int *){};
-  virtual void unpack_remap_grid(int, void *, int, int *){};
-  virtual int unpack_read_grid(int, char *) { return 0; };
-  virtual void pack_write_grid(int, void *){};
-  virtual void unpack_write_grid(int, void *, int *){};
-  virtual int get_grid_by_name(const std::string &, int &) { return -1; };
-  virtual void *get_grid_by_index(int) { return nullptr; };
-  virtual int get_griddata_by_name(int, const std::string &, int &) {
-    return -1;
-  };
 
 protected:
   int instance_me;

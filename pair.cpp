@@ -55,10 +55,8 @@ Pair::Pair(LAMMPS *lmp)
   did_mix = false;
   nextra = 0;
   single_extra = 0;
-  ewaldflag = pppmflag = msmflag = dispersionflag = tip4pflag = dipoleflag =
-      spinflag = 0;
+  ewaldflag = msmflag = tip4pflag = spinflag = 0;
   reinitflag = 1;
-  centroidstressflag = CENTROID_SAME;
   compute_flag = 1;
   manybody_flag = 0;
   offset_flag = 0;
@@ -79,7 +77,6 @@ Pair::Pair(LAMMPS *lmp)
   beyond_contact = 0;
   datamask_read = ALL_MASK;
   datamask_modify = ALL_MASK;
-  reverse_comm_device = 0;
   copymode = 0;
 }
 void Pair::init() {
