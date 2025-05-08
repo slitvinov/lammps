@@ -31,8 +31,3 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
   extent_zhi = zhi;
 }
 void RegBlock::init() { Region::init(); }
-int RegBlock::inside(double x, double y, double z) {
-  if (x >= xlo && x <= xhi && y >= ylo && y <= yhi && z >= zlo && z <= zhi)
-    return 1;
-  return 0;
-}

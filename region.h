@@ -22,7 +22,6 @@ public:
   int nregion;
   Region(class LAMMPS *, int, char **);
   virtual void init();
-  virtual int inside(double, double, double) = 0;
 
 protected:
   void options(int, char **);
