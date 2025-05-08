@@ -47,8 +47,6 @@ public:
 
 protected:
   int nmax;
-  int deform_vremap;
-  int deform_groupbit;
   double *h_rate;
   tagint *tag;
   int *type, *mask;

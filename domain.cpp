@@ -34,7 +34,6 @@ static Region *region_creator(LAMMPS *lmp, int narg, char **arg) {
 Domain::Domain(LAMMPS *lmp) : Pointers(lmp) {
   box_exist = 0;
   box_change = 0;
-  deform_flag = deform_vremap = deform_groupbit = 0;
   dimension = 3;
   nonperiodic = 0;
   xperiodic = yperiodic = zperiodic = 1;
@@ -69,7 +68,6 @@ void Domain::init() {
   int box_change_yz = 0, box_change_xz = 0, box_change_xy = 0;
   const auto &fixes = modify->get_fix_list();
   box_change = 0;
-  deform_flag = deform_vremap = deform_groupbit = 0;
   for (auto &reg : regions)
     reg->init();
 }

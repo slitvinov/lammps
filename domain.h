@@ -33,9 +33,6 @@ public:
   int box_change_size;
   int box_change_shape;
   int box_change_domain;
-  int deform_flag;
-  int deform_vremap;
-  int deform_groupbit;
   int copymode;
   enum { NO_REMAP, X_REMAP, V_REMAP };
   typedef Region *(*RegionCreator)(LAMMPS *, int, char **);

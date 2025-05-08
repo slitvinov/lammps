@@ -63,8 +63,6 @@ void AtomVec::store_args(int narg, char **arg) {
 }
 void AtomVec::process_args(int narg, char **) {}
 void AtomVec::init() {
-  deform_vremap = domain->deform_vremap;
-  deform_groupbit = domain->deform_groupbit;
   h_rate = domain->h_rate;
 }
 static constexpr bigint DELTA = 16384;
