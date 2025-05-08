@@ -41,12 +41,10 @@ static constexpr const char *mesh_name[] = {"recursive bisection",
 CreateAtoms::CreateAtoms(LAMMPS *lmp) : Command(lmp) {}
 void CreateAtoms::command(int narg, char **arg) {
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
-  int iarg;
   nrandom = utils::bnumeric(FLERR, arg[2], false, lmp);
   seed = utils::inumeric(FLERR, arg[3], false, lmp);
   region = domain->get_region_by_id(arg[4]);
   region->init();
-  iarg = 5;
   sublo[0] = domain->sublo[0];
   subhi[0] = domain->subhi[0];
   sublo[1] = domain->sublo[1];
