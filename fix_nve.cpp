@@ -17,14 +17,6 @@ using namespace FixConst;
 FixNVE::FixNVE(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg) {
   time_integrate = 1;
 }
-int FixNVE::setmask() {
-  int mask = 0;
-  mask |= INITIAL_INTEGRATE;
-  mask |= FINAL_INTEGRATE;
-  mask |= INITIAL_INTEGRATE_RESPA;
-  mask |= FINAL_INTEGRATE_RESPA;
-  return mask;
-}
 void FixNVE::init() {
   dtv = update->dt;
   dtf = 0.5 * update->dt * force->ftm2v;

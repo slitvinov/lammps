@@ -61,7 +61,6 @@ public:
   double **cvatom;
   unsigned int datamask_read, datamask_modify;
   Fix(class LAMMPS *, int, char **);
-  virtual int setmask() = 0;
   virtual void post_constructor() {}
   virtual void init() {}
   virtual void init_list(int, class NeighList *) {}
