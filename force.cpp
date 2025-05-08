@@ -32,13 +32,6 @@ void _noopt Force::create_factories() {
   pair_map = new PairCreatorMap();
   (*pair_map)["dpd"] = &style_creator<Pair, PairDPD>;
 }
-Force::~Force() {
-  delete[] pair_style;
-  if (pair)
-    delete pair;
-  pair = nullptr;
-  delete pair_map;
-}
 void Force::init() {
   qqrd2e = qqr2e / dielectric;
   if (pair)
@@ -66,19 +59,6 @@ Pair *Force::new_pair(const std::string &style, int trysuffix, int &sflag) {
     PairCreator &pair_creator = (*pair_map)[style];
     return pair_creator(lmp);
   }
-  return nullptr;
-}
-Pair *Force::pair_match(const std::string &word, int exact, int nsub) {
-  int iwhich, count;
-  if (exact && (word == pair_style))
-    return pair;
-  else if (!exact && utils::strmatch(pair_style, word))
-    return pair;
-  return nullptr;
-}
-char *Force::pair_match_ptr(Pair *ptr) {
-  if (ptr == pair)
-    return pair_style;
   return nullptr;
 }
 char *Force::store_style(const std::string &style, int sflag) {

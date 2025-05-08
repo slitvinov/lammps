@@ -41,13 +41,10 @@ public:
   typedef std::map<std::string, PairCreator> PairCreatorMap;
   PairCreatorMap *pair_map;
   Force(class LAMMPS *);
-  ~Force() override;
   void init();
   void setup();
   void create_pair(const std::string &, int);
   Pair *new_pair(const std::string &, int, int &);
-  Pair *pair_match(const std::string &, int, int nsub = 0);
-  char *pair_match_ptr(Pair *);
   char *store_style(const std::string &, int);
 
 private:
