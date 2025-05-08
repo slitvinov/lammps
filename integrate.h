@@ -8,6 +8,7 @@ public:
   virtual void setup(int flag) = 0;
   virtual void run(int) = 0;
   virtual void force_clear() = 0;
+  virtual void cleanup() {}
 
 protected:
   int eflag, vflag;
