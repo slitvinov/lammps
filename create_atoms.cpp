@@ -50,19 +50,9 @@ void CreateAtoms::command(int narg, char **arg) {
   region->init();
   iarg = 5;
   int scaleflag = 1;
-  remapflag = 0;
-  mode = ATOM;
-  int molseed;
-  vstr = xstr = ystr = zstr = nullptr;
   quat_user = 0;
   quatone[0] = quatone[1] = quatone[2] = quatone[3] = 0.0;
-  subsetflag = NONE;
   int subsetseed;
-  maxtry = DEFAULT_MAXTRY;
-  radscale = 1.0;
-  mesh_style = BISECTION;
-  mesh_density = 1.0;
-  triclinic = domain->triclinic;
   double epsilon[3];
   epsilon[0] = domain->prd[0] * EPSILON;
   epsilon[1] = domain->prd[1] * EPSILON;
@@ -78,63 +68,33 @@ void CreateAtoms::command(int narg, char **arg) {
   atom->avec->clear_bonus();
   bigint natoms_previous = atom->natoms;
   int nlocal_previous = atom->nlocal;
-  if (style == RANDOM)
-    add_random();
+  add_random();
   bigint nblocal = atom->nlocal;
   MPI_Allreduce(&nblocal, &atom->natoms, 1, MPI_LMP_BIGINT, MPI_SUM, world);
   if (atom->tag_enable)
     atom->tag_extend();
   atom->tag_check();
-  delete[] vstr;
-  delete[] xstr;
-  delete[] ystr;
-  delete[] zstr;
   MPI_Barrier(world);
 }
 void CreateAtoms::add_random() {
-  double xlo, ylo, zlo, xhi, yhi, zhi, zmid;
-  double delx, dely, delz, distsq, odistsq;
-  double lamda[3], *coord;
+  double xlo, ylo, zlo, xhi, yhi, zhi;
+  double *coord;
   double *boxlo, *boxhi;
-  auto random = new RanPark(lmp, seed);
-  for (int ii = 0; ii < 30; ii++)
-    random->uniform();
+  RanPark *random = new RanPark(lmp, seed);
   xlo = domain->boxlo[0];
   xhi = domain->boxhi[0];
   ylo = domain->boxlo[1];
   yhi = domain->boxhi[1];
   zlo = domain->boxlo[2];
   zhi = domain->boxhi[2];
-  zmid = zlo + 0.5 * (zhi - zlo);
-  if (region && region->bboxflag) {
-    xlo = MAX(xlo, region->extent_xlo);
-    xhi = MIN(xhi, region->extent_xhi);
-    ylo = MAX(ylo, region->extent_ylo);
-    yhi = MIN(yhi, region->extent_yhi);
-    zlo = MAX(zlo, region->extent_zlo);
-    zhi = MIN(zhi, region->extent_zhi);
-  }
-  int ntry, success;
-  bigint ninsert = 0;
   for (bigint i = 0; i < nrandom; i++) {
-    success = 0;
-    ntry = 0;
-    while (ntry < maxtry) {
-      ntry++;
-      xone[0] = xlo + random->uniform() * (xhi - xlo);
-      xone[1] = ylo + random->uniform() * (yhi - ylo);
-      xone[2] = zlo + random->uniform() * (zhi - zlo);
-      coord = xone;
-      success = 1;
-      break;
-    }
-    if (!success)
-      continue;
-    ninsert++;
+    xone[0] = xlo + random->uniform() * (xhi - xlo);
+    xone[1] = ylo + random->uniform() * (yhi - ylo);
+    xone[2] = zlo + random->uniform() * (zhi - zlo);
+    coord = xone;
     if (coord[0] >= sublo[0] && coord[0] < subhi[0] && coord[1] >= sublo[1] &&
         coord[1] < subhi[1] && coord[2] >= sublo[2] && coord[2] < subhi[2]) {
-      if (mode == ATOM)
-        atom->avec->create_atom(ntype, xone);
+      atom->avec->create_atom(ntype, xone);
     }
   }
   delete random;
