@@ -65,16 +65,12 @@ void CommBrick::init() {
     grow_send(maxsend + bufextra, 2);
 }
 void CommBrick::setup() {
-  int i, j;
-  int ntypes = atom->ntypes;
   double *prd, *sublo, *subhi;
   double cut = get_comm_cutoff();
   prd = domain->prd;
   sublo = domain->sublo;
   subhi = domain->subhi;
   cutghost[0] = cutghost[1] = cutghost[2] = cut;
-  int *periodicity = domain->periodicity;
-  int left, right;
   if (layout == Comm::LAYOUT_UNIFORM) {
     maxneed[0] = static_cast<int>(cutghost[0] * procgrid[0] / prd[0]) + 1;
     maxneed[1] = static_cast<int>(cutghost[1] * procgrid[1] / prd[1]) + 1;
@@ -126,7 +122,6 @@ void CommBrick::setup() {
   }
 }
 void CommBrick::reverse_comm() {
-  int n;
   MPI_Request request;
   AtomVec *avec = atom->avec;
   double **f = atom->f;
@@ -152,21 +147,12 @@ void CommBrick::reverse_comm() {
   }
 }
 void CommBrick::exchange() {
-  int i, m, nsend, nrecv, nrecv1, nrecv2, nlocal;
-  double lo, hi, value;
-  double **x;
-  double *sublo, *subhi;
+  int i, nsend, nrecv, nrecv1, nrecv2, nlocal;
   MPI_Request request;
-  AtomVec *avec = atom->avec;
   atom->nghost = 0;
   atom->avec->clear_bonus();
-  sublo = domain->sublo;
-  subhi = domain->subhi;
   int dimension = domain->dimension;
   for (int dim = 0; dim < dimension; dim++) {
-    x = atom->x;
-    lo = sublo[dim];
-    hi = subhi[dim];
     nlocal = atom->nlocal;
     i = nsend = 0;
     while (i < nlocal) {
@@ -197,15 +183,13 @@ void CommBrick::exchange() {
         MPI_Wait(&request, MPI_STATUS_IGNORE);
       }
     }
-    m = 0;
   }
 }
 void CommBrick::borders() {
-  int i, n, itype, icollection, iswap, dim, ineed, twoneed;
-  int nsend, nrecv, sendflag, nfirst, nlast, ngroup, nprior;
+  int i, n, itype, iswap, dim, ineed, twoneed;
+  int nsend, nrecv, sendflag, nfirst, nlast, ngroup;
   double lo, hi;
   int *type;
-  int *collection;
   double **x;
   double *buf, *mlo, *mhi;
   MPI_Request request;
@@ -313,7 +297,6 @@ void CommBrick::borders() {
       size_reverse_send[iswap] = nrecv * size_reverse;
       size_reverse_recv[iswap] = nsend * size_reverse;
       firstrecv[iswap] = atom->nlocal + atom->nghost;
-      nprior = atom->nlocal + atom->nghost;
       atom->nghost += nrecv;
       iswap++;
     }

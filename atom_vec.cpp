@@ -70,8 +70,6 @@ void AtomVec::grow_nmax() {
 }
 static constexpr bigint DELTA_BONUS = 8192;
 void AtomVec::grow(int n) {
-  int datatype, cols, maxcols;
-  void *pdata;
   if (n == 0)
     grow_nmax();
   else
@@ -86,9 +84,7 @@ void AtomVec::grow(int n) {
   f = memory->grow(atom->f, nmax * comm->nthreads, 3, "atom:f");
   grow_pointers();
 }
-void AtomVec::copy(int i, int j, int delflag) {
-  int m, n, datatype, cols, collength, ncols;
-  void *pdata, *plength;
+void AtomVec::copy(int i, int j, int) {
   tag[j] = tag[i];
   type[j] = type[i];
   mask[j] = mask[i];
@@ -101,8 +97,7 @@ void AtomVec::copy(int i, int j, int delflag) {
   v[j][2] = v[i][2];
 }
 void AtomVec::unpack_reverse(int n, int *list, double *buf) {
-  int i, j, m, mm, nn, datatype, cols;
-  void *pdata;
+  int i, j, m;
   m = 0;
   for (i = 0; i < n; i++) {
     j = list[i];
@@ -113,9 +108,8 @@ void AtomVec::unpack_reverse(int n, int *list, double *buf) {
 }
 int AtomVec::pack_border_vel(int n, int *list, double *buf, int pbc_flag,
                              int *pbc) {
-  int i, j, m, mm, nn, datatype, cols;
-  double dx, dy, dz, dvx, dvy, dvz;
-  void *pdata;
+  int i, j, m;
+  double dx, dy, dz;
   m = 0;
   if (pbc_flag == 0) {
     for (i = 0; i < n; i++) {
@@ -150,8 +144,7 @@ int AtomVec::pack_border_vel(int n, int *list, double *buf, int pbc_flag,
   return m;
 }
 void AtomVec::unpack_border_vel(int n, int first, double *buf) {
-  int i, m, last, mm, nn, datatype, cols;
-  void *pdata;
+  int i, m, last;
   m = 0;
   last = first + n;
   while (last > nmax)
@@ -169,8 +162,6 @@ void AtomVec::unpack_border_vel(int n, int first, double *buf) {
   }
 }
 void AtomVec::create_atom(int itype, double *coord) {
-  int m, n, datatype, cols;
-  void *pdata;
   int nlocal = atom->nlocal;
   if (nlocal == nmax)
     grow(0);
@@ -242,10 +233,9 @@ void AtomVec::setup_fields() {
   }
 }
 int AtomVec::process_fields(const std::vector<std::string> &words,
-                            const std::vector<std::string> &def_words,
+                            const std::vector<std::string> &,
                             Method *method) {
   int nfield = words.size();
-  int ndef = def_words.size();
   const auto &peratom = atom->peratom;
   const int nperatom = peratom.size();
   method->resize(nfield);
