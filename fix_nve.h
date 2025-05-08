@@ -10,7 +10,6 @@ public:
 
 protected:
   double dtv, dtf;
-  int mass_require;
 };
 } // namespace LAMMPS_NS
 #endif

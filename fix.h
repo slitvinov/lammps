@@ -29,7 +29,6 @@ public:
   int nevery;
   int time_integrate;
   int maxexchange;
-  int maxexchange_dynamic;
   int stores_ids;
   int scalar_flag;
   int vector_flag;

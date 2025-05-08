@@ -32,7 +32,6 @@ Fix::Fix(LAMMPS *lmp, int, char **arg)
   time_integrate = 0;
   dynamic = 0;
   maxexchange = 0;
-  maxexchange_dynamic = 0;
   stores_ids = 0;
   scalar_flag = vector_flag = array_flag = 0;
   peratom_flag = local_flag = 0;
