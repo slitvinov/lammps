@@ -15,10 +15,6 @@
 using namespace LAMMPS_NS;
 FixNVE::FixNVE(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg) {
 }
-void FixNVE::init() {
-  dtv = update->dt;
-  dtf = 0.5 * update->dt * force->ftm2v;
-}
 void FixNVE::initial_integrate(int) {
   double dtfm;
   double **x = atom->x;
@@ -29,6 +25,8 @@ void FixNVE::initial_integrate(int) {
   int *type = atom->type;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
+  double dtv = update->dt;
+  double dtf = 0.5 * update->dt * force->ftm2v;
   for (int i = 0; i < nlocal; i++) {
     dtfm = dtf / mass[type[i]];
     v[i][0] += dtfm * f[i][0];
@@ -48,6 +46,8 @@ void FixNVE::final_integrate() {
   int *type = atom->type;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
+  double dtv = update->dt;
+  double dtf = 0.5 * update->dt * force->ftm2v;
   for (int i = 0; i < nlocal; i++) {
     dtfm = dtf / mass[type[i]];
     v[i][0] += dtfm * f[i][0];
