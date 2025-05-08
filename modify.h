@@ -22,8 +22,6 @@ public:
   Modify(class LAMMPS *);
   virtual void init();
   virtual void setup(int);
-  virtual void initial_integrate(int);
-  virtual void final_integrate();
   virtual void post_run();
   Fix *add_fix(int, char **, int trysuffix = 1);
   const std::vector<Fix *> &get_fix_list();

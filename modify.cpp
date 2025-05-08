@@ -104,14 +104,6 @@ void Modify::setup(int vflag) {
   for (int i = 0; i < nfix; i++)
     fix[i]->setup(vflag);
 }
-void Modify::initial_integrate(int vflag) {
-  for (int i = 0; i < n_initial_integrate; i++)
-    fix[list_initial_integrate[i]]->initial_integrate(vflag);
-}
-void Modify::final_integrate() {
-  for (int i = 0; i < n_final_integrate; i++)
-    fix[list_final_integrate[i]]->final_integrate();
-}
 void Modify::post_run() {
   for (int i = 0; i < nfix; i++)
     fix[i]->post_run();
