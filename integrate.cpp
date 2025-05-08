@@ -15,7 +15,6 @@ using namespace LAMMPS_NS;
 Integrate::Integrate(LAMMPS *lmp, int, char **) : Pointers(lmp) {
   elist_global = elist_atom = nullptr;
   vlist_global = vlist_atom = cvlist_atom = nullptr;
-  external_force_clear = 0;
 }
 void Integrate::init() {
   update->atimestep = update->ntimestep;
@@ -50,3 +49,4 @@ void Integrate::ev_set(bigint ntimestep) {
   int cvflag_atom = 0;
   vflag = vflag_global + vflag_atom + cvflag_atom;
 }
+

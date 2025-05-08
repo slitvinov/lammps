@@ -13,7 +13,6 @@ public:
 protected:
   int eflag, vflag;
   int virial_style;
-  int external_force_clear;
   int nelist_global, nelist_atom;
   int nvlist_global, nvlist_atom, ncvlist_atom;
   class Compute **elist_global;
