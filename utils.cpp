@@ -201,7 +201,6 @@ extern "C" {
 typedef struct regex_t *re_t;
 typedef struct regex_context_t *re_ctx_t;
 static re_t re_compile(re_ctx_t context, const char *pattern);
-static int re_matchp(const char *text, re_t pattern, int *matchlen);
 #define MAX_REGEXP_OBJECTS 256
 #define MAX_CHAR_CLASS_LEN 256
 enum {
@@ -237,35 +236,11 @@ typedef struct regex_context_t {
   regex_t re_compiled[MAX_REGEXP_OBJECTS];
   unsigned char ccl_buf[MAX_CHAR_CLASS_LEN];
 } regex_context_t;
-int re_match(const char *text, const char *pattern) {
-  regex_context_t context;
-  int dummy;
-  return re_matchp(text, re_compile(&context, pattern), &dummy);
-}
 static int matchpattern(regex_t *pattern, const char *text, int *matchlen);
 static int matchplus(regex_t p, regex_t *pattern, const char *text,
                      int *matchlen);
 static int matchone(regex_t p, char c);
 static int matchdigit(char c);
-int re_matchp(const char *text, re_t pattern, int *matchlen) {
-  *matchlen = 0;
-  if (pattern != nullptr) {
-    if (pattern[0].type == RX_BEGIN) {
-      return ((matchpattern(&pattern[1], text, matchlen)) ? 0 : -1);
-    } else {
-      int idx = -1;
-      do {
-        idx += 1;
-        if (matchpattern(pattern, text, matchlen)) {
-          if (text[0] == '\0')
-            return -1;
-          return idx;
-        }
-      } while (*text++ != '\0');
-    }
-  }
-  return -1;
-}
 re_t re_compile(re_ctx_t context, const char *pattern) {
   regex_t *const re_compiled = context->re_compiled;
   unsigned char *const ccl_buf = context->ccl_buf;

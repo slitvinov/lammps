@@ -57,18 +57,6 @@ NeighRequest::~NeighRequest() {
   delete[] iskip;
   memory->destroy(ijskip);
 }
-int NeighRequest::same_skip(NeighRequest *other) {
-  const int ntypes = atom->ntypes;
-  int same = 1;
-  for (int i = 1; i <= ntypes; i++)
-    if (iskip[i] != other->iskip[i])
-      same = 0;
-  for (int i = 1; i <= ntypes; i++)
-    for (int j = 1; j <= ntypes; j++)
-      if (ijskip[i][j] != other->ijskip[i][j])
-        same = 0;
-  return same;
-}
 void NeighRequest::copy_request(NeighRequest *other, int skipflag) {
   requestor = other->requestor;
   requestor_instance = other->requestor_instance;

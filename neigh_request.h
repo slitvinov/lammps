@@ -52,8 +52,6 @@ public:
   NeighRequest(class LAMMPS *, void *, int);
   NeighRequest(NeighRequest *);
   ~NeighRequest() override;
-  void archive();
-  int same_skip(NeighRequest *);
   void copy_request(NeighRequest *, int);
   int get_size() const { return size; }
   void *get_requestor() const { return requestor; }
