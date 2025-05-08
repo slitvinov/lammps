@@ -28,7 +28,7 @@ public:
   void create();
   void init();
 
-  class Fix *fix_nve;
+  class FixNVE *fix_nve;
 
 private:
   LAMMPS(){};

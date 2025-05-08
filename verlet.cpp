@@ -19,6 +19,7 @@
 #include "comm.h"
 #include "domain.h"
 #include "fix.h"
+#include "fix_nve.h"
 #include "force.h"
 #include "neighbor.h"
 #include "pair.h"
