@@ -27,12 +27,12 @@ CreateBox::CreateBox(LAMMPS *lmp) : Command(lmp) {}
 void CreateBox::command(int narg, char **arg) {
   domain->box_exist = 1;
   domain->triclinic = 0;
-  domain->boxlo[0] = lmp->region_block->extent_xlo;
-  domain->boxhi[0] = lmp->region_block->extent_xhi;
-  domain->boxlo[1] = lmp->region_block->extent_ylo;
-  domain->boxhi[1] = lmp->region_block->extent_yhi;
-  domain->boxlo[2] = lmp->region_block->extent_zlo;
-  domain->boxhi[2] = lmp->region_block->extent_zhi;
+  domain->boxlo[0] = lmp->region_block->xlo;
+  domain->boxhi[0] = lmp->region_block->xhi;
+  domain->boxlo[1] = lmp->region_block->ylo;
+  domain->boxhi[1] = lmp->region_block->yhi;
+  domain->boxlo[2] = lmp->region_block->zlo;
+  domain->boxhi[2] = lmp->region_block->zhi;
   atom->ntypes = utils::inumeric(FLERR, arg[0], false, lmp);
   int iarg = 2;
   update->ntimestep = 0;

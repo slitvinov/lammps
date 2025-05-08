@@ -6,8 +6,6 @@ class RegBlock : public Region {
 
 public:
   RegBlock(class LAMMPS *, int, char **);
-
-protected:
   double xlo, xhi, ylo, yhi, zlo, zhi;
 };
 } // namespace LAMMPS_NS

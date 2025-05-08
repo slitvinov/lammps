@@ -16,17 +16,10 @@ using namespace LAMMPS_NS;
 RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
     : Region(lmp, narg, arg) {
   options(narg - 8, &arg[8]);
-  xlo = xscale * utils::numeric(FLERR, arg[2], false, lmp);
-  xhi = xscale * utils::numeric(FLERR, arg[3], false, lmp);
-  ylo = yscale * utils::numeric(FLERR, arg[4], false, lmp);
-  yhi = yscale * utils::numeric(FLERR, arg[5], false, lmp);
-  zlo = zscale * utils::numeric(FLERR, arg[6], false, lmp);
-  zhi = zscale * utils::numeric(FLERR, arg[7], false, lmp);
-  bboxflag = 1;
-  extent_xlo = xlo;
-  extent_xhi = xhi;
-  extent_ylo = ylo;
-  extent_yhi = yhi;
-  extent_zlo = zlo;
-  extent_zhi = zhi;
+  xlo = utils::numeric(FLERR, arg[2], false, lmp);
+  xhi = utils::numeric(FLERR, arg[3], false, lmp);
+  ylo = utils::numeric(FLERR, arg[4], false, lmp);
+  yhi = utils::numeric(FLERR, arg[5], false, lmp);
+  zlo = utils::numeric(FLERR, arg[6], false, lmp);
+  zhi = utils::numeric(FLERR, arg[7], false, lmp);
 }

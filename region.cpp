@@ -25,7 +25,4 @@ Region::Region(LAMMPS *lmp, int, char **arg)
 }
 void Region::options(int narg, char **arg) {
   interior = 1;
-  for (int i = 0; i < 6; i++)
-    open_faces[i] = 0;
-  xscale = yscale = zscale = 1.0;
 }

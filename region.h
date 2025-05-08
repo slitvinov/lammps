@@ -6,12 +6,6 @@ public:
   char *id, *style;
   Region **reglist;
   int interior;
-  double xscale, yscale, zscale;
-  double extent_xlo, extent_xhi;
-  double extent_ylo, extent_yhi;
-  double extent_zlo, extent_zhi;
-  int bboxflag;
-  int open_faces[6];
   double dx, dy, dz, theta;
   double v[3];
   double rpoint[3];
