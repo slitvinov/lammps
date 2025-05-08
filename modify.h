@@ -14,11 +14,6 @@ public:
   int n_pre_force, n_pre_reverse, n_post_force_any;
   int n_final_integrate, n_end_of_step;
   int n_energy_couple, n_energy_global, n_energy_atom;
-  int n_initial_integrate_respa, n_post_integrate_respa;
-  int n_pre_force_respa, n_post_force_respa_any, n_final_integrate_respa;
-  int n_min_pre_exchange, n_min_pre_neighbor, n_min_post_neighbor;
-  int n_min_pre_force, n_min_pre_reverse, n_min_post_force, n_min_energy;
-  int restart_pbc_any;
   int nfix_restart_global;
   int nfix_restart_peratom;
   int nfix, maxfix;
@@ -27,7 +22,6 @@ public:
   Modify(class LAMMPS *);
   virtual void init();
   virtual void setup(int);
-  virtual void setup_pre_exchange();
   virtual void initial_integrate(int);
   virtual void pre_force(int);
   virtual void final_integrate();
@@ -36,19 +30,13 @@ public:
   const std::vector<Fix *> &get_fix_list();
 
 protected:
-  int n_post_force, n_post_force_group, n_post_force_respa;
+  int n_post_force, n_post_force_group;
   int *list_initial_integrate, *list_post_integrate;
   int *list_pre_exchange, *list_pre_neighbor, *list_post_neighbor;
   int *list_pre_force, *list_pre_reverse;
   int *list_post_force, *list_post_force_group;
   int *list_final_integrate, *list_end_of_step;
   int *list_energy_couple, *list_energy_global, *list_energy_atom;
-  int *list_initial_integrate_respa, *list_post_integrate_respa;
-  int *list_pre_force_respa, *list_post_force_respa;
-  int *list_final_integrate_respa;
-  int *list_min_pre_exchange, *list_min_pre_neighbor, *list_min_post_neighbor;
-  int *list_min_pre_force, *list_min_pre_reverse, *list_min_post_force;
-  int *list_min_energy;
   int *end_of_step_every;
   int n_timeflag;
   int *list_timeflag;
@@ -68,7 +56,6 @@ protected:
   void list_init_energy_global(int &, int *&);
   void list_init_energy_atom(int &, int *&);
   void list_init_post_force_group(int &, int *&);
-  void list_init_post_force_respa_group(int &, int *&);
   void list_init_dofflag(int &, int *&);
 
 public:

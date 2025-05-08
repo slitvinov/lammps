@@ -37,7 +37,6 @@ void Verlet::init() {
 void Verlet::setup(int flag) {
   update->setupflag = 1;
   atom->setup();
-  modify->setup_pre_exchange();
   domain->pbc();
   domain->reset_box();
   comm->setup();

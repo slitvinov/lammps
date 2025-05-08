@@ -23,7 +23,6 @@ public:
   int single_enable;
   int born_matrix_enable;
   int restartinfo;
-  int respa_enable;
   int one_coeff;
   int manybody_flag;
   int unit_convert_flag;

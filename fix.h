@@ -40,7 +40,6 @@ public:
   int no_change_box;
   int time_depend;
   int create_attribute;
-  int restart_pbc;
   int wd_header;
   int wd_section;
   int dof_flag;
@@ -92,7 +91,6 @@ public:
   virtual void init() {}
   virtual void init_list(int, class NeighList *) {}
   virtual void setup(int) {}
-  virtual void setup_pre_exchange() {}
   virtual void initial_integrate(int) {}
   virtual void post_integrate() {}
   virtual void pre_exchange() {}

@@ -39,14 +39,11 @@ Fix::Fix(LAMMPS *lmp, int, char **arg)
   time_integrate = 0;
   time_depend = 0;
   create_attribute = 0;
-  restart_pbc = 0;
   wd_header = wd_section = 0;
   dynamic = 0;
   dof_flag = 0;
   special_alter_flag = 0;
   enforce2d_flag = 0;
-  respa_level_support = 0;
-  respa_level = -1;
   maxexchange = 0;
   maxexchange_dynamic = 0;
   pre_exchange_migrate = 0;

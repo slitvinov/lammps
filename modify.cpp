@@ -35,10 +35,6 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp) {
   n_pre_force = n_pre_reverse = n_post_force_any = 0;
   n_final_integrate = n_end_of_step = 0;
   n_energy_couple = n_energy_global = n_energy_atom = 0;
-  n_initial_integrate_respa = n_post_integrate_respa = 0;
-  n_pre_force_respa = n_post_force_respa_any = n_final_integrate_respa = 0;
-  n_min_pre_exchange = n_min_pre_force = n_min_pre_reverse = 0;
-  n_min_post_force = n_min_energy = 0;
   n_timeflag = -1;
   fix = nullptr;
   fmask = nullptr;
@@ -48,16 +44,8 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp) {
   list_post_force = list_post_force_group = nullptr;
   list_final_integrate = list_end_of_step = nullptr;
   list_energy_couple = list_energy_global = list_energy_atom = nullptr;
-  list_initial_integrate_respa = list_post_integrate_respa = nullptr;
-  list_pre_force_respa = list_post_force_respa = nullptr;
-  list_final_integrate_respa = nullptr;
-  list_min_pre_exchange = list_min_pre_neighbor = list_min_post_neighbor =
-      nullptr;
-  list_min_pre_force = list_min_pre_reverse = list_min_post_force = nullptr;
-  list_min_energy = nullptr;
   end_of_step_every = nullptr;
   list_timeflag = nullptr;
-  restart_pbc_any = 0;
   nfix_restart_global = 0;
   id_restart_global = style_restart_global = nullptr;
   state_restart_global = nullptr;
@@ -75,10 +63,6 @@ void Modify::init() {
   int i, j;
   for (i = 0; i < nfix; i++)
     fix[i]->init();
-  restart_pbc_any = 0;
-  for (i = 0; i < nfix; i++)
-    if (fix[i]->restart_pbc)
-      restart_pbc_any = 1;
   list_init(INITIAL_INTEGRATE, n_initial_integrate, list_initial_integrate);
   list_init(POST_INTEGRATE, n_post_integrate, list_post_integrate);
   list_init(PRE_EXCHANGE, n_pre_exchange, list_pre_exchange);
@@ -93,23 +77,7 @@ void Modify::init() {
   list_init_energy_couple(n_energy_couple, list_energy_couple);
   list_init_energy_global(n_energy_global, list_energy_global);
   list_init_energy_atom(n_energy_atom, list_energy_atom);
-  list_init(INITIAL_INTEGRATE_RESPA, n_initial_integrate_respa,
-            list_initial_integrate_respa);
-  list_init(POST_INTEGRATE_RESPA, n_post_integrate_respa,
-            list_post_integrate_respa);
-  list_init(POST_FORCE_RESPA, n_post_force_respa, list_post_force_respa);
-  list_init(PRE_FORCE_RESPA, n_pre_force_respa, list_pre_force_respa);
-  list_init(FINAL_INTEGRATE_RESPA, n_final_integrate_respa,
-            list_final_integrate_respa);
-  list_init(MIN_PRE_EXCHANGE, n_min_pre_exchange, list_min_pre_exchange);
-  list_init(MIN_PRE_NEIGHBOR, n_min_pre_neighbor, list_min_pre_neighbor);
-  list_init(MIN_POST_NEIGHBOR, n_min_post_neighbor, list_min_post_neighbor);
-  list_init(MIN_PRE_FORCE, n_min_pre_force, list_min_pre_force);
-  list_init(MIN_PRE_REVERSE, n_min_pre_reverse, list_min_pre_reverse);
-  list_init(MIN_POST_FORCE, n_min_post_force, list_min_post_force);
-  list_init(MIN_ENERGY, n_min_energy, list_min_energy);
   n_post_force_any = n_post_force + n_post_force_group;
-  n_post_force_respa_any = n_post_force_respa + n_post_force_group;
   int nlocal = atom->nlocal;
   int *mask = atom->mask;
   int *flag = new int[nlocal];
@@ -134,22 +102,7 @@ void Modify::init() {
 }
 void Modify::setup(int vflag) {
   for (int i = 0; i < nfix; i++)
-    if (strcmp(fix[i]->style, "GROUP") == 0)
-      fix[i]->setup(vflag);
-  if (update->whichflag == 1)
-    for (int i = 0; i < nfix; i++)
-      fix[i]->setup(vflag);
-  else if (update->whichflag == 2)
-    for (int i = 0; i < nfix; i++)
-      fix[i]->min_setup(vflag);
-}
-void Modify::setup_pre_exchange() {
-  if (update->whichflag <= 1)
-    for (int i = 0; i < n_pre_exchange; i++)
-      fix[list_pre_exchange[i]]->setup_pre_exchange();
-  else if (update->whichflag == 2)
-    for (int i = 0; i < n_min_pre_exchange; i++)
-      fix[list_min_pre_exchange[i]]->setup_pre_exchange();
+    fix[i]->setup(vflag);
 }
 void Modify::initial_integrate(int vflag) {
   for (int i = 0; i < n_initial_integrate; i++)
@@ -181,31 +134,16 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
                               "amoeba/pitorsion",
                               "amoeba/bitorsion",
                               nullptr};
-  if (domain->box_exist == 0) {
-    int m;
-    for (m = 0; exceptions[m] != nullptr; m++)
-      if (strcmp(arg[2], exceptions[m]) == 0)
-        break;
-  }
   int igroup = group->find(arg[1]);
   int ifix, newflag;
   for (ifix = 0; ifix < nfix; ifix++)
     if (strcmp(arg[0], fix[ifix]->id) == 0)
       break;
-  if (ifix < nfix) {
-    newflag = 0;
-    int match = 0;
-    if (strcmp(arg[2], fix[ifix]->style) == 0)
-      match = 1;
-    delete fix[ifix];
-    fix[ifix] = nullptr;
-  } else {
-    newflag = 1;
-    if (nfix == maxfix) {
-      maxfix += DELTA;
-      fix = (Fix **)memory->srealloc(fix, maxfix * sizeof(Fix *), "modify:fix");
-      memory->grow(fmask, maxfix, "modify:fmask");
-    }
+  newflag = 1;
+  if (nfix == maxfix) {
+    maxfix += DELTA;
+    fix = (Fix **)memory->srealloc(fix, maxfix * sizeof(Fix *), "modify:fix");
+    memory->grow(fmask, maxfix, "modify:fmask");
   }
   fix[ifix] = nullptr;
   if ((fix[ifix] == nullptr) && (fix_map->find(arg[2]) != fix_map->end())) {
@@ -217,22 +155,6 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
     fix_list = std::vector<Fix *>(fix, fix + nfix);
   }
   fix[ifix]->post_constructor();
-  for (int i = 0; i < nfix_restart_global; i++)
-    if ((strcmp(id_restart_global[i], fix[ifix]->id) == 0) &&
-        (utils::strip_style_suffix(fix[ifix]->style, lmp) ==
-         style_restart_global[i])) {
-      fix[ifix]->restart(state_restart_global[i]);
-      used_restart_global[i] = 1;
-      fix[ifix]->restart_reset = 1;
-    }
-  for (int i = 0; i < nfix_restart_peratom; i++)
-    if (strcmp(id_restart_peratom[i], fix[ifix]->id) == 0 &&
-        strcmp(style_restart_peratom[i], fix[ifix]->style) == 0) {
-      used_restart_peratom[i] = 1;
-      for (int j = 0; j < atom->nlocal; j++)
-        fix[ifix]->unpack_restart(j, index_restart_peratom[i]);
-      fix[ifix]->restart_reset = 1;
-    }
   fmask[ifix] = fix[ifix]->setmask();
   return fix[ifix];
 }
