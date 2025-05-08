@@ -13,6 +13,3 @@
 using namespace LAMMPS_NS;
 Integrate::Integrate(LAMMPS *lmp, int, char **) : Pointers(lmp) {
 }
-void Integrate::init() {
-  update->atimestep = update->ntimestep;
-}

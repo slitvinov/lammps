@@ -27,7 +27,7 @@
 using namespace LAMMPS_NS;
 Verlet::Verlet(LAMMPS *lmp, int narg, char **arg) : Integrate(lmp, narg, arg) {}
 void Verlet::init() {
-  Integrate::init();
+  update->atimestep = update->ntimestep;
   torqueflag = extraflag = 0;
 }
 void Verlet::setup(int flag) {
