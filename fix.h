@@ -26,28 +26,10 @@ public:
     BOX_CHANGE_SIZE = BOX_CHANGE_X | BOX_CHANGE_Y | BOX_CHANGE_Z,
     BOX_CHANGE_SHAPE = BOX_CHANGE_YZ | BOX_CHANGE_XZ | BOX_CHANGE_XY
   };
-  bigint next_reneighbor;
   int nevery;
-  int thermo_energy;
-  int thermo_virial;
-  int energy_global_flag;
-  int energy_peratom_flag;
-  int virial_global_flag;
-  int virial_peratom_flag;
-  int ecouple_flag;
   int time_integrate;
-  int rigid_flag;
-  int no_change_box;
-  int time_depend;
-  int create_attribute;
-  int wd_header;
-  int wd_section;
-  int dof_flag;
-  int special_alter_flag;
-  int enforce2d_flag;
   int maxexchange;
   int maxexchange_dynamic;
-  int pre_exchange_migrate;
   int stores_ids;
   int scalar_flag;
   int vector_flag;
@@ -71,15 +53,12 @@ public:
   int extarray;
   double *vector_atom;
   double **array_atom;
-  double *vector_local;
-  double **array_local;
   int comm_forward;
   int comm_reverse;
   int comm_border;
   double virial[6];
   double *eatom, **vatom;
   double **cvatom;
-  int restart_reset;
   unsigned int datamask_read, datamask_modify;
   Fix(class LAMMPS *, int, char **);
   virtual int setmask() = 0;
