@@ -11,7 +11,6 @@ public:
   void cleanup() override;
 
 protected:
-  int triclinic;
   int torqueflag, extraflag;
 };
 } // namespace LAMMPS_NS

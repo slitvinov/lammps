@@ -35,7 +35,6 @@ void Verlet::init() {
   virial_style = VIRIAL_FDOTR;
   ev_setup();
   torqueflag = extraflag = 0;
-  triclinic = domain->triclinic;
 }
 void Verlet::setup(int flag) {
   update->setupflag = 1;
