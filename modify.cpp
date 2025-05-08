@@ -167,22 +167,6 @@ void Modify::setup_post_neighbor() {
     for (int i = 0; i < n_min_post_neighbor; i++)
       fix[list_min_post_neighbor[i]]->setup_post_neighbor();
 }
-void Modify::setup_pre_force(int vflag) {
-  if (update->whichflag == 1)
-    for (int i = 0; i < n_pre_force; i++)
-      fix[list_pre_force[i]]->setup_pre_force(vflag);
-  else if (update->whichflag == 2)
-    for (int i = 0; i < n_min_pre_force; i++)
-      fix[list_min_pre_force[i]]->setup_pre_force(vflag);
-}
-void Modify::setup_pre_reverse(int eflag, int vflag) {
-  if (update->whichflag == 1)
-    for (int i = 0; i < n_pre_reverse; i++)
-      fix[list_pre_reverse[i]]->setup_pre_reverse(eflag, vflag);
-  else if (update->whichflag == 2)
-    for (int i = 0; i < n_min_pre_reverse; i++)
-      fix[list_min_pre_reverse[i]]->setup_pre_reverse(eflag, vflag);
-}
 void Modify::initial_integrate(int vflag) {
   for (int i = 0; i < n_initial_integrate; i++)
     fix[list_initial_integrate[i]]->initial_integrate(vflag);

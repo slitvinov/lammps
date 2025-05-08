@@ -95,7 +95,6 @@ public:
   virtual void setup_pre_exchange() {}
   virtual void setup_pre_neighbor() {}
   virtual void setup_post_neighbor() {}
-  virtual void setup_pre_reverse(int, int) {}
   virtual void initial_integrate(int) {}
   virtual void post_integrate() {}
   virtual void pre_exchange() {}

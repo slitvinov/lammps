@@ -52,9 +52,7 @@ void Verlet::setup(int flag) {
   force->setup();
   ev_set(update->ntimestep);
   force_clear();
-  modify->setup_pre_force(0);
   force->pair->compute(0, 0);
-  modify->setup_pre_reverse(0, 0);
   if (force->newton)
     comm->reverse_comm();
   modify->setup(0);
