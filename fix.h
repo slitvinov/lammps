@@ -9,7 +9,6 @@ public:
   char *id, *style;
   int igroup, groupbit;
   int nevery;
-  int time_integrate;
   int maxexchange;
   int stores_ids;
   int scalar_flag;

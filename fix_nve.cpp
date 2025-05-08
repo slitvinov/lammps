@@ -15,7 +15,6 @@
 using namespace LAMMPS_NS;
 using namespace FixConst;
 FixNVE::FixNVE(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg) {
-  time_integrate = 1;
 }
 void FixNVE::init() {
   dtv = update->dt;

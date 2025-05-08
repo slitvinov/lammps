@@ -26,7 +26,6 @@ Fix::Fix(LAMMPS *lmp, int, char **arg)
   igroup = group->find(arg[1]);
   groupbit = group->bitmask[igroup];
   style = utils::strdup(arg[2]);
-  time_integrate = 0;
   dynamic = 0;
   maxexchange = 0;
   stores_ids = 0;
