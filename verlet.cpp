@@ -52,9 +52,9 @@ void Verlet::setup(int flag) {
   force->setup();
   ev_set(update->ntimestep);
   force_clear();
-  modify->setup_pre_force(vflag);
-  force->pair->compute(eflag, vflag);
-  modify->setup_pre_reverse(eflag, vflag);
+  modify->setup_pre_force(0);
+  force->pair->compute(0, 0);
+  modify->setup_pre_reverse(0, 0);
   if (force->newton)
     comm->reverse_comm();
   modify->setup(vflag);
@@ -75,7 +75,7 @@ void Verlet::run(int n) {
   for (int i = 0; i < n; i++) {
     ntimestep = ++update->ntimestep;
     ev_set(ntimestep);
-    modify->initial_integrate(vflag);
+    modify->initial_integrate(0);
     nflag = neighbor->decide();
     domain->pbc();
     comm->exchange();
@@ -84,7 +84,7 @@ void Verlet::run(int n) {
     comm->borders();
     neighbor->build(1);
     force_clear();
-    force->pair->compute(eflag, vflag);
+    force->pair->compute(0, 0);
     comm->reverse_comm();
     modify->final_integrate();
   }
