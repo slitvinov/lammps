@@ -32,8 +32,6 @@ void Verlet::init() {
   for (const auto &fix : modify->get_fix_list())
     if (fix->time_integrate)
       do_time_integrate = true;
-  virial_style = VIRIAL_FDOTR;
-  ev_setup();
   torqueflag = extraflag = 0;
 }
 void Verlet::setup(int flag) {

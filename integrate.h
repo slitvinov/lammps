@@ -11,18 +11,6 @@ public:
   virtual void cleanup() {}
 
 protected:
-  int eflag, vflag;
-  int virial_style;
-  int nelist_global, nelist_atom;
-  int nvlist_global, nvlist_atom, ncvlist_atom;
-  class Compute **elist_global;
-  class Compute **elist_atom;
-  class Compute **vlist_global;
-  class Compute **vlist_atom;
-  class Compute **cvlist_atom;
-  int pair_compute_flag;
-  int kspace_compute_flag;
-  void ev_setup();
   void ev_set(bigint);
 };
 } // namespace LAMMPS_NS
