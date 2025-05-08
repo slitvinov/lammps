@@ -33,7 +33,6 @@ public:
   std::vector<std::string> fields_data_atom, fields_data_vel;
   AtomVec(class LAMMPS *);
   void store_args(int, char **);
-  virtual void process_args(int, char **);
   virtual void init();
   virtual void grow(int);
   virtual void grow_pointers() {}

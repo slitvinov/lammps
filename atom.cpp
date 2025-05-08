@@ -169,7 +169,7 @@ void Atom::set_atomflag_defaults() {
   dpd_flag = edpd_flag = tdpd_flag = 0;
 }
 void Atom::create_avec(const std::string &style, int narg, char **arg,
-                       int trysuffix) {
+                       int) {
   delete[] atom_style;
   if (avec)
     delete avec;
@@ -178,7 +178,6 @@ void Atom::create_avec(const std::string &style, int narg, char **arg,
   set_atomflag_defaults();
   avec = new_avec(style);
   avec->store_args(narg, arg);
-  avec->process_args(narg, arg);
   avec->grow(1);
   atom_style = utils::strdup(style);
 }

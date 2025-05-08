@@ -56,11 +56,10 @@ AtomVec::AtomVec(LAMMPS *lmp) : Pointers(lmp) {
   x = v = f = nullptr;
   threads = nullptr;
 }
-void AtomVec::store_args(int narg, char **arg) {
+void AtomVec::store_args(int narg, char **) {
   nargcopy = narg;
   argcopy = nullptr;
 }
-void AtomVec::process_args(int narg, char **) {}
 void AtomVec::init() {
   h_rate = domain->h_rate;
 }
