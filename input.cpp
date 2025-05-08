@@ -186,7 +186,7 @@ int Input::execute_command() {
   if (mycmd == "comm_modify")
     comm->modify_params(narg, arg);
   else if (mycmd == "fix") {
-    lmp->fix_nve = modify->add_fix(narg, arg);
+    lmp->fix_nve = new FixNVE(lmp, narg, arg);
   }
   else if (mycmd == "mass")
     atom->set_mass(FLERR, narg, arg);
