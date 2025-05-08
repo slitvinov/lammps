@@ -11,7 +11,6 @@
 #include "lammps.h"
 #include "pointers.h"
 #include "lmptype.h"
-#include "integrate.h"
 #include "verlet.h"
 #include "atom.h"
 #include "atom_vec.h"
@@ -25,7 +24,7 @@
 #include "pair.h"
 #include "update.h"
 using namespace LAMMPS_NS;
-Verlet::Verlet(LAMMPS *lmp, int narg, char **arg) : Integrate(lmp, narg, arg) {}
+Verlet::Verlet(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp) {}
 void Verlet::init() {
   update->atimestep = update->ntimestep;
   torqueflag = extraflag = 0;

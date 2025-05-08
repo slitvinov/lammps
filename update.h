@@ -21,9 +21,9 @@ public:
   bigint eflag_global, eflag_atom;
   bigint vflag_global, vflag_atom;
   char *unit_style;
-  class Integrate *integrate;
+  class Verlet *integrate;
   char *integrate_style;
-  typedef Integrate *(*IntegrateCreator)(LAMMPS *, int, char **);
+  typedef Verlet *(*IntegrateCreator)(LAMMPS *, int, char **);
   typedef std::map<std::string, IntegrateCreator> IntegrateCreatorMap;
   IntegrateCreatorMap *integrate_map;
   Update(class LAMMPS *);

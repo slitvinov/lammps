@@ -23,7 +23,6 @@ fix.o \
 force.o \
 group.o \
 input.o \
-integrate.o \
 main.o \
 memory.o \
 my_page.o \

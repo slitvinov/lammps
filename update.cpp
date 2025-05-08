@@ -12,14 +12,12 @@
 #include "comm.h"
 #include "fix.h"
 #include "force.h"
-#include "integrate.h"
 #include "neighbor.h"
 #include "lmptype.h"
-#include "integrate.h"
 #include "verlet.h"
 using namespace LAMMPS_NS;
 template <typename T>
-static Integrate *integrate_creator(LAMMPS *lmp, int narg, char **arg) {
+static Verlet *integrate_creator(LAMMPS *lmp, int narg, char **arg) {
   return new T(lmp, narg, arg);
 }
 Update::Update(LAMMPS *lmp) : Pointers(lmp) {
