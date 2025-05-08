@@ -53,9 +53,6 @@ void CreateAtoms::command(int narg, char **arg) {
   subhi[2] = domain->subhi[2];
   MPI_Barrier(world);
   atom->nghost = 0;
-  atom->avec->clear_bonus();
-  bigint natoms_previous = atom->natoms;
-  int nlocal_previous = atom->nlocal;
   add_random();
   bigint nblocal = atom->nlocal;
   MPI_Allreduce(&nblocal, &atom->natoms, 1, MPI_LMP_BIGINT, MPI_SUM, world);

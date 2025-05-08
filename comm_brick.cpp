@@ -150,7 +150,6 @@ void CommBrick::exchange() {
   int i, nsend, nrecv, nrecv1, nrecv2, nlocal;
   MPI_Request request;
   atom->nghost = 0;
-  atom->avec->clear_bonus();
   int dimension = domain->dimension;
   for (int dim = 0; dim < dimension; dim++) {
     nlocal = atom->nlocal;

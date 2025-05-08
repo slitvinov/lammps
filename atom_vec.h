@@ -37,7 +37,6 @@ public:
   virtual void grow(int);
   virtual void grow_pointers() {}
   virtual void copy(int, int, int);
-  virtual void clear_bonus() {}
   virtual void unpack_reverse(int, int *, double *);
   virtual int pack_border_vel(int, int *, double *, int, int *);
   virtual void unpack_border_vel(int, int, double *);
