@@ -23,7 +23,6 @@ public:
   virtual void init();
   virtual void setup(int);
   virtual void initial_integrate(int);
-  virtual void pre_force(int);
   virtual void final_integrate();
   virtual void post_run();
   Fix *add_fix(int, char **, int trysuffix = 1);

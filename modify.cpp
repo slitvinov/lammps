@@ -108,10 +108,6 @@ void Modify::initial_integrate(int vflag) {
   for (int i = 0; i < n_initial_integrate; i++)
     fix[list_initial_integrate[i]]->initial_integrate(vflag);
 }
-void Modify::pre_force(int vflag) {
-  for (int i = 0; i < n_pre_force; i++)
-    fix[list_pre_force[i]]->pre_force(vflag);
-}
 void Modify::final_integrate() {
   for (int i = 0; i < n_final_integrate; i++)
     fix[list_final_integrate[i]]->final_integrate();
@@ -122,18 +118,6 @@ void Modify::post_run() {
   n_timeflag = -1;
 }
 Fix *Modify::add_fix(int narg, char **arg, int trysuffix) {
-  const char *exceptions[] = {"GPU",
-                              "OMP",
-                              "INTEL",
-                              "property/atom",
-                              "cmap",
-                              "cmap3",
-                              "rx",
-                              "deprecated",
-                              "STORE/KIM",
-                              "amoeba/pitorsion",
-                              "amoeba/bitorsion",
-                              nullptr};
   int igroup = group->find(arg[1]);
   int ifix, newflag;
   for (ifix = 0; ifix < nfix; ifix++)
@@ -165,76 +149,38 @@ const std::vector<Fix *> &Modify::get_fix_list() {
 void Modify::list_init(int mask, int &n, int *&list) {
   delete[] list;
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fmask[i] & mask)
-      n++;
   list = new int[n];
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fmask[i] & mask)
-      list[n++] = i;
 }
 void Modify::list_init_end_of_step(int mask, int &n, int *&list) {
   delete[] list;
   delete[] end_of_step_every;
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fmask[i] & mask)
-      n++;
   list = new int[n];
   end_of_step_every = new int[n];
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fmask[i] & mask) {
-      list[n] = i;
-      end_of_step_every[n++] = fix[i]->nevery;
-    }
 }
 void Modify::list_init_energy_couple(int &n, int *&list) {
   delete[] list;
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->ecouple_flag)
-      n++;
   list = new int[n];
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->ecouple_flag)
-      list[n++] = i;
 }
 void Modify::list_init_energy_global(int &n, int *&list) {
   delete[] list;
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->energy_global_flag && fix[i]->thermo_energy)
-      n++;
   list = new int[n];
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->energy_global_flag && fix[i]->thermo_energy)
-      list[n++] = i;
 }
 void Modify::list_init_energy_atom(int &n, int *&list) {
   delete[] list;
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->energy_peratom_flag && fix[i]->thermo_energy)
-      n++;
   list = new int[n];
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (fix[i]->energy_peratom_flag && fix[i]->thermo_energy)
-      list[n++] = i;
 }
 void Modify::list_init_post_force_group(int &n, int *&list) {
   delete[] list;
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (strcmp(fix[i]->style, "GROUP") == 0)
-      n++;
   list = new int[n];
   n = 0;
-  for (int i = 0; i < nfix; i++)
-    if (strcmp(fix[i]->style, "GROUP") == 0)
-      list[n++] = i;
 }
