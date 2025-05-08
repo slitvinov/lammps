@@ -11,7 +11,6 @@
 #include "comm.h"
 #include "fix.h"
 #include "memory.h"
-#include "modify.h"
 #include "universe.h"
 #include "update.h"
 #include <cctype>

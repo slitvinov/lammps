@@ -80,7 +80,6 @@ protected:
   int triclinic;
   int newton_pair;
   int fix_check;
-  int *fixchecklist;
   double triggersq;
   double **xhold;
   int maxhold;

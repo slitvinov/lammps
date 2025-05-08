@@ -17,7 +17,6 @@
 #include "force.h"
 #include "group.h"
 #include "memory.h"
-#include "modify.h"
 #include "neighbor.h"
 #include "pair.h"
 #include "procmap.h"
@@ -70,33 +69,21 @@ void Comm::init() {
     size_forward += atom->avec->size_velocity;
   if (ghost_velocity)
     size_border += atom->avec->size_velocity;
-  const auto &fix_list = modify->get_fix_list();
-  for (const auto &fix : fix_list)
-    size_border += fix->comm_border;
   maxforward = MAX(size_forward, size_border);
   maxreverse = size_reverse;
   if (force->pair)
     maxforward = MAX(maxforward, force->pair->comm_forward);
   if (force->pair)
     maxreverse = MAX(maxreverse, force->pair->comm_reverse);
-  for (const auto &fix : fix_list) {
-    maxforward = MAX(maxforward, fix->comm_forward);
-    maxreverse = MAX(maxreverse, fix->comm_reverse);
-  }
   if (force->newton == 0)
     maxreverse = 0;
   if (force->pair)
     maxreverse = MAX(maxreverse, force->pair->comm_reverse_off);
   maxexchange_atom = atom->avec->maxexchange;
   maxexchange_fix_dynamic = 0;
-  for (const auto &fix : fix_list)
-    if (fix->maxexchange_dynamic)
-      maxexchange_fix_dynamic = 1;
 }
 void Comm::init_exchange() {
   maxexchange_fix = 0;
-  for (const auto &fix : modify->get_fix_list())
-    maxexchange_fix += fix->maxexchange;
   maxexchange = maxexchange_atom + maxexchange_fix;
   bufextra = maxexchange + BUFEXTRA;
 }

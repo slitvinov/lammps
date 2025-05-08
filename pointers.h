@@ -12,7 +12,7 @@ public:
     : lmp(ptr), memory(ptr->memory),
         universe(ptr->universe), input(ptr->input), atom(ptr->atom),
         update(ptr->update), neighbor(ptr->neighbor), comm(ptr->comm),
-        domain(ptr->domain), force(ptr->force), modify(ptr->modify),
+        domain(ptr->domain), force(ptr->force),
         group(ptr->group), world(ptr->world), infile(ptr->infile),
         screen(ptr->screen), logfile(ptr->logfile) {}
   virtual ~Pointers() = default;
@@ -33,7 +33,6 @@ protected:
   Comm *&comm;
   Domain *&domain;
   Force *&force;
-  Modify *&modify;
   Group *&group;
   MPI_Comm &world;
   FILE *&infile;

@@ -17,7 +17,6 @@
 #include "fix.h"
 #include "force.h"
 #include "memory.h"
-#include "modify.h"
 #include "region.h"
 #include "region_block.h"
 #include "universe.h"
@@ -66,7 +65,6 @@ void Domain::init() {
   box_change_size = box_change_shape = box_change_domain = 0;
   int box_change_x = 0, box_change_y = 0, box_change_z = 0;
   int box_change_yz = 0, box_change_xz = 0, box_change_xy = 0;
-  const auto &fixes = modify->get_fix_list();
   box_change = 0;
   for (auto &reg : regions)
     reg->init();

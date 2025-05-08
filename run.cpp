@@ -13,7 +13,6 @@
 #include "run.h"
 #include "domain.h"
 #include "integrate.h"
-#include "modify.h"
 #include "update.h"
 using namespace LAMMPS_NS;
 Run::Run(LAMMPS *lmp) : Command(lmp) {}

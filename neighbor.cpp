@@ -21,7 +21,6 @@
 #include "force.h"
 #include "group.h"
 #include "memory.h"
-#include "modify.h"
 #include "nbin.h"
 #include "nbin_standard.h"
 #include "neigh_list.h"
@@ -61,7 +60,6 @@ Neighbor::Neighbor(LAMMPS *lmp)
   cutneighghostsq = nullptr;
   cuttype = nullptr;
   cuttypesq = nullptr;
-  fixchecklist = nullptr;
   nlist = 0;
   lists = nullptr;
   nbin = 0;
@@ -140,9 +138,6 @@ void Neighbor::init() {
   }
   cutneighmaxsq = cutneighmax * cutneighmax;
   int respa = 0;
-  delete[] fixchecklist;
-  fixchecklist = nullptr;
-  fixchecklist = new int[modify->nfix];
   fix_check = 0;
   memory->destroy(xhold);
   maxhold = 0;

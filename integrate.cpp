@@ -8,7 +8,6 @@
 #include "lmptype.h"
 #include "integrate.h"
 #include "force.h"
-#include "modify.h"
 #include "pair.h"
 #include "update.h"
 using namespace LAMMPS_NS;

@@ -18,7 +18,6 @@
 #include "fix.h"
 #include "force.h"
 #include "memory.h"
-#include "modify.h"
 using namespace LAMMPS_NS;
 const std::vector<std::string> AtomVec::default_grow = {
     "id", "type", "mask", "image", "x", "v", "f"};

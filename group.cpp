@@ -20,7 +20,6 @@
 #include "fix.h"
 #include "force.h"
 #include "memory.h"
-#include "modify.h"
 #include "region.h"
 using namespace LAMMPS_NS;
 static constexpr int MAX_GROUP = 32;

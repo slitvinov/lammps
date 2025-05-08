@@ -13,7 +13,6 @@
 #include "fix.h"
 #include "force.h"
 #include "integrate.h"
-#include "modify.h"
 #include "neighbor.h"
 #include "lmptype.h"
 #include "integrate.h"

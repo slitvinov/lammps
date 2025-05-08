@@ -26,7 +26,6 @@ input.o \
 integrate.o \
 main.o \
 memory.o \
-modify.o \
 my_page.o \
 nbin.o \
 nbin_standard.o \

@@ -12,7 +12,6 @@ public:
   class Comm *comm;
   class Domain *domain;
   class Force *force;
-  class Modify *modify;
   class Group *group;
   int restart_ver;
   MPI_Comm world;

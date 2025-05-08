@@ -24,7 +24,6 @@
 #include "lammps.h"
 #include "library.h"
 #include "memory.h"
-#include "modify.h"
 #include "neighbor.h"
 #include "universe.h"
 #include "update.h"
@@ -32,7 +31,7 @@ using namespace LAMMPS_NS;
 LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     : memory(nullptr), universe(nullptr), input(nullptr),
       atom(nullptr), update(nullptr), neighbor(nullptr), comm(nullptr),
-      domain(nullptr), force(nullptr), modify(nullptr), group(nullptr) {
+      domain(nullptr), force(nullptr), group(nullptr) {
   memory = new Memory(this);
   universe = new Universe(this, communicator);
   restart_ver = -1;
@@ -96,7 +95,6 @@ void LAMMPS::create() {
   atom->create_avec("atomic", 0, nullptr, 1);
   group = new Group(this);
   force = new Force(this);
-  modify = new Modify(this);
   update = new Update(this);
 }
 void LAMMPS::init() {
@@ -104,7 +102,6 @@ void LAMMPS::init() {
   force->init();
   domain->init();
   atom->init();
-  modify->init();
   neighbor->init();
   comm->init();
 }
