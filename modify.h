@@ -28,8 +28,6 @@ public:
   virtual void init();
   virtual void setup(int);
   virtual void setup_pre_exchange();
-  virtual void setup_pre_neighbor();
-  virtual void setup_post_neighbor();
   virtual void initial_integrate(int);
   virtual void pre_force(int);
   virtual void final_integrate();

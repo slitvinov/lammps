@@ -45,9 +45,7 @@ void Verlet::setup(int flag) {
   if (atom->sortfreq > 0)
     atom->sort();
   comm->borders();
-  modify->setup_pre_neighbor();
   neighbor->build(1);
-  modify->setup_post_neighbor();
   neighbor->ncalls = 0;
   force->setup();
   ev_set(update->ntimestep);
