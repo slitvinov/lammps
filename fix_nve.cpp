@@ -13,7 +13,6 @@
 #include "force.h"
 #include "update.h"
 using namespace LAMMPS_NS;
-using namespace FixConst;
 FixNVE::FixNVE(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg) {
 }
 void FixNVE::init() {

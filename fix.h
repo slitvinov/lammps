@@ -58,32 +58,5 @@ protected:
   int copymode;
   int dynamic;
 };
-namespace FixConst {
-enum {
-  INITIAL_INTEGRATE = 1 << 0,
-  POST_INTEGRATE = 1 << 1,
-  PRE_EXCHANGE = 1 << 2,
-  PRE_NEIGHBOR = 1 << 3,
-  POST_NEIGHBOR = 1 << 4,
-  PRE_FORCE = 1 << 5,
-  PRE_REVERSE = 1 << 6,
-  POST_FORCE = 1 << 7,
-  FINAL_INTEGRATE = 1 << 8,
-  END_OF_STEP = 1 << 9,
-  POST_RUN = 1 << 10,
-  INITIAL_INTEGRATE_RESPA = 1 << 11,
-  POST_INTEGRATE_RESPA = 1 << 12,
-  PRE_FORCE_RESPA = 1 << 13,
-  POST_FORCE_RESPA = 1 << 14,
-  FINAL_INTEGRATE_RESPA = 1 << 15,
-  MIN_PRE_EXCHANGE = 1 << 16,
-  MIN_PRE_NEIGHBOR = 1 << 17,
-  MIN_POST_NEIGHBOR = 1 << 18,
-  MIN_PRE_FORCE = 1 << 19,
-  MIN_PRE_REVERSE = 1 << 20,
-  MIN_POST_FORCE = 1 << 21,
-  MIN_ENERGY = 1 << 22
-};
-}
 } // namespace LAMMPS_NS
 #endif

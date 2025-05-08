@@ -15,7 +15,6 @@
 #include "memory.h"
 #include <cstring>
 using namespace LAMMPS_NS;
-using namespace FixConst;
 int Fix::instance_total = 0;
 Fix::Fix(LAMMPS *lmp, int, char **arg)
     : Pointers(lmp), id(nullptr), style(nullptr),
