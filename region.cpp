@@ -23,7 +23,6 @@ Region::Region(LAMMPS *lmp, int, char **arg)
   dx = dy = dz = 0.0;
   nregion = 1;
 }
-void Region::init() { vel_timestep = -1; }
 void Region::options(int narg, char **arg) {
   interior = 1;
   for (int i = 0; i < 6; i++)

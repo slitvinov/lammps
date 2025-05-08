@@ -18,10 +18,8 @@ public:
   double omega[3];
   double rprev;
   double xcenter[3];
-  int vel_timestep;
   int nregion;
   Region(class LAMMPS *, int, char **);
-  virtual void init();
 
 protected:
   void options(int, char **);

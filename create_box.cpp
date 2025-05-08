@@ -26,7 +26,6 @@ using namespace LAMMPS_NS;
 CreateBox::CreateBox(LAMMPS *lmp) : Command(lmp) {}
 void CreateBox::command(int narg, char **arg) {
   domain->box_exist = 1;
-  lmp->region_block->init();
   domain->triclinic = 0;
   domain->boxlo[0] = lmp->region_block->extent_xlo;
   domain->boxhi[0] = lmp->region_block->extent_xhi;

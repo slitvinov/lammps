@@ -30,4 +30,3 @@ RegBlock::RegBlock(LAMMPS *lmp, int narg, char **arg)
   extent_zlo = zlo;
   extent_zhi = zhi;
 }
-void RegBlock::init() { Region::init(); }
