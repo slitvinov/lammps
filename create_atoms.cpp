@@ -41,7 +41,6 @@ static constexpr const char *mesh_name[] = {"recursive bisection",
 CreateAtoms::CreateAtoms(LAMMPS *lmp) : Command(lmp) {}
 void CreateAtoms::command(int narg, char **arg) {
   ntype = utils::inumeric(FLERR, arg[0], false, lmp);
-  const char *meshfile;
   int iarg;
   nrandom = utils::bnumeric(FLERR, arg[2], false, lmp);
   seed = utils::inumeric(FLERR, arg[3], false, lmp);
