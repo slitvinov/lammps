@@ -54,7 +54,6 @@ public:
 
 protected:
   double small[3];
-  std::unordered_set<Region *> regions;
 };
 } // namespace LAMMPS_NS
 #endif

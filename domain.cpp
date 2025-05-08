@@ -60,8 +60,6 @@ void Domain::init() {
   int box_change_x = 0, box_change_y = 0, box_change_z = 0;
   int box_change_yz = 0, box_change_xz = 0, box_change_xy = 0;
   box_change = 0;
-  for (auto &reg : regions)
-    reg->init();
 }
 void Domain::set_initial_box(int expandflag) {
   small[0] = SMALL * (boxhi[0] - boxlo[0]);
