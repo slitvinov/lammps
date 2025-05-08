@@ -43,8 +43,6 @@ void Force::setup() {
 }
 void Force::create_pair(const std::string &style, int trysuffix) {
   delete[] pair_style;
-  if (pair)
-    delete pair;
   pair_style = nullptr;
   pair = nullptr;
   int sflag;
