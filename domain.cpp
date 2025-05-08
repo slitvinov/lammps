@@ -27,9 +27,6 @@ using namespace LAMMPS_NS;
 #define DELTAREGION 4
 #define BONDSTRETCH 1.1
 template <typename T>
-static Region *region_creator(LAMMPS *lmp, int narg, char **arg) {
-  return new T(lmp, narg, arg);
-}
 Domain::Domain(LAMMPS *lmp) : Pointers(lmp) {
   box_exist = 0;
   box_change = 0;
@@ -58,8 +55,6 @@ Domain::Domain(LAMMPS *lmp) : Pointers(lmp) {
   boxlo_lamda[0] = boxlo_lamda[1] = boxlo_lamda[2] = 0.0;
   boxhi_lamda[0] = boxhi_lamda[1] = boxhi_lamda[2] = 1.0;
   copymode = 0;
-  region_map = new RegionCreatorMap();
-  (*region_map)["block"] = &region_creator<RegBlock>;
 }
 void Domain::init() {
   box_change_size = box_change_shape = box_change_domain = 0;

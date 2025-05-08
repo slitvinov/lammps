@@ -37,7 +37,6 @@ public:
   enum { NO_REMAP, X_REMAP, V_REMAP };
   typedef Region *(*RegionCreator)(LAMMPS *, int, char **);
   typedef std::map<std::string, RegionCreator> RegionCreatorMap;
-  RegionCreatorMap *region_map;
   Domain(class LAMMPS *);
   virtual void init();
   void set_initial_box(int expandflag = 1);
