@@ -48,12 +48,6 @@ void CreateAtoms::command(int narg, char **arg) {
   region = domain->get_region_by_id(arg[4]);
   region->init();
   iarg = 5;
-  int scaleflag = 1;
-  int subsetseed;
-  double epsilon[3];
-  epsilon[0] = domain->prd[0] * EPSILON;
-  epsilon[1] = domain->prd[1] * EPSILON;
-  epsilon[2] = domain->prd[2] * EPSILON;
   sublo[0] = domain->sublo[0];
   subhi[0] = domain->subhi[0];
   sublo[1] = domain->sublo[1];
